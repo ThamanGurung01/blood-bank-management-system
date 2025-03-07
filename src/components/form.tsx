@@ -162,7 +162,7 @@ const Form = ({ type }: { type: string }) => {
                       type="text"
                       id="name"
                       name="name"
-                      className="block w-full rounded-md border-gray-300 pl-10 focus:border-red-500 focus:ring-red-500 sm:text-sm"
+                      className="block w-full rounded-md border-gray-300 pl-10 py-2 focus:border-red-500 focus:ring-red-500 sm:text-sm"
                       placeholder="John Doe"
                     />
                   </div>
@@ -185,7 +185,7 @@ const Form = ({ type }: { type: string }) => {
                   type="email"
                   id="email"
                   name="email"
-                  className="block w-full rounded-md border-gray-300 pl-10 focus:border-red-500 focus:ring-red-500 sm:text-sm"
+                  className="block w-full rounded-md border-gray-300 pl-10 py-2 focus:border-red-500 focus:ring-red-500 sm:text-sm"
                   placeholder="you@example.com"
                 />
               </div>
@@ -206,7 +206,7 @@ const Form = ({ type }: { type: string }) => {
                   type="password"
                   id="password"
                   name="password"
-                  className="block w-full rounded-md border-gray-300 pl-10 focus:border-red-500 focus:ring-red-500 sm:text-sm"
+                  className="block w-full rounded-md border-gray-300 pl-10 py-2 focus:border-red-500 focus:ring-red-500 sm:text-sm"
                   placeholder="••••••••"
                 />
               </div>
