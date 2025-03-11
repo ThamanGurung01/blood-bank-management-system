@@ -5,9 +5,8 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Upload, User, Mail, Lock, AlertCircle } from "lucide-react";
-
+import { fromValidation } from "@/utils/validation";
 const Map = dynamic(() => import("@/components/map"), { ssr: false });
-
 const Form = ({ type }: { type: string }) => {
   const [latitude, setLatitude] = useState<number>(0);
   const [longitude, setLongitude] = useState<number>(0);
@@ -65,9 +64,14 @@ const Form = ({ type }: { type: string }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Form validation would go here
-    // This is just a placeholder for demonstration
-    console.log("Form submitted");
+const formdata=new FormData(e.target as HTMLFormElement);
+const location={
+  latitude,longitude
+}
+formdata.append("location",JSON.stringify(location));
+const validation=fromValidation(formdata,type);
+const errors = validation?.error?.flatten().fieldErrors;
+console.log(errors?.email?.[0]);
   };
 
   return (
@@ -106,7 +110,7 @@ const Form = ({ type }: { type: string }) => {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          <form onSubmit={handleSubmit} className="mt-8 space-y-6" encType="multipart/form-data">
             {type !== "login" && (
               <div className="space-y-6">
                 <div className="flex flex-col items-center">
