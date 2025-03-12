@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Upload, User, Mail, Lock, AlertCircle } from "lucide-react";
+import { MapPin, Upload, User, Mail, Lock, AlertCircle, Contact, Building } from "lucide-react";
 import { fromValidation } from "@/utils/validation";
 const Map = dynamic(() => import("@/components/map"), { ssr: false });
 const Form = ({ type }: { type: string }) => {
@@ -15,7 +15,7 @@ const Form = ({ type }: { type: string }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showMap, setShowMap] = useState<boolean>(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-
+  const [dropdownValue, setDropdownValue] = useState("");
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setSelectedFile(file);
@@ -62,16 +62,20 @@ const Form = ({ type }: { type: string }) => {
     }
   };
 
+  const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target?.value;
+    setDropdownValue(value);
+  }
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-const formdata=new FormData(e.target as HTMLFormElement);
-const location={
-  latitude,longitude
-}
-formdata.append("location",JSON.stringify(location));
-const validation=fromValidation(formdata,type);
-const errors = validation?.error?.flatten().fieldErrors;
-console.log(errors?.email?.[0]);
+    const formdata = new FormData(e.target as HTMLFormElement);
+    const location = {
+      latitude, longitude
+    }
+    formdata.append("location", JSON.stringify(location));
+    const validation = fromValidation(formdata, type);
+    const errors = validation?.error?.flatten().fieldErrors;
+    console.log(errors?.email?.[0]);
   };
 
   return (
@@ -239,13 +243,101 @@ console.log(errors?.email?.[0]);
                     name="role"
                     id="role"
                     className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500 sm:text-sm"
+                    onChange={handleOptionChange} value={dropdownValue}
                   >
                     <option value="">Select your role</option>
                     <option value="donor">Donor</option>
                     <option value="blood_bank">Blood Bank</option>
                   </select>
                 </div>
+                {dropdownValue === "donor" && (
+                  <>
+                    <div>
+                      <label
+                        htmlFor="age"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Age
+                      </label>
+                      <div className="relative mt-1 rounded-md shadow-sm">
+                        <input
+                          type="number"
+                          id="age"
+                          name="age"
+                          className="block w-full rounded-md border-gray-300 pl-4.5 py-2 focus:border-red-500 focus:ring-red-500 sm:text-sm"
+                          placeholder="22"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="blood_group"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Blood Group
+                      </label>
+                      <select
+                        name="blood_group"
+                        id="blood_group"
+                        className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500 sm:text-sm"
+                      >
+                        <option value="">Select your Blood Group</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+{dropdownValue==="blood_bank"&&(
+   <div>
+   <label
+     htmlFor="blood_bank"
+     className="block text-sm font-medium text-gray-700"
+   >
+     Blood Bank
+   </label>
+   <div className="relative mt-1 rounded-md shadow-sm">
+     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+       <Building className="h-5 w-5 text-gray-400" />
+     </div>
+     <input
+       type="text"
+       id="blood_bank"
+       name="blood_bank"
+       className="block w-full rounded-md border-gray-300 pl-10 py-2 focus:border-red-500 focus:ring-red-500 sm:text-sm"
+       placeholder="NRCS Blood Bank"
+     />
+   </div>
+ </div>
+)}
 
+
+                <div>
+                  <label
+                    htmlFor="contact"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Contact
+                  </label>
+                  <div className="relative mt-1 rounded-md shadow-sm">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <Contact className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="number"
+                      id="contact"
+                      name="contact"
+                      className="block w-full rounded-md border-gray-300 pl-10 py-2 focus:border-red-500 focus:ring-red-500 sm:text-sm"
+                      placeholder="9826853429"
+                    />
+                  </div>
+                </div>
                 <div>
                   <label
                     htmlFor="location"
