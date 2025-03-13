@@ -6,20 +6,26 @@ import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Upload, User, Mail, Lock, AlertCircle, Contact, Building } from "lucide-react";
 import { fromValidation } from "@/utils/validation";
+import IValidation from "@/types/validationTypes";
+import { ACCEPTED_IMAGE_TYPES } from "@/utils/validation";
+
 const Map = dynamic(() => import("@/components/map"), { ssr: false });
 const Form = ({ type }: { type: string }) => {
   const [latitude, setLatitude] = useState<number>(0);
   const [longitude, setLongitude] = useState<number>(0);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showMap, setShowMap] = useState<boolean>(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [dropdownValue, setDropdownValue] = useState("");
+  const [validationErrors, setValidationErrors] = useState<IValidation>();
+
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
+    const file = e.target.files?.[0] || undefined;
     setSelectedFile(file);
-    if (file) {
+    if (file && ACCEPTED_IMAGE_TYPES.includes(file?.type || "")) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result as string);
@@ -39,7 +45,6 @@ const Form = ({ type }: { type: string }) => {
   };
 
   const handleGetLocation = () => {
-    toggleMap();
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -72,10 +77,13 @@ const Form = ({ type }: { type: string }) => {
     const location = {
       latitude, longitude
     }
-    formdata.append("location", JSON.stringify(location));
+    type==="signup"&& formdata.append("location", JSON.stringify(location));
     const validation = fromValidation(formdata, type);
-    const errors = validation?.error?.flatten().fieldErrors;
-    console.log(errors?.email?.[0]);
+    const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
+    setValidationErrors(errors);
+    if(!errors){
+      console.log(Object.fromEntries(formdata));
+    }
   };
 
   return (
@@ -154,7 +162,20 @@ const Form = ({ type }: { type: string }) => {
                     accept="image/*"
                   />
                 </div>
-
+                {validationErrors?.profile_picture?.[0] && (
+                  <div className="rounded-md bg-red-50 p-2">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <AlertCircle className="h-5 w-5 text-red-400" />
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-red-700">
+                          {validationErrors?.profile_picture?.[0]}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div>
                   <label
                     htmlFor="name"
@@ -175,6 +196,20 @@ const Form = ({ type }: { type: string }) => {
                     />
                   </div>
                 </div>
+                {validationErrors?.name?.[0] && (
+                  <div className="rounded-md bg-red-50 p-2">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <AlertCircle className="h-5 w-5 text-red-400" />
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-red-700">
+                          {validationErrors?.name?.[0]}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -190,7 +225,7 @@ const Form = ({ type }: { type: string }) => {
                   <Mail className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  type="email"
+                  type="text"
                   id="email"
                   name="email"
                   className="block w-full rounded-md border-gray-300 pl-10 py-2 focus:border-red-500 focus:ring-red-500 sm:text-sm"
@@ -198,7 +233,20 @@ const Form = ({ type }: { type: string }) => {
                 />
               </div>
             </div>
-
+            {validationErrors?.email?.[0] && (
+              <div className="rounded-md bg-red-50 p-2">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <AlertCircle className="h-5 w-5 text-red-400" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-red-700">
+                      {validationErrors?.email?.[0]}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
             <div>
               <label
                 htmlFor="password"
@@ -218,6 +266,20 @@ const Form = ({ type }: { type: string }) => {
                   placeholder="••••••••"
                 />
               </div>
+              {validationErrors?.password?.[0] && (
+                <div className="rounded-md bg-red-50 p-2">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <AlertCircle className="h-5 w-5 text-red-400" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-red-700">
+                        {validationErrors?.password?.[0]}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
               {type === "login" && (
                 <div className="mt-2 text-right">
                   <Link
@@ -250,6 +312,20 @@ const Form = ({ type }: { type: string }) => {
                     <option value="blood_bank">Blood Bank</option>
                   </select>
                 </div>
+                {validationErrors?.role?.[0] && (
+                  <div className="rounded-md bg-red-50 p-2">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <AlertCircle className="h-5 w-5 text-red-400" />
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-red-700">
+                          {validationErrors?.role?.[0]}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {dropdownValue === "donor" && (
                   <>
                     <div>
@@ -269,6 +345,20 @@ const Form = ({ type }: { type: string }) => {
                         />
                       </div>
                     </div>
+                    {validationErrors?.age?.[0] && (
+                      <div className="rounded-md bg-red-50 p-2">
+                        <div className="flex">
+                          <div className="flex-shrink-0">
+                            <AlertCircle className="h-5 w-5 text-red-400" />
+                          </div>
+                          <div className="ml-3">
+                            <p className="text-sm text-red-700">
+                              {validationErrors?.age?.[0]}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     <div>
                       <label
                         htmlFor="blood_group"
@@ -292,30 +382,60 @@ const Form = ({ type }: { type: string }) => {
                         <option value="AB-">AB-</option>
                       </select>
                     </div>
+                    {validationErrors?.blood_group?.[0] && (
+                      <div className="rounded-md bg-red-50 p-2">
+                        <div className="flex">
+                          <div className="flex-shrink-0">
+                            <AlertCircle className="h-5 w-5 text-red-400" />
+                          </div>
+                          <div className="ml-3">
+                            <p className="text-sm text-red-700">
+                              {validationErrors?.blood_group?.[0]}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
-{dropdownValue==="blood_bank"&&(
-   <div>
-   <label
-     htmlFor="blood_bank"
-     className="block text-sm font-medium text-gray-700"
-   >
-     Blood Bank
-   </label>
-   <div className="relative mt-1 rounded-md shadow-sm">
-     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-       <Building className="h-5 w-5 text-gray-400" />
-     </div>
-     <input
-       type="text"
-       id="blood_bank"
-       name="blood_bank"
-       className="block w-full rounded-md border-gray-300 pl-10 py-2 focus:border-red-500 focus:ring-red-500 sm:text-sm"
-       placeholder="NRCS Blood Bank"
-     />
-   </div>
- </div>
-)}
+                {dropdownValue === "blood_bank" && (
+                  <>
+                  <div>
+                    <label
+                      htmlFor="blood_bank"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Blood Bank
+                    </label>
+                    <div className="relative mt-1 rounded-md shadow-sm">
+                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <Building className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        id="blood_bank"
+                        name="blood_bank"
+                        className="block w-full rounded-md border-gray-300 pl-10 py-2 focus:border-red-500 focus:ring-red-500 sm:text-sm"
+                        placeholder="NRCS Blood Bank"
+                      />
+                    </div>
+                  </div>
+                  {validationErrors?.blood_bank?.[0] && (
+                    <div className="rounded-md bg-red-50 p-2">
+                      <div className="flex">
+                        <div className="flex-shrink-0">
+                          <AlertCircle className="h-5 w-5 text-red-400" />
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm text-red-700">
+                            {validationErrors?.blood_bank?.[0]}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  </>
+                )}
 
 
                 <div>
@@ -338,6 +458,20 @@ const Form = ({ type }: { type: string }) => {
                     />
                   </div>
                 </div>
+                {validationErrors?.contact?.[0] && (
+                  <div className="rounded-md bg-red-50 p-2">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <AlertCircle className="h-5 w-5 text-red-400" />
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-red-700">
+                          {validationErrors?.contact?.[0]}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div>
                   <label
                     htmlFor="location"
@@ -378,7 +512,20 @@ const Form = ({ type }: { type: string }) => {
                         </div>
                       </div>
                     )}
-
+                    {validationErrors?.location?.[0] && (
+                      <div className="rounded-md bg-red-50 p-2">
+                        <div className="flex">
+                          <div className="flex-shrink-0">
+                            <AlertCircle className="h-5 w-5 text-red-400" />
+                          </div>
+                          <div className="ml-3">
+                            <p className="text-sm text-red-700">
+                              {validationErrors?.location?.[0]}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     {(latitude !== 0 || longitude !== 0) && (
                       <div className="rounded-md bg-gray-50 p-2 text-sm text-gray-700">
                         Coordinates: {latitude.toFixed(6)},{" "}

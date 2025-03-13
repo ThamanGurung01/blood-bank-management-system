@@ -5,7 +5,7 @@ export interface IDonor extends Document{
     blood_group:string;
     age:number;
     location:string;
-    contact:number;
+    contact:string;
     status:boolean;
     donations:Array<{
         bloodBank:Schema.Types.ObjectId;
@@ -25,7 +25,7 @@ const DonorSchema=new Schema<IDonor>({
         required:true
     },
     contact:{
-        type:Number,
+        type:String,
         required:true
     }
 ,
