@@ -1,6 +1,7 @@
-import { Schema,Document,model,models } from "mongoose";
+import { Schema, Document, model, models, CallbackError } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import Donor from "./donor.models";
 export type Role= 'donor' | 'blood_bank' | 'admin';
 export interface IUser extends Document{
     name:string;
@@ -36,7 +37,14 @@ UserSchema.pre<IUser>("save", async function (next) {
     this.password = await bcrypt.hash(this.password, 12);
     next();
   });
-  
+  UserSchema.pre<IUser>("deleteOne", { document: true }, async function(next){
+    try {
+      await Donor.deleteMany({ user: this._id });
+      next();
+    } catch (error: unknown) {
+      next(error as CallbackError);
+    }
+  });
   UserSchema.methods.isPasswordCorrect = async function (
     password: string
   ): Promise<boolean> {
@@ -63,4 +71,4 @@ UserSchema.pre<IUser>("save", async function (next) {
       { expiresIn: "7d" }
     );
   };
-export default models.UserSchema || model<IUser>("user",UserSchema);
+export default models.User || model<IUser>("User",UserSchema);

@@ -8,6 +8,7 @@ import { MapPin, Upload, User, Mail, Lock, AlertCircle, Contact, Building } from
 import { fromValidation } from "@/utils/validation";
 import IValidation from "@/types/validationTypes";
 import { ACCEPTED_IMAGE_TYPES } from "@/utils/validation";
+import { createUser } from "@/actions/userActions";
 
 const Map = dynamic(() => import("@/components/map"), { ssr: false });
 const Form = ({ type }: { type: string }) => {
@@ -71,7 +72,7 @@ const Form = ({ type }: { type: string }) => {
     const value = e.target?.value;
     setDropdownValue(value);
   }
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
     const formdata = new FormData(e.target as HTMLFormElement);
     const location = {
@@ -83,6 +84,8 @@ const Form = ({ type }: { type: string }) => {
     setValidationErrors(errors);
     if(!errors){
       console.log(Object.fromEntries(formdata));
+     const response= await createUser(formdata);
+     console.log(response);
     }
   };
 

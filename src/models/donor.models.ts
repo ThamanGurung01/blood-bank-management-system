@@ -1,10 +1,14 @@
 import { Schema,Document,model,models } from "mongoose";
+import { string } from "zod";
 export type Role= 'donor' | 'blood_bank' | 'admin';
 export interface IDonor extends Document{
     user:Schema.Types.ObjectId;
     blood_group:string;
-    age:number;
-    location:string;
+    age:string;
+    location:{
+        latitude:number;
+        longitude:number;
+    };
     contact:string;
     status:boolean;
     donations:Array<{
@@ -18,11 +22,17 @@ const DonorSchema=new Schema<IDonor>({
         required:true
     },
     age:{
-        type:Number,
+        type:String,
         required:true},
     location:{
-        type:String,
-        required:true
+        latitude:{
+            type:Number,
+            required:true
+        },
+        longitude:{
+            type:Number,
+            required:true
+        },
     },
     contact:{
         type:String,
