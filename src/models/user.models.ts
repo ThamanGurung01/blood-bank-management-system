@@ -63,4 +63,4 @@ UserSchema.pre<IUser>("save", async function (next) {
       { expiresIn: "7d" }
     );
   };
-export default models.Donor || model<IUser>("user",UserSchema);
+export default models.UserSchema || model<IUser>("user",UserSchema);

@@ -1,9 +1,8 @@
 import React from 'react'
-import dashboardLayout from './layout'
 const page = () => {
   return (
     <div>
-        dashboardLayout
+        <h1>dashboardLayout</h1>
     </div>
   )
 }
