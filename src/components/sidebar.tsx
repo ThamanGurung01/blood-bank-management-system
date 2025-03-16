@@ -1,8 +1,10 @@
+"use client";
 import React from 'react'
-
+import { usePathname } from 'next/navigation';
 const Sidebar = () => {
+  const pathname=usePathname();
   return (
-    <div>Sidebar</div>
+    <div className={`${[pathname==="/"?"":"hidden"]}`}>Sidebar</div>
   )
 }
 

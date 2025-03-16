@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import { useRef, useState } from "react";
+import { useRef, useState,useEffect } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,6 +9,7 @@ import { fromValidation } from "@/utils/validation";
 import IValidation from "@/types/validationTypes";
 import { ACCEPTED_IMAGE_TYPES } from "@/utils/validation";
 import { createUser } from "@/actions/userActions";
+import { signIn ,useSession} from "next-auth/react";
 
 const Map = dynamic(() => import("@/components/map"), { ssr: false });
 const Form = ({ type }: { type: string }) => {
@@ -21,8 +22,7 @@ const Form = ({ type }: { type: string }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [dropdownValue, setDropdownValue] = useState("");
   const [validationErrors, setValidationErrors] = useState<IValidation>();
-
-
+const {data:session}=useSession();
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || undefined;
     setSelectedFile(file);
@@ -83,12 +83,20 @@ const Form = ({ type }: { type: string }) => {
     const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
     setValidationErrors(errors);
     if(!errors){
-      console.log(Object.fromEntries(formdata));
-     const response= await createUser(formdata);
-     console.log(response);
+if(type==="signup"){
+  console.log(Object.fromEntries(formdata));
+  const response= await createUser(formdata);
+  console.log(response);
+}else if(type==="login"){
+  const credentials=Object.fromEntries(formdata);
+  const response= await signIn("credentials",credentials);
+  console.log(response);
+}
     }
   };
-
+  if(session){
+    console.log(session);
+  }
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       {/* Left Column - Form */}

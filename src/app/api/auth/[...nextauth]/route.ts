@@ -1,45 +1,84 @@
 import { connectToDb } from "@/utils/database";
-import NextAuth from "next-auth";
+import NextAuth, {  DefaultSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import User from "@/models/user.models";
+export interface User {
+  id: string;
+  email: string;
+  password: string;
+  role?: string;
+}
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      name:string;
+      email:string;
+      role?: string;
+    } & DefaultSession["user"];
+  }
+}
 
-const handler =NextAuth({
+const handler = NextAuth({
     providers: [
         CredentialsProvider({
-          // The name to display on the sign in form (e.g. "Sign in with...")
           name: "Credentials",
-          // `credentials` is used to generate a form on the sign in page.
-          // You can specify which fields should be submitted, by adding keys to the `credentials` object.
-          // e.g. domain, username, password, 2FA token, etc.
-          // You can pass any HTML attribute to the <input> tag through the object.
           credentials: {
             email: { label: "email", type: "text", placeholder: "jsmith@example.com" },
             password: { label: "Password", type: "password" }
           },
-          async authorize(credentials,req) {
+          async authorize(credentials, req): Promise<User | null> {
            try {
+            if (!credentials?.email || !credentials?.password) {
+              throw new Error("Missing credentials");
+            }
             await connectToDb();
-            const user:any=await User.find({});
-            console.log(user);
+            const user = await User.findOne({ email: credentials.email }) as User;
+            if (!user) throw new Error("User not found");
+            console.log("next auth user"+user);
             if (user) {
-              // Any object returned will be saved in `user` property of the JWT
               return user
             } else {
-              // If you return null then an error will be displayed advising the user to check their details.
               return null
-      
-              // You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
             }
+
            } catch (error) {
             console.log(error);
+            return null;
            }
           },
           
         })
       ],
-      callbacks: {
-        session({ session }) {
+      pages: {
+        signIn: "/login",
+      },
+      callbacks:{
+        async jwt({token,user}){
+          if (user) {
+            token.id = user.id;
+            token.name=user.name;
+            token.email=user.email;
+            token.role = (user as User).role;
+          }
+          return token;
+        },
+        async session({ session, token }) {
+          if (session.user) {
+            session.user.id = token.id as string;
+            token.name=token.name;
+            token.email=token.email;
+            session.user.role = token.role as string;
+          }
           return session;
         },
+        async redirect({ url, baseUrl }) {
+      return url.startsWith(baseUrl) ? url : "/"; 
+    },
       },
+      session:{
+        strategy:"jwt",
+      },
+      secret:process.env.NEXTAUTH_SECRET,
 })
+export { handler as GET, handler as POST }

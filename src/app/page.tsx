@@ -3,7 +3,7 @@ import Form from "@/components/form";
 const Page = () => {
   return (
     <div>
-      <Form type={"login"} />
+      <h1>dashboardLayout</h1>
     </div>
   );
 };
