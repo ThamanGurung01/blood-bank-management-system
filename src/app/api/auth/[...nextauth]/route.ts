@@ -2,11 +2,12 @@ import { connectToDb } from "@/utils/database";
 import NextAuth, {  DefaultSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import User from "@/models/user.models";
-export interface User {
+export interface AUser {
   id: string;
   email: string;
   password: string;
   role?: string;
+   isPasswordCorrect(password: string): Promise<boolean>;
 }
 declare module "next-auth" {
   interface Session {
@@ -27,31 +28,33 @@ const handler = NextAuth({
             email: { label: "email", type: "text", placeholder: "jsmith@example.com" },
             password: { label: "Password", type: "password" }
           },
-          async authorize(credentials, req): Promise<User | null> {
+          async authorize(credentials, req): Promise<AUser | null> {
            try {
             if (!credentials?.email || !credentials?.password) {
               throw new Error("Missing credentials");
             }
             await connectToDb();
-            const user = await User.findOne({ email: credentials.email }) as User;
+            const user = await User.findOne({ email: credentials.email }) as AUser;
             if (!user) throw new Error("User not found");
             console.log("next auth user"+user);
-            if (user) {
-              return user
-            } else {
-              return null
+            const isPasswordCorrect=await user.isPasswordCorrect(credentials.password);
+            if (!isPasswordCorrect) {
+              throw new Error("The password you've entered is incorrect");
             }
-
-           } catch (error) {
-            console.log(error);
-            return null;
+            return user
+           } catch (error:any) {
+            if(error){
+              throw new Error(error.message);
+            }else{
+              throw new Error("Authentication error");
+            }
            }
           },
-          
         })
       ],
       pages: {
         signIn: "/login",
+        error:"/login",
       },
       callbacks:{
         async jwt({token,user}){
@@ -59,7 +62,7 @@ const handler = NextAuth({
             token.id = user.id;
             token.name=user.name;
             token.email=user.email;
-            token.role = (user as User).role;
+            token.role = (user as AUser).role;
           }
           return token;
         },
@@ -73,7 +76,7 @@ const handler = NextAuth({
           return session;
         },
         async redirect({ url, baseUrl }) {
-      return url.startsWith(baseUrl) ? url : "/"; 
+      return baseUrl; 
     },
       },
       session:{

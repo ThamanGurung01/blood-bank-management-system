@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import { useRef, useState,useEffect } from "react";
+import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,7 +10,12 @@ import IValidation from "@/types/validationTypes";
 import { ACCEPTED_IMAGE_TYPES } from "@/utils/validation";
 import { createUser } from "@/actions/userActions";
 import { signIn ,useSession} from "next-auth/react";
+import { useSearchParams,useRouter } from "next/navigation";
 
+const errorMessages: Record<string, string> = {
+  CredentialsSignin: "Invalid email or password. Please try again.",
+  default: "Something went wrong. Please try again.",
+};
 const Map = dynamic(() => import("@/components/map"), { ssr: false });
 const Form = ({ type }: { type: string }) => {
   const [latitude, setLatitude] = useState<number>(0);
@@ -22,6 +27,9 @@ const Form = ({ type }: { type: string }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [dropdownValue, setDropdownValue] = useState("");
   const [validationErrors, setValidationErrors] = useState<IValidation>();
+  const searchParams=useSearchParams();
+  const signinError=searchParams.get("error");
+  const router=useRouter();
 const {data:session}=useSession();
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || undefined;
@@ -73,26 +81,30 @@ const {data:session}=useSession();
     setDropdownValue(value);
   }
   const handleSubmit = async(e: React.FormEvent) => {
-    e.preventDefault();
-    const formdata = new FormData(e.target as HTMLFormElement);
-    const location = {
-      latitude, longitude
-    }
-    type==="signup"&& formdata.append("location", JSON.stringify(location));
-    const validation = fromValidation(formdata, type);
-    const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
-    setValidationErrors(errors);
-    if(!errors){
+try {
+  e.preventDefault();
+  const formdata = new FormData(e.target as HTMLFormElement);
+  const location = {
+    latitude, longitude
+  }
+  type==="signup"&& formdata.append("location", JSON.stringify(location));
+  const validation = fromValidation(formdata, type);
+  const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
+  setValidationErrors(errors);
+  if(!errors){
 if(type==="signup"){
-  console.log(Object.fromEntries(formdata));
-  const response= await createUser(formdata);
-  console.log(response);
+console.log(Object.fromEntries(formdata));
+const response= await createUser(formdata);
+console.log(response);
 }else if(type==="login"){
-  const credentials=Object.fromEntries(formdata);
-  const response= await signIn("credentials",credentials);
-  console.log(response);
+const credentials=Object.fromEntries(formdata);
+await signIn("credentials",credentials);
+router.push("/");
 }
-    }
+  }
+} catch (error:any) {
+  throw new Error(error.message);
+}
   };
   if(session){
     console.log(session);
@@ -567,6 +579,20 @@ if(type==="signup"){
                 {type === "login" ? "Sign in" : "Create account"}
               </button>
             </div>
+            {signinError && (
+                <div className="rounded-md bg-red-50 p-2">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <AlertCircle className="h-5 w-5 text-red-400" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-red-700">
+                        {signinError}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
           </form>
         </div>
       </div>

@@ -48,6 +48,7 @@ UserSchema.pre<IUser>("save", async function (next) {
   UserSchema.methods.isPasswordCorrect = async function (
     password: string
   ): Promise<boolean> {
+    console.log("inside check password");
     return bcrypt.compare(password, this.password);
   };
   
