@@ -1,0 +1,10 @@
+@import "tailwindcss";
+.sidebarOptionContainer{
+    @apply px-4 py-2 mt-7 mb-5 flex border-2 text-center;
+}
+.sidebarIcons{
+    @apply mt-1;
+}
+.sidebar{
+    @apply ml-6;
+}

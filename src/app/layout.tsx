@@ -1,23 +1,33 @@
-import type { Metadata } from "next";
+"use client"
 import AuthProvider from "./context/AuthProvider";
-import "./styles/globals.css";
+import "@/styles/globals.css";
 import Sidebar from "@/components/sidebar";
-export const metadata: Metadata = {
-  title: "Blood Bank Management System",
-  description: "Blood Bank Management System is a web application that helps manage blood bank operations , manage donor and donation history .",
-  icons:"/blood.png",
-};
+import Navbar from "@/components/navbar";
+import { usePathname } from "next/navigation";
+import Head from "../components/head";
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname=usePathname();
+  const dashboardPath=["/"];
   return (
     <html lang="en">
-      <body>
+      <head>
+        <Head/>
+      </head>
+      <body className="overflow-hidden">
+        <Navbar/>
+      <div className={`${dashboardPath.includes(pathname)?"flex":""} `}>
+      <AuthProvider>
       <Sidebar/>
-        <AuthProvider>{children}</AuthProvider>
+      <main>
+      {children}
+      </main>
+      </AuthProvider>
+      </div>
       </body>
     </html>
   );
