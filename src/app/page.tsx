@@ -1,23 +1,9 @@
-"use client"
-import { useSession } from "next-auth/react";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import Form from "@/components/form";
 const Page = () => {
-  const {data:session,status}=useSession();
-  const router=useRouter();
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-    }
-  }, [status, router]);
-
-  if (status === "loading") {
-    return <div>Loading...</div>; 
-  }
   return (
-    <div>
-      <h1>dashboardLayout</h1>
-    </div>
+   <div>
+    <Form type={"login"} />
+   </div>
   );
 };
 

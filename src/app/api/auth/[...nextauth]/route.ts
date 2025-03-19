@@ -53,8 +53,8 @@ const handler = NextAuth({
         })
       ],
       pages: {
-        signIn: "/login",
-        error:"/login",
+        signIn: "/",
+        error:"/",
       },
       callbacks:{
         async jwt({token,user}){
@@ -76,7 +76,7 @@ const handler = NextAuth({
           return session;
         },
         async redirect({ url, baseUrl }) {
-      return baseUrl; 
+      return `${baseUrl}/dashboard`; 
     },
       },
       session:{

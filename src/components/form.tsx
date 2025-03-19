@@ -99,7 +99,7 @@ console.log(response);
 }else if(type==="login"){
 const credentials=Object.fromEntries(formdata);
 await signIn("credentials",credentials);
-router.push("/");
+router.push("/dashboard");
 }
   }
 } catch (error:any) {
@@ -135,7 +135,7 @@ router.push("/");
                 <>
                   Already have an account?{" "}
                   <Link
-                    href="/login"
+                    href="/"
                     className="font-medium text-red-600 hover:text-red-500"
                   >
                     Sign in

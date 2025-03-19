@@ -1,31 +1,52 @@
-"use client";
-import React from 'react'
-import { usePathname } from 'next/navigation';
+
+import React, { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react';
 import {House,Droplet,Syringe,Package,Calendar } from "lucide-react";
-import "@/styles/dashboard.css"
-
+import "@/styles/sidebar.css"
+import { useRouter } from 'next/navigation';
 
 const Sidebar = () => {
-  const pathname=usePathname();
-  const dashboardPath=["/"];
+const [selectedSidebarOption,setSelectedSidebarOption]=useState<string>();
   const {data:session}=useSession();
+const router=useRouter();
+const handleSidebarSelect=(option:string)=>{
+ if(!option) return console.log("error no option passed for handle side bar");
+  if(option==="overview"){
+    setSelectedSidebarOption(option);
+    router.push(`/dashboard`);
+   }else{
+    setSelectedSidebarOption(option);
+    router.push(`/dashboard/${option}`);
+   }
+ 
+}
+
+
+  useEffect(()=>{
+    if(session?.user.role==="blood_bank"){
+      setSelectedSidebarOption("overview");
+    }
+  },[session])
+
+
+
+
   return (
-    <div className={`${dashboardPath.includes(pathname)?"":"hidden"} h-screen flex flex-col border-r-2 border-gray-300 text-2xl`}>
+    <div className={`h-screen flex flex-col border-r-2 border-gray-300 text-2xl pt-2 px-2`}>
       {/* blood_bank */}
      {
       session?.user.role==="blood_bank"&&(
         <>
-         <div className='sidebarOptionContainer'>
+         <div className={`sidebarOptionContainer ${selectedSidebarOption==="overview" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("overview")} >
         <div>
         <House className='sidebarIcons'/>
         </div>
         <div className='sidebar'>
-        Dashboard
+        Overview
         </div>
       </div>
       
-      <div className='sidebarOptionContainer'>
+      <div className={`sidebarOptionContainer ${selectedSidebarOption==="blood-stock" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("blood-stock")}>
         <div>
         <Droplet className='sidebarIcons'/>
         </div>
@@ -34,7 +55,7 @@ const Sidebar = () => {
         </div>
       </div>
 
-      <div className='sidebarOptionContainer'>
+      <div className={`sidebarOptionContainer ${selectedSidebarOption==="blood-donation" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("blood-donation")}>
         <div>
         <Syringe className='sidebarIcons'/>
         </div>
@@ -43,7 +64,7 @@ const Sidebar = () => {
         </div>
       </div>
 
-      <div className='sidebarOptionContainer'>
+      <div className={`sidebarOptionContainer ${selectedSidebarOption==="blood-supply" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("blood-supply")}>
         <div>
         <Package className='sidebarIcons'/>
         </div>
@@ -52,7 +73,7 @@ const Sidebar = () => {
         </div>
       </div>
 
-      <div className='sidebarOptionContainer'>
+      <div className={`sidebarOptionContainer ${selectedSidebarOption==="event" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("event")}>
         <div>
         <Calendar className='sidebarIcons'/>
         </div>
