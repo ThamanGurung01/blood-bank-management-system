@@ -14,7 +14,7 @@ export default function RootLayout({
       <head>
         <Head/>
       </head>
-      <body className="">
+      <body className="bg-gray-100 overflow-hidden">
       <AuthProvider> {children}</AuthProvider>
       </body>
     </html>

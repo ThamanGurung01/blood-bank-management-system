@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react';
-import {House,Droplet,Syringe,Package,Calendar } from "lucide-react";
+import { useSession,signOut } from 'next-auth/react';
+import {House,Droplet,Syringe,Package,Calendar,LogOut, History, Users } from "lucide-react";
 import "@/styles/sidebar.css"
 import { useRouter } from 'next/navigation';
 
@@ -9,8 +9,9 @@ const Sidebar = () => {
 const [selectedSidebarOption,setSelectedSidebarOption]=useState<string>();
   const {data:session}=useSession();
 const router=useRouter();
-const handleSidebarSelect=(option:string)=>{
- if(!option) return console.log("error no option passed for handle side bar");
+const handleSidebarSelect=(option:string,role:string)=>{
+  if(!option&&!role) return console.log("error no option and role passed for handle side bar");
+ if(role==="blood_bank"){
   if(option==="overview"){
     setSelectedSidebarOption(option);
     router.push(`/dashboard`);
@@ -18,13 +19,27 @@ const handleSidebarSelect=(option:string)=>{
     setSelectedSidebarOption(option);
     router.push(`/dashboard/${option}`);
    }
+ }else if(role==="donor"){
+  if(option==="overview"){
+    setSelectedSidebarOption(option);
+    router.push(`/dashboard`);
+   }else{
+    setSelectedSidebarOption(option);
+    router.push(`/dashboard/${option}`);
+   }
+ }
  
 }
-
+const handleSignOut = () => {
+    signOut({ callbackUrl: "/" });
+};
 
   useEffect(()=>{
     if(session?.user.role==="blood_bank"){
       setSelectedSidebarOption("overview");
+    }else if(session?.user.role==="donor"){
+      setSelectedSidebarOption("find-donors");
+      router.push("/dashboard/find-donors");
     }
   },[session])
 
@@ -37,7 +52,7 @@ const handleSidebarSelect=(option:string)=>{
      {
       session?.user.role==="blood_bank"&&(
         <>
-         <div className={`sidebarOptionContainer ${selectedSidebarOption==="overview" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("overview")} >
+         <div className={`sidebarOptionContainer ${selectedSidebarOption==="overview" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("overview","blood_bank")} >
         <div>
         <House className='sidebarIcons'/>
         </div>
@@ -46,7 +61,7 @@ const handleSidebarSelect=(option:string)=>{
         </div>
       </div>
       
-      <div className={`sidebarOptionContainer ${selectedSidebarOption==="blood-stock" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("blood-stock")}>
+      <div className={`sidebarOptionContainer ${selectedSidebarOption==="blood-stock" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("blood-stock","blood_bank")}>
         <div>
         <Droplet className='sidebarIcons'/>
         </div>
@@ -55,7 +70,7 @@ const handleSidebarSelect=(option:string)=>{
         </div>
       </div>
 
-      <div className={`sidebarOptionContainer ${selectedSidebarOption==="blood-donation" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("blood-donation")}>
+      <div className={`sidebarOptionContainer ${selectedSidebarOption==="blood-donation" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("blood-donation","blood_bank")}>
         <div>
         <Syringe className='sidebarIcons'/>
         </div>
@@ -64,7 +79,7 @@ const handleSidebarSelect=(option:string)=>{
         </div>
       </div>
 
-      <div className={`sidebarOptionContainer ${selectedSidebarOption==="blood-supply" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("blood-supply")}>
+      <div className={`sidebarOptionContainer ${selectedSidebarOption==="blood-supply" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("blood-supply","blood_bank")}>
         <div>
         <Package className='sidebarIcons'/>
         </div>
@@ -73,7 +88,7 @@ const handleSidebarSelect=(option:string)=>{
         </div>
       </div>
 
-      <div className={`sidebarOptionContainer ${selectedSidebarOption==="event" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("event")}>
+      <div className={`sidebarOptionContainer ${selectedSidebarOption==="event" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("event","blood_bank")}>
         <div>
         <Calendar className='sidebarIcons'/>
         </div>
@@ -81,6 +96,16 @@ const handleSidebarSelect=(option:string)=>{
         Event
         </div>
       </div>
+
+      <div className={`sidebarOptionContainer notSelected`} onClick={handleSignOut}>
+        <div>
+        <LogOut className='sidebarIcons'/>
+        </div>
+        <div className='sidebar'>
+        SignOut
+        </div>
+      </div>
+
         </>
       )
      }
@@ -89,50 +114,51 @@ const handleSidebarSelect=(option:string)=>{
 {
       session?.user.role==="donor"&&(
         <>
-         <div className='sidebarOptionContainer'>
+<div className={`sidebarOptionContainer ${selectedSidebarOption==="find-donors" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("find-donors","donor")}>
         <div>
-        <House className='sidebarIcons'/>
+        <Users className='sidebarIcons'/>
         </div>
         <div className='sidebar'>
-        Dashboard Donor
+        Find Donors
         </div>
       </div>
-      
-      <div className='sidebarOptionContainer'>
+
+      <div className={`sidebarOptionContainer ${selectedSidebarOption==="blood-request" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("blood-request","donor")}>
         <div>
         <Droplet className='sidebarIcons'/>
         </div>
         <div className='sidebar'>
-        Blood Stock
+        Blood Request
         </div>
       </div>
 
-      <div className='sidebarOptionContainer'>
-        <div>
-        <Syringe className='sidebarIcons'/>
-        </div>
-        <div className='sidebar'>
-        Blood Donation
-        </div>
-      </div>
-
-      <div className='sidebarOptionContainer'>
-        <div>
-        <Package className='sidebarIcons'/>
-        </div>
-        <div className='sidebar'>
-        Blood Supply
-        </div>
-      </div>
-
-      <div className='sidebarOptionContainer'>
+      <div className={`sidebarOptionContainer ${selectedSidebarOption==="donation-schedule" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("donation-schedule","donor")} >
         <div>
         <Calendar className='sidebarIcons'/>
         </div>
         <div className='sidebar'>
-        Event
+        Donation Schedule
         </div>
       </div>
+      
+      <div className={`sidebarOptionContainer ${selectedSidebarOption==="donation-history" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("donation-history","donor")}>
+        <div>
+        <History className='sidebarIcons'/>
+        </div>
+        <div className='sidebar'>
+        Donation History
+        </div>
+      </div>
+
+      <div className={`sidebarOptionContainer notSelected`} onClick={handleSignOut}>
+        <div>
+        <LogOut className='sidebarIcons'/>
+        </div>
+        <div className='sidebar'>
+        SignOut
+        </div>
+      </div>
+
         </>
       )
      }

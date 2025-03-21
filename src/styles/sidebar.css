@@ -1,6 +1,6 @@
 @import "tailwindcss";
 .sidebarOptionContainer{
-    @apply px-4 py-2 mt-7 flex  rounded-2xl cursor-pointer text-center hover:text-white;
+    @apply px-4 py-2 mt-7 flex  rounded-xl cursor-pointer text-center select-none;
 }
 .sidebarIcons{
     @apply mt-1;
@@ -12,5 +12,5 @@
     @apply bg-black text-white;
 }
 .notSelected{
-    @apply hover:bg-gray-800;
+    @apply hover:bg-gray-800 hover:text-white;
 }
