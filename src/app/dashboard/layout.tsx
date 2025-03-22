@@ -2,7 +2,7 @@
 import Navbar from '@/components/navbar';
 import { usePathname } from 'next/navigation';
 import React from 'react'
-import AuthProvider from '../context/AuthProvider';
+import "@/styles/dashboard.css"
 import Sidebar from "@/components/sidebar";
 const layout = ({
     children,

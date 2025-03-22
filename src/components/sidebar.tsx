@@ -49,7 +49,7 @@ const handleSignOut = () => {
 
 
   return (
-    <div className={` flex flex-col border-r-2 border-gray-300 text-2xl pt-2 px-2`}>
+    <div className={`h-screen flex flex-col border-r-2 border-gray-300 text-2xl pt-24 px-2 fixed z-0`}>
       {/* blood_bank */}
      {
       session?.user.role==="blood_bank"&&(

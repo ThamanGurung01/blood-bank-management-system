@@ -1,0 +1,4 @@
+@import "tailwindcss";
+.initialPage{
+    @apply mt-24 ml-72;
+}

@@ -15,7 +15,7 @@ const Page = () => {
     return <div>Loading...</div>; 
   }
   return (
-    <div>
+    <div className="initialPage">
       <h1>overview</h1>
     </div>
   );
