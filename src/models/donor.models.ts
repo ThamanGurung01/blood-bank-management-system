@@ -3,6 +3,7 @@ import { string } from "zod";
 export type Role= 'donor' | 'blood_bank' | 'admin';
 export interface IDonor extends Document{
     user:Schema.Types.ObjectId;
+    donorId:string;
     blood_group:string;
     age:string;
     location:{
@@ -17,6 +18,7 @@ export interface IDonor extends Document{
     }>;
 }
 const DonorSchema=new Schema<IDonor>({
+    donorId: { type: String, unique: true },
     blood_group:{
         type:String,
         required:true

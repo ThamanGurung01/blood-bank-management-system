@@ -30,14 +30,16 @@ const handleSidebarSelect=(option:string,role:string)=>{
  }
  
 }
+
 const handleSignOut = () => {
     signOut({ callbackUrl: "/" });
 };
-
   useEffect(()=>{
-    if(session?.user.role==="blood_bank"){
+    if (!session?.user?.role) return;
+    if(session?.user.role==="blood_bank"&&!selectedSidebarOption){
       setSelectedSidebarOption("overview");
-    }else if(session?.user.role==="donor"){
+      router.push("/dashboard");
+    }else if(session?.user.role==="donor"&&!selectedSidebarOption){
       setSelectedSidebarOption("find-donors");
       router.push("/dashboard/find-donors");
     }
@@ -47,7 +49,7 @@ const handleSignOut = () => {
 
 
   return (
-    <div className={`h-screen flex flex-col border-r-2 border-gray-300 text-2xl pt-2 px-2`}>
+    <div className={` flex flex-col border-r-2 border-gray-300 text-2xl pt-2 px-2`}>
       {/* blood_bank */}
      {
       session?.user.role==="blood_bank"&&(
