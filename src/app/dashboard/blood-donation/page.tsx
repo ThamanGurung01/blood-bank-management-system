@@ -15,7 +15,7 @@ export default function page() {
   };
 
   return (
-    <div className="max-w-lg mx-auto p-6 bg-white shadow-lg rounded-xl">
+    <div className="max-w-lg mx-auto p-6 bg-white shadow-lg rounded-xl initialPage">
       <h2 className="text-2xl font-bold mb-4">Blood Donation Form</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
 

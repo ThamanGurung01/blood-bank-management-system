@@ -95,6 +95,7 @@ try {
 if(type==="signup"){
 console.log(Object.fromEntries(formdata));
 const response= await createUser(formdata);
+router.push("/");
 console.log(response);
 }else if(type==="login"){
 const credentials=Object.fromEntries(formdata);
