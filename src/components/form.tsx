@@ -12,10 +12,6 @@ import { createUser } from "@/actions/userActions";
 import { signIn ,useSession} from "next-auth/react";
 import { useSearchParams,useRouter } from "next/navigation";
 
-const errorMessages: Record<string, string> = {
-  CredentialsSignin: "Invalid email or password. Please try again.",
-  default: "Something went wrong. Please try again.",
-};
 const Map = dynamic(() => import("@/components/map"), { ssr: false });
 const Form = ({ type }: { type: string }) => {
   const [latitude, setLatitude] = useState<number>(0);

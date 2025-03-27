@@ -1,17 +1,32 @@
 "use client"
+import IValidation from "@/types/validationTypes";
+import { fromValidation } from "@/utils/validation";
 import { useState } from "react";
 
 export default function page() {
 
   const bloodTypes = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
   const [existingDonor, setExistingDonor] = useState<boolean>(true);
+  const [validationErrors, setValidationErrors] = useState<IValidation>();
 
   const handleDonor = () => {
     setExistingDonor((c) => !c);
   }
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log(e);
+try {
+  e.preventDefault();
+  const formdata = new FormData(e.target as HTMLFormElement);
+  const validation = fromValidation(formdata, existingDonor?"existing_blood_donation":"new_blood_donation");
+  const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
+  setValidationErrors(errors);
+  if(!errors){
+if(existingDonor){
+}else{
+}
+  }
+} catch (error:any) {
+  throw new Error(error.message);
+}
   };
 
   return (
@@ -64,11 +79,11 @@ export default function page() {
             required
           >
             <option value="">Select Donation Type</option>
-            <option value="Whole Blood">Whole Blood</option>
-            <option value="RBC">Red Blood Cells (RBC)</option>
-            <option value="Platelets">Platelets</option>
-            <option value="Plasma">Plasma</option>
-            <option value="Cryoprecipitate">Cryoprecipitate</option>
+            <option value="whole_blood">Whole Blood</option>
+            <option value="rbc">Red Blood Cells (RBC)</option>
+            <option value="platelets">Platelets</option>
+            <option value="plasma">Plasma</option>
+            <option value="cryoprecipitate">Cryoprecipitate</option>
           </select>
         </div>
 

@@ -9,4 +9,10 @@ export default interface IValidation{
       age?:string[];
       blood_group?:string[];
       blood_bank?:string[];
+      blood_type?:string[];
+      donation_type?:string[];
+      blood_quantity?:string[];
+      collected_date?:string[];
+      donor_id?:string[];
+
 }
