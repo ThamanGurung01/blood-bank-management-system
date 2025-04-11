@@ -2,67 +2,39 @@
 import IValidation from "@/types/validationTypes";
 import { connectToDb } from "@/utils/database";
 import { fromValidation } from "@/utils/validation";
-import User, { IUser } from "@/models/user.models"
-import Donor, { IDonor } from "@/models/donor.models"
-import BloodBank, { IBlood_Bank } from "@/models/blood_bank.models"
+import BloodDonation, { IBLood_Donation } from "@/models/blood_donation.models"
 import { formDataDeform } from "@/utils/formDataDeform";
-import { generateDonorId } from "@/utils/generateDonorId";
-export const createUser=async(formData:FormData)=>{
+import Donor from "@/models/donor.models";
+export const insertBloodDonation=async(formData:FormData,bloodDonationType:string)=>{
 try {
     await connectToDb();
-    const validation=fromValidation(formData,"signup");
+    const validation=fromValidation(formData,bloodDonationType);
+    console.log(formData.get("donor_address"));
     const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
     if(!errors){
-        const existingUser=await User.find({email:formData.get("email")});
-        console.log("existing"+existingUser);
-        if(existingUser.length>0) return {success:false,message:"user already exists"};
-        if(formData.get("role")==="donor"){
-            const cUser:IUser=await User.create(formDataDeform(formData,"user"));
-            const userId=cUser._id;
-            const donorData = formDataDeform(formData,"donor") as IDonor | undefined;
-            if (!donorData) {
-                return { success: false, message: "Donor data is invalid" };
+        if(bloodDonationType==="new_blood_donation"){
+            const bloodDonationData=formDataDeform(formData,"new_blood_donation") as IBLood_Donation | undefined;
+            if (!bloodDonationType) {
+                return { success: false, message: "Donation data is invalid" };
             }
-            console.log(donorData);
-            const donorId=await generateDonorId();
-            if(!donorId) return { success: false, message: "Donor Id is empty" };
-           const cDonor= await Donor.create({
-            donorId:donorId,
-            user:userId,
-            contact:donorData.contact,
-            age:donorData.age,
-            location:{
-                latitude:donorData.location.latitude,
-                longitude:donorData.location.longitude,
-            },
-            blood_group:donorData.blood_group,
-           });
-           console.log(cDonor+"fsfad");
-           const createdUser={...cUser,...cDonor};
-           console.log(createdUser+"cretaed");
-           return {success:true,message:`User successfully created`}
-        }else if(formData.get("role")==="blood_bank"){
-            const cUser:IBlood_Bank=await User.create(formDataDeform(formData,"user"));
-            const userId=cUser._id;
-            const bloodBank= formDataDeform(formData,"blood_bank")as IBlood_Bank | undefined;
-            if (!bloodBank) {
-                return { success: false, message: "Blood bank data is invalid" };
+            console.log(bloodDonationData);
+            const cBloodDonation=await BloodDonation.create(bloodDonationData);
+            console.log(cBloodDonation+"blood donation created");
+            return {success:true,message:`Blood donation successfully created`}
+        }else if(bloodDonationType==="existing_blood_donation"){
+            const bloodDonationData=formDataDeform(formData,"existing_blood_donation") as IBLood_Donation | undefined;
+            if (!bloodDonationType) {
+                return { success: false, message: "Donation data is invalid" };
             }
-
-            console.log(bloodBank?.location+"blood bank");
-           const cBloodBank= await BloodBank.create({
-            user:userId,
-            blood_bank:bloodBank.blood_bank,
-            location:{
-                latitude:bloodBank.location.latitude,
-                longitude:bloodBank.location.longitude,
-            },
-            contact:bloodBank.contact,
-           });
-           const createdUser={...cUser,...cBloodBank};
-           console.log(cBloodBank+"cblood")
-           console.log(createdUser);
-           return {success:true,message:`User successfully created:`}
+            console.log(bloodDonationData);
+            const existingDonor=await Donor.findOne({donorId:formData?.get("donor_id")}).populate("user");
+            console.log(formData?.get("donor_id"));
+            console.log("existing donor: "+existingDonor);
+            if(!existingDonor) return {success:false,message:"Donor not found"};
+            const newBloodDonationData={...bloodDonationData,donor_name:existingDonor.user.name,donor_contact:existingDonor.contact};
+            const cBloodDonation=await BloodDonation.create(newBloodDonationData);
+            console.log(cBloodDonation+"blood donation created");
+            return {success:true,message:`Blood donation successfully created`}
         }
     }else{
         console.log(errors);

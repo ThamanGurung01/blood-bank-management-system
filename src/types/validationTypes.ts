@@ -14,5 +14,8 @@ export default interface IValidation{
       blood_quantity?:string[];
       collected_date?:string[];
       donor_id?:string[];
+      donor_name?:string[];
+      donor_contact?:string[];
+      donor_address?:string[];
 
 }

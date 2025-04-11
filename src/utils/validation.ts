@@ -44,12 +44,19 @@ const bloodDonationSchema=z.object({
   blood_type:z.enum(["","A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]).refine((val) => val !== "", { message: "Blood Type is required" }),
   donation_type:z.enum(["","whole_blood", "rbc", "platelets", "plasma", "cryoprecipitate"]).refine((val) => val !== "", { message: "Donation Type is required" }),
   blood_quantity:z.preprocess((val)=>(val!==""?typeof val === "string" ? Number(val) : val:undefined),z.number({
-    required_error: "Age is required",
-  }).min(18,"Age must be at least 18").max(65,"Age must not exceed 65")),
+    required_error: "Quantity is required",
+  }).min(1,"Quantity must be at least 1")),
   collected_date:z.string().min(1,"Date is Required"),
+  donor_address:z.string().min(1,"Donor Address is Required"),
 });
 const existingBloodDonationSchema=bloodDonationSchema.extend({
   donor_id:z.string().min(1,"Donor Id is Required"),
+})
+const newBloodDonationSchema=bloodDonationSchema.extend({
+  donor_name:z.string().min(1,"Donor Name is Required"),
+  donor_contact:z.string()
+  .length(10, "Contact number must be exactly 10 digits")
+  .regex(/^98\d{8}$|^97\d{8}$/, "Contact number must start with 98 or 97"),
 })
 export const fromValidation = (formData:FormData,type:string) => {
   const formObject: Record<string, any> = Object.fromEntries(formData);
@@ -66,7 +73,7 @@ return baseSchema.safeParse(formObject);
     return signupSchema.safeParse(formObject);
   }
 }else if(type==="new_blood_donation"){
-  return bloodDonationSchema.safeParse(formObject);
+  return newBloodDonationSchema.safeParse(formObject);
 }else if(type==="existing_blood_donation"){
  return existingBloodDonationSchema.safeParse(formObject);
 }

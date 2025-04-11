@@ -6,6 +6,10 @@ export interface IBLood_Donation extends Document{
     donation_type:DonationType;
     blood_units:string;
     collected_date:Date;
+    donor_name:string;
+    donor_contact:string;
+    donor_address:string;
+    donor_type:string;
 }
 const BloodDonationSchema=new Schema<IBLood_Donation>({
 donorId:{
@@ -28,5 +32,21 @@ collected_date:{
     type:Date,
     required:true,
 },
+donor_name:{
+    type:String,
+    required:true,
+},
+donor_contact:{
+    type:String,
+    required:true,
+},
+donor_address:{
+type:String,
+required:true,
+},
+donor_type:{
+    type:String,
+    default:"new",
+}
 })
-export default models.blood_donation || model<IBLood_Donation>("blood_donation",BloodDonationSchema)
+export default models.Blood_donation || model<IBLood_Donation>("Blood_donation",BloodDonationSchema)

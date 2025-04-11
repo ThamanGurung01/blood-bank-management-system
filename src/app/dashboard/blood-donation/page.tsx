@@ -1,6 +1,8 @@
 "use client"
+import { insertBloodDonation } from "@/actions/bloodDonationActions";
 import IValidation from "@/types/validationTypes";
 import { fromValidation } from "@/utils/validation";
+import { AlertCircle } from "lucide-react";
 import { useState } from "react";
 
 export default function page() {
@@ -21,7 +23,11 @@ try {
   setValidationErrors(errors);
   if(!errors){
 if(existingDonor){
-}else{
+  const bloodDonationData=await insertBloodDonation(formdata,"existing_blood_donation");
+  console.log(bloodDonationData);
+}else if(!existingDonor){
+  const bloodDonationData=await insertBloodDonation(formdata,"new_blood_donation");
+  console.log(bloodDonationData);
 }
   }
 } catch (error:any) {
@@ -33,31 +39,117 @@ if(existingDonor){
     <div className="max-w-lg mx-auto p-6 bg-white shadow-lg rounded-xl initialPage">
       <h2 className="text-2xl font-bold mb-4">Blood Donation Form</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-
         <div>
           <p className="select-none cursor-pointer" onClick={handleDonor}>{existingDonor ? "new Donor" : "existing Donor"}</p>
         </div>
 
-        {existingDonor && (
+        {existingDonor ? (
+         <>
           <div>
             <label className="block font-semibold">Donor ID</label>
             <input
               type="text"
               name="donor_id"
               className="w-full p-2 border rounded"
-              required
+              placeholder="DON-1043064479-123"
             />
           </div>
+          {validationErrors?.donor_id?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.donor_id?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+         </>
+        ):(
+        <>
+        <div>
+            <label className="block font-semibold">Name</label>
+            <input
+              type="text"
+              name="donor_name"
+              className="w-full p-2 border rounded"
+              placeholder="John Doe"
+            />
+          </div>
+          {validationErrors?.donor_name?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.donor_name?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+          <div>
+            <label className="block font-semibold">Contact</label>
+            <input
+              type="text"
+              name="donor_contact"
+              className="w-full p-2 border rounded"
+              placeholder="9876343210"
+            />
+          </div>
+          {validationErrors?.donor_contact?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.donor_contact?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+        </>
         )
 
         }
+        <div>
+            <label className="block font-semibold">Address</label>
+            <input
+              type="text"
+              name="donor_address"
+              className="w-full p-2 border rounded"
+              placeholder="City"
+            />
+          </div>
+          {validationErrors?.donor_address?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.donor_address?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
         <div>
           <label className="block font-semibold">Blood Type</label>
           <select
             name="blood_type"
             className="w-full p-2 border rounded"
-            required
           >
             <option value="">Select your Blood Group</option>
             <option value="A+">A+</option>
@@ -70,13 +162,26 @@ if(existingDonor){
             <option value="AB-">AB-</option>
           </select>
         </div>
+        {validationErrors?.blood_type?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.blood_type?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
         <div>
           <label className="block font-semibold">Donation Type</label>
           <select
             name="donation_type"
             className="w-full p-2 border rounded"
-            required
           >
             <option value="">Select Donation Type</option>
             <option value="whole_blood">Whole Blood</option>
@@ -86,6 +191,20 @@ if(existingDonor){
             <option value="cryoprecipitate">Cryoprecipitate</option>
           </select>
         </div>
+        {validationErrors?.donation_type?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.donation_type?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
         <div>
           <label className="block font-semibold">Quantity (Units)</label>
@@ -93,11 +212,23 @@ if(existingDonor){
             type="number"
             name="blood_quantity"
             className="w-full p-2 border rounded"
-            min={1}
             placeholder="1"
-            required
           />
         </div>
+        {validationErrors?.blood_quantity?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.blood_quantity?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
         <div>
           <label className="block font-semibold">Collected Date</label>
@@ -105,9 +236,22 @@ if(existingDonor){
             type="date"
             name="collected_date"
             className="w-full p-2 border rounded"
-            required
           />
         </div>
+        {validationErrors?.collected_date?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.collected_date?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
 
 

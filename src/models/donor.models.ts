@@ -52,7 +52,7 @@ donations: [
     },
     user:{
         type:Schema.Types.ObjectId,
-        ref:'user',
+        ref:'User',
        },
 },{timestamps:true});
 export default models.Donor || model<IDonor>("Donor",DonorSchema);

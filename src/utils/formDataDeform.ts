@@ -19,6 +19,27 @@ if(type==="user"){
          location:JSON.parse(formData.get("location")as string),
          contact:formData.get("contact"),
      }
+}else if(type=== "new_blood_donation"){
+    return {
+        donor_name:formData.get("donor_name"),
+        donor_contact:formData.get("donor_contact"),
+        blood_type:formData.get("blood_type"),
+        donation_type:formData.get("donation_type"),
+        blood_units:formData.get("blood_quantity"),
+        collected_date:new Date(),
+    }
+    
+    
+}else if(type=== "existing_blood_donation"){
+    return {
+        donorId:formData.get("donor_id"),
+        blood_type:formData.get("blood_type"),
+        donation_type:formData.get("donation_type"),
+        blood_units:formData.get("blood_quantity"),
+        collected_date:new Date(formData.get("collected_date")as string),
+        donor_address:formData.get("donor_address"),
+    }
+
 }else{
     return undefined;
 }
