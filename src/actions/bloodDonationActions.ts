@@ -2,9 +2,11 @@
 import { connectToDb } from "@/utils/database";
 import { fromValidation } from "@/utils/validation";
 import { formDataDeform } from "@/utils/formDataDeform";
+import { calculateExpiry } from "@/utils/calculateBloodExpiry";
 import Donor from "@/models/donor.models";
 import BloodBank from "@/models/blood_bank.models";
 import BloodDonation, { IBLood_Donation } from "@/models/blood_donation.models";
+import Blood from "@/models/blood.models";
 import IValidation from "@/types/validationTypes";
 import {getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -12,14 +14,11 @@ export const insertBloodDonation=async(formData:FormData,bloodDonationType:strin
 try {
     const session=await getServerSession(authOptions);
     if(!session) return {success:false,message:"User not authenticated"};
-    console.log("session in server :"+session)
     if(session?.user.role!=="blood_bank") return {success:false,message:"User not authorized"};
-    console.log(session);
     if(!formData) return {success:false,message:"Form data is invalid"};
     if(bloodDonationType!=="new_blood_donation" && bloodDonationType!=="existing_blood_donation") return {success:false,message:"Blood donation type is invalid"};
     await connectToDb();
     const validation=fromValidation(formData,bloodDonationType);
-    console.log(formData.get("donor_address"));
     const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
     if(!errors){
         const user=session.user.id;
@@ -31,26 +30,21 @@ try {
             if (!bloodDonationType) {
                 return { success: false, message: "Donation data is invalid" };
             }
-            console.log(bloodDonationData);
             const cBloodDonation=await BloodDonation.create({...bloodDonationData,blood_bank:bloodBankId});
-            console.log(cBloodDonation+"blood donation created");
             return {success:true,message:`Blood donation successfully created`}
         }else if(bloodDonationType==="existing_blood_donation"){
             const bloodDonationData=formDataDeform(formData,"existing_blood_donation") as IBLood_Donation | undefined;
             if (!bloodDonationType) {
                 return { success: false, message: "Donation data is invalid" };
             }
-            console.log(bloodDonationData);
             const existingDonor=await Donor.findOne({donorId:formData?.get("donor_id")}).populate("user");
-            console.log(formData?.get("donor_id"));
-            console.log("existing donor: "+existingDonor);
             if(!existingDonor) return {success:false,message:"Donor not found"};
             const newBloodDonationData={...bloodDonationData,donor_name:existingDonor.user.name,donor_contact:existingDonor.contact};
             const cBloodDonation=await BloodDonation.create({...newBloodDonationData,blood_bank:bloodBankId});
-            console.log(cBloodDonation+"blood donation created");
             const uDonor=await Donor.findByIdAndUpdate(existingDonor._id,{$push:{donations:{bloodBank:bloodBankId,bloodDonation:cBloodDonation._id,date:newBloodDonationData.collected_date}}},{new:true});
-           console.log(cBloodDonation._id+" blood donation id")
-            return {success:true,message:`Blood donation successfully created`};
+           const bloodExpiryDate=calculateExpiry(newBloodDonationData.donation_type,newBloodDonationData.collected_date);
+            const cBlood=await Blood.create({...newBloodDonationData,blood_bank:bloodBankId,donor:existingDonor._id,expiry_date:bloodExpiryDate});
+           return {success:true,message:`Blood donation successfully created`};
         }
     }else{
         console.log(errors);
