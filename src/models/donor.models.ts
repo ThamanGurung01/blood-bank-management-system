@@ -14,6 +14,7 @@ export interface IDonor extends Document{
     status:boolean;
     donations:Array<{
         bloodBank:Schema.Types.ObjectId;
+        bloodDonation:Schema.Types.ObjectId;
         date:Date;
     }>;
 }
@@ -43,7 +44,9 @@ const DonorSchema=new Schema<IDonor>({
 ,
 donations: [
     {
+        _id:false,
       bloodBank: { type: Schema.Types.ObjectId, ref: "blood_bank" },
+      bloodDonation:{ type: Schema.Types.ObjectId, ref: "Blood_donation" },
       date: { type: Date, required: true },
     },],
     status:{

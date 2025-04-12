@@ -10,6 +10,7 @@ export interface IBLood_Donation extends Document{
     donor_contact:string;
     donor_address:string;
     donor_type:string;
+    blood_bank:Schema.Types.ObjectId;
 }
 const BloodDonationSchema=new Schema<IBLood_Donation>({
 donorId:{
@@ -47,6 +48,11 @@ required:true,
 donor_type:{
     type:String,
     default:"new",
-}
+},
+blood_bank:{
+    type:Schema.Types.ObjectId,
+    ref:"blood_bank",
+    required:true,
+},
 })
 export default models.Blood_donation || model<IBLood_Donation>("Blood_donation",BloodDonationSchema)
