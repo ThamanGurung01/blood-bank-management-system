@@ -3,12 +3,16 @@ import React from 'react'
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { getBloodStock } from '@/actions/bloodDonationActions';
+import { useSearchParams,useRouter } from 'next/navigation';
 type BloodProduct = {
   type: string;
   units: number;
   threshold: number;
 };
 const page = () => {
+  const params=useSearchParams();
+  const router=useRouter();
+const bloodType=params.get("bloodType");
   const [bloodStock, setBloodStock] = useState<BloodProduct[]>([
     { type: 'Whole Blood', units: 0, threshold: 30 },
     { type: 'RBC', units: 0, threshold: 100 },
@@ -33,12 +37,21 @@ const page = () => {
   };
 
   const fetchBloodStock = async () => {
-   const bloodStockData= await getBloodStock("anything");
-   if(!bloodStockData?.success) return setBloodStock([]);
+   if(bloodType){
+    const bloodStockData= await getBloodStock(bloodType);
+   if(!bloodStockData?.success) return setBloodStock([
+    { type: 'Whole Blood', units: 0, threshold: 30 },
+    { type: 'RBC', units: 0, threshold: 100 },
+    { type: 'Platelets', units: 0, threshold: 25 },
+    { type: 'Plasma', units: 0, threshold: 80 },
+    { type: 'Cryoprecipitate', units: 0, threshold: 15 }]);
    if (Array.isArray(bloodStockData?.message)) {
      setBloodStock(bloodStockData.message);
    } else {
      setBloodStock([]);
+   }
+   }else{
+    router.push("/dashboard/blood-stock");
    }
   };
 

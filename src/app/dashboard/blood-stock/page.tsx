@@ -1,13 +1,15 @@
 "use client";
 import { useState } from 'react';
+import { useRouter } from "next/navigation";
 
 export default function BloodTypeSelector() {
   const bloodTypes = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
   const [selectedType, setSelectedType] = useState(null);
-
+const router=useRouter();
   const handleClick = (bloodType: any) => {
     setSelectedType(bloodType);
     console.log(`Selected blood type: ${bloodType}`);
+    router.push(`/dashboard/blood-stock/stock?bloodType=${encodeURIComponent(bloodType)}`);
   };
 
   return (
