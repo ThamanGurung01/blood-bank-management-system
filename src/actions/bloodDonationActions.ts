@@ -10,6 +10,7 @@ import Blood from "@/models/blood.models";
 import IValidation from "@/types/validationTypes";
 import {getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { calculateBloodStock } from "@/utils/calculateBloodStock";
 export const insertBloodDonation=async(formData:FormData,bloodDonationType:string)=>{
 try {
     const session=await getServerSession(authOptions);
@@ -54,4 +55,23 @@ try {
     console.log(error?.message);
     return {success:false,message:"Something went wrong"}
 }
+}
+export const getBloodStock=async(bloodType:string)=>{
+ try{
+    if(!bloodType) return {success:false,message:"Blood type is invalid"};
+    const session=await getServerSession(authOptions);
+    if(!session) return {success:false,message:"User not authenticated"};
+    if(session?.user.role!=="blood_bank") return {success:false,message:"User not authorized"};
+    const user=session.user.id;
+    const bloodBankData=await BloodBank.findOne({user});
+    if(!bloodBankData) return {success:false,message:"Blood bank not found"};
+    const bloodBankId=bloodBankData._id;
+    const bloodStock=await Blood.find({blood_bank:bloodBankId,blood_type:bloodType}).sort({createdAt:-1});
+    if(!bloodStock) return {success:false,message:"Blood stock not found"};
+    const bloodStockData=calculateBloodStock(bloodStock);
+    console.log(bloodStockData);
+    return {success:true,message:bloodStockData};
+ }  catch(error){
+    console.log("error "+error);
+ } 
 }

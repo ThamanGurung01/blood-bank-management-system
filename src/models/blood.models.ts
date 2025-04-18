@@ -39,12 +39,12 @@ const bloodSchema=new Schema<IBlood>({
     },
     blood_bank:{
         type:Schema.Types.ObjectId,
-        ref:"blood_bank",
+        ref:"Blood_bank",
         required:true,
     },
     donor:{
         type:Schema.Types.ObjectId,
-        ref:"donor",
+        ref:"Donor",
         required:true,
     },
 })
