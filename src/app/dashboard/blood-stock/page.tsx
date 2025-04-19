@@ -13,7 +13,7 @@ const router=useRouter();
   };
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto p-16 initialPage">
+    <div className="w-full mx-auto p-16 ml-[300px] mt-[100px]">
       <div className="flex justify-center">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-24">
           {bloodTypes.map((type) => (
@@ -36,13 +36,13 @@ const router=useRouter();
         </div>
       </div>
 
-      <div className="mt-16 p-6 bg-gray-100 rounded-md text-center">
+      {/* <div className="mt-16 p-6 bg-gray-100 rounded-md text-center">
         {selectedType ? (
           <p className="text-xl">Selected blood type: <span className="font-bold">{selectedType}</span></p>
         ) : (
           <p className="text-xl text-gray-500">Please select a blood type</p>
         )}
-      </div>
+      </div> */}
     </div>
   );
 }

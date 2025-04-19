@@ -1,5 +1,6 @@
 "use client"
 import React from 'react'
+import { MoveLeft } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { getBloodStock } from '@/actions/bloodDonationActions';
@@ -61,15 +62,18 @@ const bloodType=params.get("bloodType");
     return () => clearInterval(interval);
   }, []);
   return (
-    <div className="min-h-screen bg-gray-100 initialPage">
+    <div className="bg-gray-100 initialPage">
       <Head>
         <title>Blood Stock Overview</title>
         <meta name="description" content="Current blood stock availability" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-center mb-8">Blood Stock Overview</h1>
+      <main className="container px-4 py-8 ml-60 mt-44">
+ <div className='flex mb-4'>
+ <button onClick={()=>router.push("/dashboard/blood-stock")} className='flex justify-between border-2 border-gray-600 w-32 rounded-2xl px-5 py-2 cursor-pointer font-bold text-xl hover:text-white hover:bg-black transition-all duration-500'><MoveLeft className='mt-1'/>Back</button>
+ <h1 className="text-3xl font-bold text-center ml-64"> Blood Stock: {bloodType}</h1>
+ </div>
         
         <div className="bg-white shadow-md rounded-lg overflow-hidden">
           <div className="grid grid-cols-12 bg-gray-200 font-semibold">
