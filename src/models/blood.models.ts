@@ -1,6 +1,6 @@
 import {Schema,model,models,Document} from "mongoose";
 import { DonationType } from "./blood_donation.models";
-export type bloodStatus="available"|"used"|"expired";
+export type bloodStatus="available"|"used"|"hold"|"expired";
 export interface IBlood extends Document{
     blood_type:string;
     donation_type:DonationType;
@@ -34,7 +34,7 @@ const bloodSchema=new Schema<IBlood>({
     },
     status:{
         type:String,
-        enum:["available","used","expired"],
+        enum:["available","used","hold","expired"],
         default:"available",
     },
     blood_bank:{
