@@ -146,7 +146,7 @@ if(existingDonor){
                           )}
 
         <div>
-          <label className="block font-semibold">Blood Type</label>
+          <label className="block font-semibold">Blood Group</label>
           <select
             name="blood_type"
             className="w-full p-2 border rounded"
