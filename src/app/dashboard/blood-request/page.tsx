@@ -1,13 +1,14 @@
 "use client"
 import { useState } from "react";
 import { CheckCircle, AlertCircle, FileText } from "lucide-react";
-
+import { Ring2 } from 'ldrs/react'
+import 'ldrs/react/Ring2.css'
 const page = () => {
   const [formData, setFormData] = useState({
     patientName: "",
     contactNumber: "",
     address: "",
-    blood_group:"",
+    blood_group: "",
     blood_quantity: 1,
     priorityLevel: "normal",
     requestDate: "",
@@ -40,7 +41,7 @@ const page = () => {
   const handleFileUpload = (e: any) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { 
+      if (file.size > 5 * 1024 * 1024) {
         setError("File size exceeds 5MB limit");
         return;
       }
@@ -81,8 +82,8 @@ const page = () => {
       patientName: "",
       contactNumber: "",
       address: "",
-      blood_group:"",
-    blood_quantity: 1,
+      blood_group: "",
+      blood_quantity: 1,
       priorityLevel: "normal",
       requestDate: "",
       document: null,
@@ -335,11 +336,15 @@ const page = () => {
               >
                 {isSubmitting ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Processing...
+                    <Ring2
+                      size="20"
+                      stroke="5"
+                      strokeLength="0.25"
+                      bgOpacity="0.1"
+                      speed="0.8"
+                      color="white"
+                    />
+                    <span className="ml-3">Processing...</span>
                   </>
                 ) : (
                   "Submit Request"
