@@ -239,8 +239,8 @@ const page = () => {
                       onChange={handleInputChange}
                       className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     >
-                      <option value="normal">Normal</option>
-                      <option value="urgent">Urgent</option>
+                      <option value="Normal">Normal</option>
+                      <option value="Urgent">Urgent</option>
                     </select>
                   </div>
                   <div>
