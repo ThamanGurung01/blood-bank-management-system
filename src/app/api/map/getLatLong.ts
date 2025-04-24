@@ -1,4 +1,4 @@
-const getLatLong=async(query:string)=>{
+export const getLatLong=async(query:string)=>{
 try {
     if(!query) return null;
 fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
