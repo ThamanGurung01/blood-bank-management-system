@@ -1,7 +1,7 @@
 import {z} from "zod";
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 export const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"];
-
+export const ALLOWED_DOCUMENT_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
 //for login and signup
 const baseSchema=z.object({
 email:z.string().min(1,"Email is required").email("Invalid email format"),
@@ -70,12 +70,24 @@ const bloodRequestSchema = z.object({
   .length(10, "Contact number must be exactly 10 digits")
   .regex(/^98\d{8}$|^97\d{8}$/, "Contact number must start with 98 or 97"),
   hospitalName: z.string().min(1, "Hospital name is required"),
-  address: z.string().min(1, "Address is required"),
+  hospitalAddress: z.string().min(1, "Delivery Address is required!"),
   blood_group: z.string().min(1, "Blood group is required"),
-  blood_quantity: z.number().min(1, "Blood quantity must be at least 1"),
+  blood_quantity: z.preprocess((val)=>(val!==""?typeof val === "string" ? Number(val) : val:undefined),z.number({
+    required_error: "Quantity is required",
+  }).min(1,"Quantity must be at least 1")),
   priorityLevel: z.enum(["Normal","urgent"]).default("Normal"),
   requestDate: z.string().min(1, "Request date is required"),
-  document: z.any().nullable(),
+  document: z
+  .any()
+  .refine((file) => file.size > 0, {
+    message: "Blood Requisition Document is required.",
+  })
+  .refine((file) => file instanceof File && file.size <= MAX_FILE_SIZE, {
+    message: "Document must be less than 5MB",
+  })
+  .refine((file) => file instanceof File && ALLOWED_DOCUMENT_TYPES.includes(file.type), {
+    message: "Only PDF, JPEG, PNG, and DOC/DOCX files are allowed",
+  }),
   notes: z.string().optional(),
 });
 

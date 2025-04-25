@@ -3,12 +3,14 @@ import { useState } from "react";
 import { CheckCircle, AlertCircle, FileText } from "lucide-react";
 import { Ring2 } from 'ldrs/react'
 import 'ldrs/react/Ring2.css'
+import IValidation from "@/types/validationTypes";
+import { fromValidation } from "@/utils/validation";
 const page = () => {
   const [formData, setFormData] = useState({
     patientName: "",
     contactNumber: "",
     hospitalName:"",
-    address: "",
+    hospitalAddress: "",
     blood_group: "",
     blood_quantity: 1,
     priorityLevel: "Normal",
@@ -19,8 +21,9 @@ const page = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [error, setError] = useState("");
+  const [fileError, setFileError] = useState("");
   const [fileName, setFileName] = useState("");
+    const [validationErrors, setValidationErrors] = useState<IValidation>();
 
   const handleInputChange = (e: any) => {
     const { name, value } = e.target;
@@ -43,13 +46,13 @@ const page = () => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        setError("File size exceeds 5MB limit");
+        setFileError("File size exceeds 5MB limit");
         return;
       }
 
       const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
       if (!allowedTypes.includes(file.type)) {
-        setError("Only PDF, JPEG, PNG, and DOC/DOCX files are allowed");
+        setFileError("Only PDF, JPEG, PNG, and DOC/DOCX files are allowed");
         return;
       }
 
@@ -58,24 +61,31 @@ const page = () => {
         document: file
       });
       setFileName(file.name);
-      setError("");
+      setFileError("");
     }
   };
 
   const handleSubmit = (e: any) => {
+   try {
     e.preventDefault();
-    setError("");
-
-    if (!formData.patientName || !formData.contactNumber || !formData.requestDate) {
-      setError("Please fill all required fields");
-      return;
-    }
-
+    setFileError("");
+const formdata = new FormData(e.target as HTMLFormElement);
+  const validation = fromValidation(formdata, "blood_request");
+  const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
+  setValidationErrors(errors);
+  if(!errors&&!fileError){
+    
     setIsSubmitting(true);
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSubmitted(true);
     }, 1500);
+  }else{
+    console.log(errors);
+  }
+   } catch (error) {
+    console.error("Error submitting form:", error);
+   }
   };
 
   const resetForm = () => {
@@ -83,7 +93,7 @@ const page = () => {
       patientName: "",
       contactNumber: "",
       hospitalName:"",
-      address: "",
+      hospitalAddress: "",
       blood_group: "",
       blood_quantity: 1,
       priorityLevel: "normal",
@@ -140,7 +150,7 @@ const page = () => {
         ) : (
           <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow overflow-hidden">
             <div className="p-6">
-              <div className="mb-6">
+              <div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="patientName">
@@ -153,7 +163,6 @@ const page = () => {
                       value={formData.patientName}
                       onChange={handleInputChange}
                       className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      required
                     />
                   </div>
                   <div>
@@ -167,15 +176,43 @@ const page = () => {
                       value={formData.contactNumber}
                       onChange={handleInputChange}
                       className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      required
                     />
                   </div>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {validationErrors?.patientName?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.patientName?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          {validationErrors?.contactNumber?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.contactNumber?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="hospitalName">
-                      Hospital Name
+                      Hospital Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -187,24 +224,62 @@ const page = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="address">
-                      Delivery Address
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="hospitalAddress">
+                    Hospital Address / Delivery Address <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
-                      id="address"
-                      name="address"
-                      value={formData.address}
+                      id="hospitalAddress"
+                      name="hospitalAddress"
+                      value={formData.hospitalAddress}
                       onChange={handleInputChange}
                       className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="blood_type">
-                      Blood Group
+                  
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {validationErrors?.hospitalName?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.hospitalName?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          {validationErrors?.hospitalAddress?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.hospitalAddress?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          </div>
+              </div>
+
+
+
+              <div className="mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="blood_group">
+                      Blood Group <span className="text-red-500">*</span>
                     </label>
                     <select
-                      name="blood_type"
+                      name="blood_group"
                       value={formData.blood_group}
                       onChange={handleInputChange}
                       className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -220,13 +295,6 @@ const page = () => {
                       <option value="AB-">AB-</option>
                     </select>
                   </div>
-                </div>
-              </div>
-
-
-
-              <div className="mb-6">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
                   <div>
                     <label >Quantity (Units)</label>
                     <input
@@ -239,10 +307,56 @@ const page = () => {
                     />
                   </div>
                 </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {validationErrors?.blood_group?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.blood_group?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          {validationErrors?.blood_quantity?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.blood_quantity?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          </div>
               </div>
 
               <div className="mb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="requestDate">
+                      Required Date <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="date"
+                        id="requestDate"
+                        name="requestDate"
+                        value={formData.requestDate}
+                        onChange={handleInputChange}
+                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        min={new Date().toISOString().split('T')[0]}
+                      />
+                    </div>
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="priorityLevel">
                       Priority Level
@@ -258,24 +372,38 @@ const page = () => {
                       <option value="Urgent">Urgent</option>
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="requestDate">
-                      Required By Date <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="date"
-                        id="requestDate"
-                        name="requestDate"
-                        value={formData.requestDate}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        min={new Date().toISOString().split('T')[0]}
-                        required
-                      />
-                    </div>
-                  </div>
+                  
                 </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {validationErrors?.requestDate?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.requestDate?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          {validationErrors?.priorityLevel?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.priorityLevel?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          </div>
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="notes">
@@ -291,12 +419,27 @@ const page = () => {
                     placeholder="Any special requirements or instructions..."
                   ></textarea>
                 </div>
-
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                <div className="mb-4">
+                {validationErrors?.notes?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.notes?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          </div>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 mb-4">
                   <div className="text-center">
                     <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-sm font-medium text-gray-700 mb-2">
-                      Upload Supporting Document (Optional)
+                      Upload Blood Requisition Document <span className="text-red-500">*</span>
                     </p>
                     <p className="text-xs text-gray-500 mb-4">
                       PDF, DOC, DOCX, JPG or PNG (Max. 5MB)
@@ -326,12 +469,28 @@ const page = () => {
                     )}
                   </div>
                 </div>
+                <div className="mb-4">
+                {validationErrors?.document?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.document?.[0]} <br/> If you don't have one, please consult with the doctor or the hospital.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          </div>
               </div>
 
-              {error && (
+              {fileError && (
                 <div className="mb-6 p-4 bg-red-50 rounded-lg flex items-start">
                   <AlertCircle className="text-red-500 mr-2 flex-shrink-0 mt-0.5" size={16} />
-                  <p className="text-sm text-red-600">{error}</p>
+                  <p className="text-sm text-red-600">{fileError}</p>
                 </div>
               )}
             </div>
