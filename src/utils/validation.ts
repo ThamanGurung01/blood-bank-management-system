@@ -2,6 +2,7 @@ import {z} from "zod";
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 export const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"];
 
+//for login and signup
 const baseSchema=z.object({
 email:z.string().min(1,"Email is required").email("Invalid email format"),
 password:z.string().min(6,"Password must be at least 6 characters"),
@@ -40,6 +41,8 @@ const bloodBankSchema=signupSchema.extend({
   blood_bank:z.string().min(3,"Blood bank name must be at least 3 characters"),
 })
 
+
+//blood DOnation
 const bloodDonationSchema=z.object({
   blood_type:z.enum(["","A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]).refine((val) => val !== "", { message: "Blood Type is required" }),
   donation_type:z.enum(["","whole_blood", "rbc", "platelets", "plasma", "cryoprecipitate"]).refine((val) => val !== "", { message: "Donation Type is required" }),
@@ -58,6 +61,25 @@ const newBloodDonationSchema=bloodDonationSchema.extend({
   .length(10, "Contact number must be exactly 10 digits")
   .regex(/^98\d{8}$|^97\d{8}$/, "Contact number must start with 98 or 97"),
 })
+
+
+//for blood request
+const bloodRequestSchema = z.object({
+  patientName: z.string().min(1, "Patient name is required"),
+  contactNumber: z.string()
+  .length(10, "Contact number must be exactly 10 digits")
+  .regex(/^98\d{8}$|^97\d{8}$/, "Contact number must start with 98 or 97"),
+  hospitalName: z.string().min(1, "Hospital name is required"),
+  address: z.string().min(1, "Address is required"),
+  blood_group: z.string().min(1, "Blood group is required"),
+  blood_quantity: z.number().min(1, "Blood quantity must be at least 1"),
+  priorityLevel: z.enum(["Normal","urgent"]).default("Normal"),
+  requestDate: z.string().min(1, "Request date is required"),
+  document: z.any().nullable(),
+  notes: z.string().optional(),
+});
+
+
 export const fromValidation = (formData:FormData,type:string) => {
   const formObject: Record<string, any> = Object.fromEntries(formData);
 if(type === 'login'){
@@ -76,5 +98,6 @@ return baseSchema.safeParse(formObject);
   return newBloodDonationSchema.safeParse(formObject);
 }else if(type==="existing_blood_donation"){
  return existingBloodDonationSchema.safeParse(formObject);
-}
-}
+}else if(type==="blood_request"){
+  return bloodRequestSchema.safeParse(formObject);
+}}

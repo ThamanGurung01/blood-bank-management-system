@@ -11,7 +11,7 @@ const page = () => {
     address: "",
     blood_group: "",
     blood_quantity: 1,
-    priorityLevel: "normal",
+    priorityLevel: "Normal",
     requestDate: "",
     document: null,
     notes: ""
@@ -101,7 +101,7 @@ const page = () => {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Blood Bank Requisition Form</h1>
           <p className="text-gray-600 mt-1">
-            Request blood units from the central blood supply management system
+            Note*: If the request is emergency, please contact the blood bank directly.
           </p>
         </div>
 
