@@ -7,6 +7,7 @@ const page = () => {
   const [formData, setFormData] = useState({
     patientName: "",
     contactNumber: "",
+    hospitalName:"",
     address: "",
     blood_group: "",
     blood_quantity: 1,
@@ -81,6 +82,7 @@ const page = () => {
     setFormData({
       patientName: "",
       contactNumber: "",
+      hospitalName:"",
       address: "",
       blood_group: "",
       blood_quantity: 1,
@@ -171,6 +173,19 @@ const page = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="hospitalName">
+                      Hospital Name
+                    </label>
+                    <input
+                      type="text"
+                      id="hospitalName"
+                      name="hospitalName"
+                      value={formData.hospitalName}
+                      onChange={handleInputChange}
+                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    />
+                  </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="address">
                       Delivery Address
@@ -185,7 +200,7 @@ const page = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="address">
+                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="blood_type">
                       Blood Group
                     </label>
                     <select

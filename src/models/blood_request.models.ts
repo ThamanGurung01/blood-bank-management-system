@@ -2,6 +2,7 @@ import mongoose, { Schema, Document, models } from 'mongoose';
 
 export interface IBlood_Request extends Document {
     patientName: string;
+    hospitalName: string;
     address: {
         latitude: number;
         longitude: number;
@@ -18,6 +19,7 @@ export interface IBlood_Request extends Document {
 
 const BloodRequestSchema: Schema = new Schema({
     patientName: { type: String, required: true },
+    hospitalName: { type: String, required: true },
     address: {
         latitude: {
             type: Number,
