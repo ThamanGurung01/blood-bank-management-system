@@ -40,6 +40,18 @@ if(type==="user"){
         donor_address:formData.get("donor_address"),
     }
 
+}else if(type==="blood_request"){
+    return {
+        patientName: formData.get("patientName"),
+        hospitalName: formData.get("hospitalName"),
+        hospitalAddress: formData.get("hospitalAddress"),
+        blood_group: formData.get("blood_group"),
+        blood_quantity: formData.get("blood_quantity"),
+        contactNumber: formData.get("contactNumber"),
+        priorityLevel: formData.get("priorityLevel"),
+        notes: formData.get("notes"),
+    }
+
 }else{
     return undefined;
 }

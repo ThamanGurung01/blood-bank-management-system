@@ -5,6 +5,8 @@ import { Ring2 } from 'ldrs/react'
 import 'ldrs/react/Ring2.css'
 import IValidation from "@/types/validationTypes";
 import { fromValidation } from "@/utils/validation";
+import { insertBloodRequest } from "@/actions/bloodRequestActions";
+import { getLatLong } from "@/app/api/map/getLatLong";
 const page = () => {
   const [formData, setFormData] = useState({
     patientName: "",
@@ -65,8 +67,9 @@ const page = () => {
     }
   };
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = async(e: any) => {
    try {
+    console.log("Form Data: ",formData);
     e.preventDefault();
     setFileError("");
 const formdata = new FormData(e.target as HTMLFormElement);
@@ -74,7 +77,9 @@ const formdata = new FormData(e.target as HTMLFormElement);
   const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
   setValidationErrors(errors);
   if(!errors&&!fileError){
-    
+   const response=await insertBloodRequest(formdata);
+console.log("Response: ",response);
+
     setIsSubmitting(true);
     setTimeout(() => {
       setIsSubmitting(false);

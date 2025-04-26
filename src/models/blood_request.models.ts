@@ -8,7 +8,7 @@ export interface IBlood_Request extends Document {
         longitude: number;
     };
     blood_group: string;
-    quantity: number;
+    quantity: string;
     contactNumber: string;
     priorityLevel: "Normal" | "Urgent";
     status: 'Pending' | 'Approved' | 'Rejected';
@@ -31,11 +31,11 @@ const BloodRequestSchema: Schema = new Schema({
         },
     },
     blood_group: { type: String, required: true },
-    quantity: { type: Number, required: true },
+    blood_quantity: { type: String, required: true },
     contactNumber: { type: String, required: true },
     priorityLevel: { type: String, enum: ['Normal', 'Urgent'], default: 'Normal' },
     status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' },
-    document: { type: String, required: true },
+    document: { type: String,default: "" },
     notes: { type: String },
     requestor: {
         type: Schema.Types.ObjectId,
