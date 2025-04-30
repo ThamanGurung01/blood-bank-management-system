@@ -33,6 +33,11 @@ try {
                 return { success: false, message: "Donation data is invalid" };
             }
             const cBloodDonation=await BloodDonation.create({...bloodDonationData,blood_bank:bloodBankId});
+            const bloodExpiryDate=calculateExpiry(bloodDonationData?.donation_type,bloodDonationData?.collected_date);
+            const cBlood=await Blood.create({...bloodDonationData,blood_bank:bloodBankId,expiry_date:bloodExpiryDate});
+            console.log(typeof bloodDonationData?.blood_units);
+
+            console.log(cBlood);
             return {success:true,message:`Blood donation successfully created`}
         }else if(bloodDonationType==="existing_blood_donation"){
             const bloodDonationData=formDataDeform(formData,"existing_blood_donation") as IBLood_Donation | undefined;
@@ -46,6 +51,8 @@ try {
             // const uDonor=await Donor.findByIdAndUpdate(existingDonor._id,{$push:{donations:{bloodBank:bloodBankId,bloodDonation:cBloodDonation._id,date:newBloodDonationData.collected_date}}},{new:true});
            const bloodExpiryDate=calculateExpiry(newBloodDonationData.donation_type,newBloodDonationData.collected_date);
             const cBlood=await Blood.create({...newBloodDonationData,blood_bank:bloodBankId,donor:existingDonor._id,expiry_date:bloodExpiryDate});
+            console.log(typeof newBloodDonationData.blood_units);
+            console.log(cBlood);
            return {success:true,message:`Blood donation successfully created`};
         }
     }else{

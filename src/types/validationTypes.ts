@@ -25,4 +25,5 @@ export default interface IValidation {
   requestDate?: string[];
   document?: string[];
   notes?: string[];
+  blood_component?: string[];
 }

@@ -1,4 +1,5 @@
 export const formDataDeform=(formData:FormData,type:string)=>{
+    try{
 if(type==="user"){
     return {
         name:formData.get("name"),
@@ -25,7 +26,7 @@ if(type==="user"){
         donor_contact:formData.get("donor_contact"),
         blood_type:formData.get("blood_type"),
         donation_type:formData.get("donation_type"),
-        blood_units:formData.get("blood_quantity"),
+        blood_units:parseInt(formData.get("blood_quantity")as string),
         collected_date:new Date(),
     }
     
@@ -35,7 +36,7 @@ if(type==="user"){
         donorId:formData.get("donor_id"),
         blood_type:formData.get("blood_type"),
         donation_type:formData.get("donation_type"),
-        blood_units:formData.get("blood_quantity"),
+        blood_units:parseInt(formData.get("blood_quantity") as string),
         collected_date:new Date(formData.get("collected_date")as string),
         donor_address:formData.get("donor_address"),
     }
@@ -46,8 +47,10 @@ if(type==="user"){
         hospitalName: formData.get("hospitalName"),
         hospitalAddress: formData.get("hospitalAddress"),
         blood_group: formData.get("blood_group"),
-        blood_quantity: formData.get("blood_quantity"),
+        blood_quantity: parseInt(formData.get("blood_quantity") as string),
+        blood_component: formData.get("blood_component"),
         contactNumber: formData.get("contactNumber"),
+        requestDate: new Date(formData.get("requestDate") as string),
         priorityLevel: formData.get("priorityLevel"),
         notes: formData.get("notes"),
     }
@@ -55,4 +58,8 @@ if(type==="user"){
 }else{
     return undefined;
 }
+    }catch(err){
+        console.log(err);
+        return undefined;
+    }
 }

@@ -72,6 +72,7 @@ const bloodRequestSchema = z.object({
   hospitalName: z.string().min(1, "Hospital name is required"),
   hospitalAddress: z.string().min(1, "Delivery Address is required!"),
   blood_group: z.string().min(1, "Blood group is required"),
+  blood_component:z.enum(["","whole_blood", "rbc", "platelets", "plasma", "cryoprecipitate"]).refine((val) => val !== "", { message: "Donation Type is required" }),
   blood_quantity: z.preprocess((val)=>(val!==""?typeof val === "string" ? Number(val) : val:undefined),z.number({
     required_error: "Quantity is required",
   }).min(1,"Quantity must be at least 1")),

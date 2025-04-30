@@ -4,7 +4,7 @@ export type bloodStatus="available"|"used"|"hold"|"expired";
 export interface IBlood extends Document{
     blood_type:string;
     donation_type:DonationType;
-    blood_units:string;
+    blood_units:number;
     collected_date:Date;
     expiry_date:Date;
     status:bloodStatus;
@@ -16,12 +16,9 @@ const bloodSchema=new Schema<IBlood>({
         type:String,
         required:true,
     },
-    donation_type:{
-        type:String,
-        required:true,
-    },
+    donation_type: { type: String, enum: ["whole_blood","rbc","platelets","plasma","cryoprecipitate"], required: true },
     blood_units:{
-        type:String,
+        type:Number,
         required:true,
     },
     collected_date:{

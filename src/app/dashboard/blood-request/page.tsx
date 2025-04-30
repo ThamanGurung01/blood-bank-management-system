@@ -15,6 +15,7 @@ const page = () => {
     hospitalAddress: "",
     blood_group: "",
     blood_quantity: 1,
+    blood_component: "",
     priorityLevel: "Normal",
     requestDate: "",
     document: null,
@@ -101,6 +102,7 @@ console.log("Response: ",response);
       hospitalAddress: "",
       blood_group: "",
       blood_quantity: 1,
+      blood_component: "",
       priorityLevel: "normal",
       requestDate: "",
       document: null,
@@ -311,8 +313,7 @@ console.log("Response: ",response);
                       placeholder="1"
                     />
                   </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 {validationErrors?.blood_group?.[0] && (
                             <div className="rounded-md bg-red-50 p-2">
                               <div className="flex">
@@ -339,6 +340,40 @@ console.log("Response: ",response);
                                   </p>
                                 </div>
                               </div>
+                            </div>
+                          )}
+                          </div>
+                </div>
+                <div  className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="blood_component">Blood Component <span className="text-red-500">*</span></label>
+          <select
+          value={formData.blood_component}
+          onChange={handleInputChange}
+            name="blood_component"
+            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          >
+            <option value="">Select Donation Type</option>
+            <option value="whole_blood">Whole Blood</option>
+            <option value="rbc">Red Blood Cells (RBC)</option>
+            <option value="platelets">Platelets</option>
+            <option value="plasma">Plasma</option>
+            <option value="cryoprecipitate">Cryoprecipitate</option>
+          </select>
+        </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {validationErrors?.blood_component?.[0] && (
+                            <div className="rounded-md bg-red-50 p-2">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <AlertCircle className="h-5 w-5 text-red-400" />
+                                </div>
+                                <div className="ml-3">
+                                  <p className="text-sm text-red-700">
+                                    {validationErrors?.blood_component?.[0]}
+                                  </p>
+                                </div>
+                              </div>
+                              
                             </div>
                           )}
                           </div>
@@ -377,7 +412,7 @@ console.log("Response: ",response);
                       <option value="Urgent">Urgent</option>
                     </select>
                   </div>
-                  
+
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 {validationErrors?.requestDate?.[0] && (
