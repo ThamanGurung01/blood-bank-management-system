@@ -77,16 +77,15 @@ export const insertBloodRequest=async(formData:FormData)=>{
             ]);
             console.log("Blood stock Data: ",bloodStockData);
             if(bloodStockData.length===0) return {success:false,message:"No blood available"};
-            //now also find by nearest location
-            const nearestBloodBank=nearestDistance(bloodStockData,deliveryAddress.data);
+            const nearestBloodBank=nearestDistance(bloodStockData,deliveryAddress.data,bloodRequestData.priorityLevel);
             console.log(nearestBloodBank.map((b: { blood_bank: { blood_bank: string }; distance: number }) => ({
               name: b.blood_bank.blood_bank,
               distance: b.distance.toFixed(2) + ' km'
             })));
             console.log(nearestBloodBank[0]);
-            // const cBloodRequest=await BloodRequest.create({...bloodRequestData,requestor:donorId,hospitalAddress:{latitude:deliveryAddress?.data?.lat,longitude:deliveryAddress?.data?.lon}});
-            // console.log("Created Blood Request: ",cBloodRequest);
-            // if(!cBloodRequest) return {success:false,message:"Failed to create blood request"};
+            const cBloodRequest=await BloodRequest.create({...bloodRequestData,requestor:donorId,hospitalAddress:{latitude:deliveryAddress?.data?.lat,longitude:deliveryAddress?.data?.lon},blood_bank:nearestBloodBank[0]._id});
+            console.log("Created Blood Request: ",cBloodRequest);
+            if(!cBloodRequest) return {success:false,message:"Failed to create blood request"};
             return {success:true,message:`Blood request successfully created`}
         }else{
             console.log(errors);

@@ -1,8 +1,9 @@
 import { calculateDistance } from "./calculateDistance";
-export const nearestDistance = (bloodStockData:any,hospitalCoords:any)=>{
+export const nearestDistance = (bloodStockData:any,hospitalCoords:any,priority:string)=>{
+  const MAX_DISTANCE = priority === "Urgent" ? 10 : 100;
     const bloodBanksWithDistance = bloodStockData.map((item: { blood_bank: { location: { latitude: any; longitude: any; }; }; }) => {
         const bankCoords = {
-          lat: item.blood_bank.location.latitude, // adjust field names to match your schema
+          lat: item.blood_bank.location.latitude, 
           lon: item.blood_bank.location.longitude
         };
       
@@ -13,5 +14,5 @@ export const nearestDistance = (bloodStockData:any,hospitalCoords:any)=>{
           distance
         };
       });
-      return bloodBanksWithDistance.sort((a:any, b:any) => a.distance - b.distance);
+      return bloodBanksWithDistance .filter((item: any) => item.distance <= MAX_DISTANCE).sort((a:any, b:any) => a.distance - b.distance);
 }

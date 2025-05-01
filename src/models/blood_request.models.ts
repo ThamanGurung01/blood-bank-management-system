@@ -17,6 +17,7 @@ export interface IBlood_Request extends Document {
     document: string;
     notes: string;
     requestor: Schema.Types.ObjectId;
+    blood_bank: Schema.Types.ObjectId;
 }
 
 const BloodRequestSchema: Schema = new Schema({
@@ -45,6 +46,11 @@ const BloodRequestSchema: Schema = new Schema({
     requestor: {
         type: Schema.Types.ObjectId,
         ref: 'User',
+        required: true,
+    },
+    blood_bank:{
+        type: Schema.Types.ObjectId,
+        ref: 'Blood_bank',
         required: true,
     }
 }, { timestamps: true });
