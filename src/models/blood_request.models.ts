@@ -34,9 +34,9 @@ const BloodRequestSchema: Schema = new Schema({
         },
     },
     requestDate: { type: Date, required: true },
-    blood_group: { type: Number, required: true },
+    blood_group: { type: String, required: true },
     blood_component: { type: String, enum: ["whole_blood","rbc","platelets","plasma","cryoprecipitate"], required: true },
-    blood_quantity: { type: String, required: true },
+    blood_quantity: { type: Number, required: true },
     contactNumber: { type: String, required: true },
 
     priorityLevel: { type: String, enum: ['Normal', 'Urgent'], default: 'Normal' },

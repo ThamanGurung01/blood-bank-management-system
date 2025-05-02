@@ -33,13 +33,10 @@ export const insertBloodRequest=async(formData:FormData)=>{
             if (!deliveryAddress?.success) {
                 return { success: false, message: "Failed to fetch location data" };
               }
-              console.log(deliveryAddress.data)
             const bloodRequestData=formDataDeform(formData,"blood_request") as IBlood_Request | undefined;
             if (!bloodRequestData) {
                 return { success: false, message: "Request data is invalid" };
             }
-            console.log("blood request :",bloodRequestData);
-            console.log("blood_  component: ",bloodRequestData.blood_component)
             const matchingBloodGroups=getReceivingBloodGroups(bloodRequestData.blood_group);
             if(!matchingBloodGroups) return {success:false,message:"Invalid blood group"};
             const bloodStockData = await Blood.aggregate([
@@ -75,7 +72,6 @@ export const insertBloodRequest=async(formData:FormData)=>{
                 $unwind: "$blood_bank"
               }
             ]);
-            console.log("Blood stock Data: ",bloodStockData);
             if(bloodStockData.length===0) return {success:false,message:"No blood available"};
             const nearestBloodBank=nearestDistance(bloodStockData,deliveryAddress.data,bloodRequestData.priorityLevel);
             console.log(nearestBloodBank.map((b: { blood_bank: { blood_bank: string }; distance: number }) => ({
@@ -92,7 +88,7 @@ export const insertBloodRequest=async(formData:FormData)=>{
             return {success:false,message:"User validation error"};
         }
     } catch (error:any) {
-        console.error("Insert Blood Request Error:", error);
+        console.log("Insert Blood Request Error:", error);
         return {success:false,message:"Something went wrong"}
 }
 }
