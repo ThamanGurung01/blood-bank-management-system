@@ -1,575 +1,532 @@
 "use client"
-import { useState } from "react";
-import { CheckCircle, AlertCircle, FileText } from "lucide-react";
-import { Ring2 } from 'ldrs/react'
-import 'ldrs/react/Ring2.css'
-import IValidation from "@/types/validationTypes";
-import { fromValidation } from "@/utils/validation";
-import { insertBloodRequest } from "@/actions/bloodRequestActions";
-import { getLatLong } from "@/app/api/map/getLatLong";
+import { useState, useEffect } from "react";
+import { Plus, Clock, CheckCircle, XCircle, Loader2, Filter, ChevronDown, Search, AlertCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+// import { getBloodRequests } from "@/actions/bloodRequestActions";
+
 const page = () => {
-  const [formData, setFormData] = useState({
-    patientName: "",
-    contactNumber: "",
-    hospitalName:"",
-    hospitalAddress: "",
-    blood_group: "",
-    blood_quantity: 1,
-    blood_component: "",
-    priorityLevel: "Normal",
-    requestDate: "",
-    document: null,
-    notes: ""
+  const router = useRouter();
+  const [requests, setRequests] = useState<{
+    id: string;
+    patientName: string;
+    bloodGroup: string;
+    component: string;
+    quantity: number;
+    requestedDate: string;
+    requiredDate: string;
+    status: string;
+    hospitalName: string;
+    priority: string;
+  }[]>([]);
+  const [filteredRequests, setFilteredRequests] = useState<{
+    id: string;
+    patientName: string;
+    bloodGroup: string;
+    component: string;
+    quantity: number;
+    requestedDate: string;
+    requiredDate: string;
+    status: string;
+    hospitalName: string;
+    priority: string;
+  }[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("active");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    bloodGroup: "",
+    component: "",
+    dateRange: "all",
   });
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [fileError, setFileError] = useState("");
-  const [fileName, setFileName] = useState("");
-    const [validationErrors, setValidationErrors] = useState<IValidation>();
+  const mockRequests = [
+    {
+      id: "BBR-123456",
+      patientName: "John Doe",
+      bloodGroup: "A+",
+      component: "Whole Blood",
+      quantity: 2,
+      requestedDate: "2025-04-28",
+      requiredDate: "2025-05-05",
+      status: "pending",
+      hospitalName: "City General Hospital",
+      priority: "Normal"
+    },
+    {
+      id: "BBR-123457",
+      patientName: "Sarah Jones",
+      bloodGroup: "O-",
+      component: "Platelets",
+      quantity: 1,
+      requestedDate: "2025-04-25",
+      requiredDate: "2025-04-30",
+      status: "approved",
+      hospitalName: "Memorial Medical Center",
+      priority: "Urgent"
+    },
+    {
+      id: "BBR-123458",
+      patientName: "Robert Smith",
+      bloodGroup: "B+",
+      component: "Red Blood Cells",
+      quantity: 3,
+      requestedDate: "2025-04-20",
+      requiredDate: "2025-04-27",
+      status: "completed",
+      hospitalName: "University Hospital",
+      priority: "Normal"
+    },
+    {
+      id: "BBR-123459",
+      patientName: "Emma Wilson",
+      bloodGroup: "AB+",
+      component: "Plasma",
+      quantity: 1,
+      requestedDate: "2025-04-15",
+      requiredDate: "2025-04-18",
+      status: "rejected",
+      hospitalName: "St. Mary's Medical Center",
+      priority: "Urgent"
+    },
+    {
+      id: "BBR-123460",
+      patientName: "Michael Brown",
+      bloodGroup: "A-",
+      component: "Whole Blood",
+      quantity: 2,
+      requestedDate: "2025-04-10",
+      requiredDate: "2025-04-15",
+      status: "completed",
+      hospitalName: "Regional Medical Center",
+      priority: "Normal"
+    }
+  ];
 
-  const handleInputChange = (e: any) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        setIsLoading(true);
+        // const data = await getBloodRequests();
+
+        const data = mockRequests;
+        setRequests(data);
+        applyFilters(data, activeTab, filters, searchTerm);
+        setIsLoading(false);
+      } catch (err) {
+        setError("Failed to load blood requests. Please try again later.");
+        setIsLoading(false);
+        console.error("Error fetching blood requests:", err);
+      }
+    };
+
+    fetchRequests();
+  }, [activeTab]);
+
+  const applyFilters = (data: any, tab: any, currentFilters: any, search: any) => {
+    let filtered = [...data];
+
+    if (tab === "active") {
+      filtered = filtered.filter(req => ["pending", "approved"].includes(req.status));
+    } else if (tab === "completed") {
+      filtered = filtered.filter(req => req.status === "completed");
+    } else if (tab === "rejected") {
+      filtered = filtered.filter(req => req.status === "rejected");
+    }
+
+    if (currentFilters.bloodGroup) {
+      filtered = filtered.filter(req => req.bloodGroup === currentFilters.bloodGroup);
+    }
+
+    if (currentFilters.component) {
+      filtered = filtered.filter(req => req.component === currentFilters.component);
+    }
+
+    if (currentFilters.dateRange === "month") {
+      const lastMonth = new Date();
+      lastMonth.setMonth(lastMonth.getMonth() - 1);
+      filtered = filtered.filter(req => new Date(req.requestedDate) >= lastMonth);
+    } else if (currentFilters.dateRange === "week") {
+      const lastWeek = new Date();
+      lastWeek.setDate(lastWeek.getDate() - 7);
+      filtered = filtered.filter(req => new Date(req.requestedDate) >= lastWeek);
+    }
+
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filtered = filtered.filter(req =>
+        req.patientName.toLowerCase().includes(searchLower) ||
+        req.id.toLowerCase().includes(searchLower) ||
+        req.hospitalName.toLowerCase().includes(searchLower)
+      );
+    }
+
+    setFilteredRequests(filtered);
   };
 
-  const handleNumberChange = (e: any) => {
-    const { name, value } = e.target;
-    const numValue = Math.max(0, parseInt(value) || 0);
-    setFormData({
-      ...formData,
-      [name]: numValue
-    });
+  const handleTabChange = (tab: any) => {
+    setActiveTab(tab);
+    applyFilters(requests, tab, filters, searchTerm);
   };
 
-  const handleFileUpload = (e: any) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setFileError("File size exceeds 5MB limit");
-        return;
-      }
+  const handleFilterChange = (e: any) => {
+    const { name, value } = e.target;
+    const newFilters = { ...filters, [name]: value };
+    setFilters(newFilters);
+    applyFilters(requests, activeTab, newFilters, searchTerm);
+  };
 
-      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-      if (!allowedTypes.includes(file.type)) {
-        setFileError("Only PDF, JPEG, PNG, and DOC/DOCX files are allowed");
-        return;
-      }
+  const handleSearch = (e: any) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    applyFilters(requests, activeTab, filters, value);
+  };
 
-      setFormData({
-        ...formData,
-        document: file
-      });
-      setFileName(file.name);
-      setFileError("");
+  const getStatusBadge = (status: any) => {
+    switch (status) {
+      case "pending":
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+            <Clock size={12} className="mr-1" />
+            Pending
+          </span>
+        );
+      case "approved":
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <Loader2 size={12} className="mr-1 animate-spin" />
+            Processing
+          </span>
+        );
+      case "completed":
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            <CheckCircle size={12} className="mr-1" />
+            Completed
+          </span>
+        );
+      case "rejected":
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+            <XCircle size={12} className="mr-1" />
+            Rejected
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            Unknown
+          </span>
+        );
     }
   };
 
-  const handleSubmit = async(e: any) => {
-   try {
-    console.log("Form Data: ",formData);
-    e.preventDefault();
-    setFileError("");
-const formdata = new FormData(e.target as HTMLFormElement);
-  const validation = fromValidation(formdata, "blood_request");
-  const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
-  setValidationErrors(errors);
-  if(!errors&&!fileError){
-   const response=await insertBloodRequest(formdata);
-console.log("Response: ",response);
-
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-    }, 1500);
-  }else{
-    console.log(errors);
-  }
-   } catch (error) {
-    console.error("Error submitting form:", error);
-   }
+  const getPriorityBadge = (priority: any) => {
+    if (priority === "Urgent") {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          Urgent
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+        Normal
+      </span>
+    );
   };
-
-  const resetForm = () => {
-    setFormData({
-      patientName: "",
-      contactNumber: "",
-      hospitalName:"",
-      hospitalAddress: "",
-      blood_group: "",
-      blood_quantity: 1,
-      blood_component: "",
-      priorityLevel: "normal",
-      requestDate: "",
-      document: null,
-      notes: ""
-    });
-    setFileName("");
-    setIsSubmitted(false);
-  };
-
   return (
-    <div className="bg-gray-50 p-10 ml-10 min-h-screen initialPage">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Blood Bank Requisition Form</h1>
-          <p className="text-gray-600 mt-1">
-            Note*: If the request is emergency, please contact the blood bank directly.
-          </p>
+    <div className="bg-gray-50 p-6 min-h-screen initialPage">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">Blood Requests</h1>
+          <Link href="blood-request/create">
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center">
+              <Plus size={20} className="mr-2" />
+              New Request
+            </button>
+          </Link>
         </div>
 
-        {isSubmitted ? (
-          <div className="bg-white p-8 rounded-lg shadow">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
-                <CheckCircle size={32} className="text-green-600" />
-              </div>
-              <h2 className="text-xl font-semibold mb-2">Requisition Submitted Successfully</h2>
-              <p className="text-gray-600 mb-6">
-                Your blood requisition has been received and is being processed. You will receive a confirmation shortly.
-              </p>
-              <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                <div className="flex justify-between mb-2">
-                  <span className="text-gray-600">Reference Number:</span>
-                  <span className="font-semibold">BBR-{Math.floor(100000 + Math.random() * 900000)}</span>
-                </div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-gray-600">Requesting Blood Bank:</span>
-                  <span className="font-semibold">NCRS</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Total Units Requested:</span>
-                  <span className="font-semibold">1</span>
-                </div>
-              </div>
+        {/* Tabs */}
+        <div className="bg-white rounded-lg shadow mb-6">
+          <div className="border-b border-gray-200">
+            <nav className="flex -mb-px">
               <button
-                onClick={resetForm}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className={`py-4 px-6 font-medium text-sm border-b-2 ${activeTab === "active"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                onClick={() => handleTabChange("active")}
               >
-                Submit Another Request
+                Active Requests
               </button>
-            </div>
+              <button
+                className={`py-4 px-6 font-medium text-sm border-b-2 ${activeTab === "completed"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                onClick={() => handleTabChange("completed")}
+              >
+                Completed
+              </button>
+              <button
+                className={`py-4 px-6 font-medium text-sm border-b-2 ${activeTab === "rejected"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                onClick={() => handleTabChange("rejected")}
+              >
+                Rejected
+              </button>
+              <button
+                className={`py-4 px-6 font-medium text-sm border-b-2 ${activeTab === "all"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                onClick={() => handleTabChange("all")}
+              >
+                All Requests
+              </button>
+            </nav>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="p-6">
-              <div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="patientName">
-                      Patient Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="patientName"
-                      name="patientName"
-                      value={formData.patientName}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="contactNumber">
-                      Contact Number <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      id="contactNumber"
-                      name="contactNumber"
-                      value={formData.contactNumber}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                {validationErrors?.patientName?.[0] && (
-                            <div className="rounded-md bg-red-50 p-2">
-                              <div className="flex">
-                                <div className="flex-shrink-0">
-                                  <AlertCircle className="h-5 w-5 text-red-400" />
-                                </div>
-                                <div className="ml-3">
-                                  <p className="text-sm text-red-700">
-                                    {validationErrors?.patientName?.[0]}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                          {validationErrors?.contactNumber?.[0] && (
-                            <div className="rounded-md bg-red-50 p-2">
-                              <div className="flex">
-                                <div className="flex-shrink-0">
-                                  <AlertCircle className="h-5 w-5 text-red-400" />
-                                </div>
-                                <div className="ml-3">
-                                  <p className="text-sm text-red-700">
-                                    {validationErrors?.contactNumber?.[0]}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                          </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="hospitalName">
-                      Hospital Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="hospitalName"
-                      name="hospitalName"
-                      value={formData.hospitalName}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="hospitalAddress">
-                    Hospital Address / Delivery Address <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="hospitalAddress"
-                      name="hospitalAddress"
-                      value={formData.hospitalAddress}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    />
-                  </div>
-                  
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                {validationErrors?.hospitalName?.[0] && (
-                            <div className="rounded-md bg-red-50 p-2">
-                              <div className="flex">
-                                <div className="flex-shrink-0">
-                                  <AlertCircle className="h-5 w-5 text-red-400" />
-                                </div>
-                                <div className="ml-3">
-                                  <p className="text-sm text-red-700">
-                                    {validationErrors?.hospitalName?.[0]}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                          {validationErrors?.hospitalAddress?.[0] && (
-                            <div className="rounded-md bg-red-50 p-2">
-                              <div className="flex">
-                                <div className="flex-shrink-0">
-                                  <AlertCircle className="h-5 w-5 text-red-400" />
-                                </div>
-                                <div className="ml-3">
-                                  <p className="text-sm text-red-700">
-                                    {validationErrors?.hospitalAddress?.[0]}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                          </div>
+        </div>
+
+        {/* Search and Filter */}
+        <div className="bg-white rounded-lg shadow p-4 mb-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-grow">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search size={18} className="text-gray-400" />
               </div>
+              <input
+                type="text"
+                placeholder="Search by patient name, reference ID or hospital..."
+                className="pl-10 pr-4 py-2 border rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                value={searchTerm}
+                onChange={handleSearch}
+              />
+            </div>
+            <div className="relative">
+              <button
+                className="px-4 py-2 border rounded-lg bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 flex items-center"
+                onClick={() => setFilterOpen(!filterOpen)}
+              >
+                <Filter size={18} className="mr-2" />
+                Filters
+                <ChevronDown size={16} className="ml-2" />
+              </button>
 
+              {filterOpen && (
+                <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg p-4 z-10">
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">Filter Requests</h3>
 
-
-              <div className="mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="blood_group">
-                      Blood Group <span className="text-red-500">*</span>
+                  <div className="mb-3">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Blood Group
                     </label>
                     <select
-                      name="blood_group"
-                      value={formData.blood_group}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      name="bloodGroup"
+                      value={filters.bloodGroup}
+                      onChange={handleFilterChange}
+                      className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     >
-                      <option value="">Select your Blood Group</option>
+                      <option value="">All Blood Groups</option>
                       <option value="A+">A+</option>
                       <option value="A-">A-</option>
                       <option value="B+">B+</option>
                       <option value="B-">B-</option>
-                      <option value="O+">O+</option>
-                      <option value="O-">O-</option>
                       <option value="AB+">AB+</option>
                       <option value="AB-">AB-</option>
+                      <option value="O+">O+</option>
+                      <option value="O-">O-</option>
                     </select>
                   </div>
-                  <div>
-                    <label >Quantity (Units)</label>
-                    <input
-                      type="number"
-                      name="blood_quantity"
-                      value={formData.blood_quantity}
-                      onChange={handleNumberChange}
-                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      placeholder="1"
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                {validationErrors?.blood_group?.[0] && (
-                            <div className="rounded-md bg-red-50 p-2">
-                              <div className="flex">
-                                <div className="flex-shrink-0">
-                                  <AlertCircle className="h-5 w-5 text-red-400" />
-                                </div>
-                                <div className="ml-3">
-                                  <p className="text-sm text-red-700">
-                                    {validationErrors?.blood_group?.[0]}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                          {validationErrors?.blood_quantity?.[0] && (
-                            <div className="rounded-md bg-red-50 p-2">
-                              <div className="flex">
-                                <div className="flex-shrink-0">
-                                  <AlertCircle className="h-5 w-5 text-red-400" />
-                                </div>
-                                <div className="ml-3">
-                                  <p className="text-sm text-red-700">
-                                    {validationErrors?.blood_quantity?.[0]}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                          </div>
-                </div>
-                <div  className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="blood_component">Blood Component <span className="text-red-500">*</span></label>
-          <select
-          value={formData.blood_component}
-          onChange={handleInputChange}
-            name="blood_component"
-            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          >
-            <option value="">Select Donation Type</option>
-            <option value="whole_blood">Whole Blood</option>
-            <option value="rbc">Red Blood Cells (RBC)</option>
-            <option value="platelets">Platelets</option>
-            <option value="plasma">Plasma</option>
-            <option value="cryoprecipitate">Cryoprecipitate</option>
-          </select>
-        </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                {validationErrors?.blood_component?.[0] && (
-                            <div className="rounded-md bg-red-50 p-2">
-                              <div className="flex">
-                                <div className="flex-shrink-0">
-                                  <AlertCircle className="h-5 w-5 text-red-400" />
-                                </div>
-                                <div className="ml-3">
-                                  <p className="text-sm text-red-700">
-                                    {validationErrors?.blood_component?.[0]}
-                                  </p>
-                                </div>
-                              </div>
-                              
-                            </div>
-                          )}
-                          </div>
-              </div>
 
-              <div className="mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="requestDate">
-                      Required Date <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="date"
-                        id="requestDate"
-                        name="requestDate"
-                        value={formData.requestDate}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                        min={new Date().toISOString().split('T')[0]}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="priorityLevel">
-                      Priority Level
+                  <div className="mb-3">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Component
                     </label>
                     <select
-                      id="priorityLevel"
-                      name="priorityLevel"
-                      value={formData.priorityLevel}
-                      onChange={handleInputChange}
-                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      name="component"
+                      value={filters.component}
+                      onChange={handleFilterChange}
+                      className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     >
-                      <option value="Normal">Normal</option>
-                      <option value="Urgent">Urgent</option>
+                      <option value="">All Components</option>
+                      <option value="Whole Blood">Whole Blood</option>
+                      <option value="Red Blood Cells">Red Blood Cells</option>
+                      <option value="Platelets">Platelets</option>
+                      <option value="Plasma">Plasma</option>
+                      <option value="Cryoprecipitate">Cryoprecipitate</option>
                     </select>
                   </div>
 
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                {validationErrors?.requestDate?.[0] && (
-                            <div className="rounded-md bg-red-50 p-2">
-                              <div className="flex">
-                                <div className="flex-shrink-0">
-                                  <AlertCircle className="h-5 w-5 text-red-400" />
-                                </div>
-                                <div className="ml-3">
-                                  <p className="text-sm text-red-700">
-                                    {validationErrors?.requestDate?.[0]}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                          {validationErrors?.priorityLevel?.[0] && (
-                            <div className="rounded-md bg-red-50 p-2">
-                              <div className="flex">
-                                <div className="flex-shrink-0">
-                                  <AlertCircle className="h-5 w-5 text-red-400" />
-                                </div>
-                                <div className="ml-3">
-                                  <p className="text-sm text-red-700">
-                                    {validationErrors?.priorityLevel?.[0]}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                          </div>
-
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="notes">
-                    Additional Notes
-                  </label>
-                  <textarea
-                    id="notes"
-                    name="notes"
-                    rows={3}
-                    value={formData.notes}
-                    onChange={handleInputChange}
-                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    placeholder="Any special requirements or instructions..."
-                  ></textarea>
-                </div>
-                <div className="mb-4">
-                {validationErrors?.notes?.[0] && (
-                            <div className="rounded-md bg-red-50 p-2">
-                              <div className="flex">
-                                <div className="flex-shrink-0">
-                                  <AlertCircle className="h-5 w-5 text-red-400" />
-                                </div>
-                                <div className="ml-3">
-                                  <p className="text-sm text-red-700">
-                                    {validationErrors?.notes?.[0]}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                          </div>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 mb-4">
-                  <div className="text-center">
-                    <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-sm font-medium text-gray-700 mb-2">
-                      Upload Blood Requisition Document <span className="text-red-500">*</span>
-                    </p>
-                    <p className="text-xs text-gray-500 mb-4">
-                      PDF, DOC, DOCX, JPG or PNG (Max. 5MB)
-                    </p>
-
-                    <input
-                      type="file"
-                      id="document"
-                      name="document"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => document.getElementById('document')?.click()}
-                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                  <div className="mb-4">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Date Range
+                    </label>
+                    <select
+                      name="dateRange"
+                      value={filters.dateRange}
+                      onChange={handleFilterChange}
+                      className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     >
-                      Select File
-                    </button>
-
-                    {fileName && (
-                      <div className="mt-4 text-sm text-gray-600">
-                        <span className="font-medium">Selected File:</span> {fileName}
-                      </div>
-                    )}
+                      <option value="all">All Time</option>
+                      <option value="month">Last Month</option>
+                      <option value="week">Last Week</option>
+                    </select>
                   </div>
-                </div>
-                <div className="mb-4">
-                {validationErrors?.document?.[0] && (
-                            <div className="rounded-md bg-red-50 p-2">
-                              <div className="flex">
-                                <div className="flex-shrink-0">
-                                  <AlertCircle className="h-5 w-5 text-red-400" />
-                                </div>
-                                <div className="ml-3">
-                                  <p className="text-sm text-red-700">
-                                    {validationErrors?.document?.[0]} <br/> If you don't have one, please consult with the doctor or the hospital.
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                          </div>
-              </div>
 
-              {fileError && (
-                <div className="mb-6 p-4 bg-red-50 rounded-lg flex items-start">
-                  <AlertCircle className="text-red-500 mr-2 flex-shrink-0 mt-0.5" size={16} />
-                  <p className="text-sm text-red-600">{fileError}</p>
+                  <button
+                    className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none"
+                    onClick={() => {
+                      setFilters({
+                        bloodGroup: "",
+                        component: "",
+                        dateRange: "all"
+                      });
+                      applyFilters(requests, activeTab, {
+                        bloodGroup: "",
+                        component: "",
+                        dateRange: "all"
+                      }, searchTerm);
+                    }}
+                  >
+                    Clear Filters
+                  </button>
                 </div>
               )}
             </div>
+          </div>
+        </div>
 
-            <div className="px-6 py-4 bg-gray-50 flex justify-end space-x-4">
-              <button
-                type="button"
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                onClick={() => resetForm()}
-              >
-                Clear Form
-              </button>
-              <button
-                type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Ring2
-                      size="20"
-                      stroke="5"
-                      strokeLength="0.25"
-                      bgOpacity="0.1"
-                      speed="0.8"
-                      color="white"
-                    />
-                    <span className="ml-3">Processing...</span>
-                  </>
-                ) : (
-                  "Submit Request"
-                )}
-              </button>
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <AlertCircle className="h-5 w-5 text-red-400" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
             </div>
-          </form>
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="bg-white rounded-lg shadow p-6 flex justify-center items-center">
+            <div className="flex flex-col items-center">
+              <Loader2 size={40} className="animate-spin text-blue-500 mb-4" />
+              <p className="text-gray-600">Loading blood requests...</p>
+            </div>
+          </div>
+        ) : filteredRequests.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-10 text-center">
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <AlertCircle size={32} className="text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">No blood requests found</h3>
+              <p className="text-gray-500 mb-6">
+                {activeTab === "active"
+                  ? "You don't have any active blood requests."
+                  : activeTab === "completed"
+                    ? "You don't have any completed blood requests."
+                    : activeTab === "rejected"
+                      ? "You don't have any rejected blood requests."
+                      : "No blood requests match your search criteria."}
+              </p>
+              <Link href="/blood-request/new">
+                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center">
+                  <Plus size={18} className="mr-2" />
+                  Create New Request
+                </button>
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Reference ID
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Patient
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Blood Info
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Hospital
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Dates
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Priority
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredRequests.map((request) => (
+                    <tr key={request.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{request.id}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{request.patientName}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{request.bloodGroup}</div>
+                        <div className="text-sm text-gray-500">{request.component} ({request.quantity} units)</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{request.hospitalName}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500">
+                          <div>Requested: {new Date(request.requestedDate).toLocaleDateString()}</div>
+                          <div>Required: {new Date(request.requiredDate).toLocaleDateString()}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getStatusBadge(request.status)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getPriorityBadge(request.priority)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <Link href={`/blood-request/${request.id}`} className="text-blue-600 hover:text-blue-900 mr-4">
+                          View
+                        </Link>
+                        {request.status === "pending" && (
+                          <Link href={`/blood-request/${request.id}/edit`} className="text-gray-600 hover:text-gray-900">
+                            Edit
+                          </Link>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         )}
       </div>
     </div>
-  )
+  );
 }
 
 export default page
