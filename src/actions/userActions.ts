@@ -6,7 +6,7 @@ import User, { IUser } from "@/models/user.models"
 import Donor, { IDonor } from "@/models/donor.models"
 import BloodBank, { IBlood_Bank } from "@/models/blood_bank.models"
 import { formDataDeform } from "@/utils/formDataDeform";
-import { generateDonorId } from "@/utils/generateDonorId";
+import { generateId } from "@/utils/generateId";
 export const createUser=async(formData:FormData)=>{
 try {
     await connectToDb();
@@ -24,7 +24,7 @@ try {
                 return { success: false, message: "Donor data is invalid" };
             }
             console.log(donorData);
-            const donorId=await generateDonorId();
+            const donorId=await generateId("donor");
             if(!donorId) return { success: false, message: "Donor Id is empty" };
            const cDonor= await Donor.create({
             donorId:donorId,

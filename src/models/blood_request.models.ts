@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, models } from 'mongoose';
 import { DonationType } from "./blood_donation.models";
 export interface IBlood_Request extends Document {
+    bloodRequestId: string;
     patientName: string;
     hospitalName: string;
     hospitalAddress: {
@@ -21,6 +22,7 @@ export interface IBlood_Request extends Document {
 }
 
 const BloodRequestSchema: Schema = new Schema({
+    bloodRequestId: { type: String, unique: true },
     patientName: { type: String, required: true },
     hospitalName: { type: String, required: true },
     hospitalAddress: {

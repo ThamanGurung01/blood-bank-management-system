@@ -13,6 +13,7 @@ import BloodBank from "@/models/blood_bank.models";
 import { getLatLong } from "@/app/api/map/getLatLong";
 import { getReceivingBloodGroups } from "@/utils/bloodMatch";
 import { nearestDistance } from "@/utils/nearestDistance";
+import { generateId } from "@/utils/generateId";
 export const insertBloodRequest=async(formData:FormData)=>{
     try {
         const session=await getServerSession(authOptions);
@@ -79,7 +80,8 @@ export const insertBloodRequest=async(formData:FormData)=>{
               distance: b.distance.toFixed(2) + ' km'
             })));
             console.log(nearestBloodBank[0]);
-            const cBloodRequest=await BloodRequest.create({...bloodRequestData,requestor:donorId,hospitalAddress:{latitude:deliveryAddress?.data?.lat,longitude:deliveryAddress?.data?.lon},blood_bank:nearestBloodBank[0]._id});
+            const BloodRequestId=await generateId("bloodRequest");
+            const cBloodRequest=await BloodRequest.create({...bloodRequestData,bloodRequestId:BloodRequestId,requestor:donorId,hospitalAddress:{latitude:deliveryAddress?.data?.lat,longitude:deliveryAddress?.data?.lon},blood_bank:nearestBloodBank[0]._id});
             console.log("Created Blood Request: ",cBloodRequest);
             if(!cBloodRequest) return {success:false,message:"Failed to create blood request"};
             return {success:true,message:`Blood request successfully created`}
