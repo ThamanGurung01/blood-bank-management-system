@@ -29,6 +29,7 @@ const page = () => {
   const [fileError, setFileError] = useState("");
   const [fileName, setFileName] = useState("");
     const [validationErrors, setValidationErrors] = useState<IValidation>();
+    const [BloodReqResponse, setBloodReqResponse] = useState<any>(null);
 
   const handleInputChange = (e: any) => {
     const { name, value } = e.target;
@@ -80,8 +81,8 @@ const formdata = new FormData(e.target as HTMLFormElement);
   const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
   setValidationErrors(errors);
   if(!errors&&!fileError){
-   const response=await insertBloodRequest(formdata);
-console.log("Response: ",response);
+   const response:any=await insertBloodRequest(formdata);
+  setBloodReqResponse(response);
 
     setIsSubmitting(true);
     setTimeout(() => {
@@ -130,16 +131,16 @@ console.log("Response: ",response);
               </p>
               <div className="bg-gray-50 p-4 rounded-lg mb-6">
                 <div className="flex justify-between mb-2">
-                  <span className="text-gray-600">Reference Number:</span>
-                  <span className="font-semibold">BBR-{Math.floor(100000 + Math.random() * 900000)}</span>
+                  <span className="text-gray-600">Blood Request Id:</span>
+                  <span className="font-semibold">{BloodReqResponse?.data?.bloodRequestId}</span>
                 </div>
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-600">Requesting Blood Bank:</span>
-                  <span className="font-semibold">NCRS</span>
+                  <span className="font-semibold">{BloodReqResponse?.data?.bloodBankName}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Total Units Requested:</span>
-                  <span className="font-semibold">1</span>
+                  <span className="font-semibold">{BloodReqResponse?.data?.blood_quantity}</span>
                 </div>
               </div>
               <button

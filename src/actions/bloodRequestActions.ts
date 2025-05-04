@@ -73,6 +73,7 @@ export const insertBloodRequest=async(formData:FormData)=>{
                 $unwind: "$blood_bank"
               }
             ]);
+            console.log("Blood Stock Data: ",bloodStockData);
             if(bloodStockData.length===0) return {success:false,message:"No blood available"};
             const nearestBloodBank=nearestDistance(bloodStockData,deliveryAddress.data,bloodRequestData.priorityLevel);
             console.log(nearestBloodBank.map((b: { blood_bank: { blood_bank: string }; distance: number }) => ({
@@ -84,7 +85,10 @@ export const insertBloodRequest=async(formData:FormData)=>{
             const cBloodRequest=await BloodRequest.create({...bloodRequestData,bloodRequestId:BloodRequestId,requestor:donorId,hospitalAddress:{latitude:deliveryAddress?.data?.lat,longitude:deliveryAddress?.data?.lon},blood_bank:nearestBloodBank[0]._id});
             console.log("Created Blood Request: ",cBloodRequest);
             if(!cBloodRequest) return {success:false,message:"Failed to create blood request"};
-            return {success:true,message:`Blood request successfully created`}
+            return {success:true,message:`Blood request successfully created`,data:JSON.parse(JSON.stringify({
+              ...cBloodRequest.toObject(),
+              bloodBankName: nearestBloodBank[0].blood_bank.blood_bank,
+            }))};
         }else{
             console.log(errors);
             return {success:false,message:"User validation error"};

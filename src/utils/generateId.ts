@@ -7,7 +7,7 @@ if(type==="donor"){
       console.log(donorId);
       return donorId;
 }else if(type==="bloodRequest"){
-      const count = await model("BloodRequest").countDocuments();
+      const count = await model("Blood_request").countDocuments();
       const date = Math.floor(new Date().getTime() / 1000);
       const bloodRequestId = `BR-${date}-${String(count + 1)}`;
       console.log(bloodRequestId);
