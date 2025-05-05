@@ -3,30 +3,31 @@ import { useState, useEffect } from "react";
 import { Plus, Clock, CheckCircle, XCircle, Loader2, Filter, ChevronDown, Search, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { getBloodRequest } from "@/actions/bloodRequestActions";
 // import { getBloodRequests } from "@/actions/bloodRequestActions";
 
 const page = () => {
   const router = useRouter();
   const [requests, setRequests] = useState<{
-    id: string;
+    bloodRequestId: string;
     patientName: string;
-    bloodGroup: string;
-    component: string;
-    quantity: number;
-    requestedDate: string;
-    requiredDate: string;
+    blood_group: string;
+    blood_component: string;
+    blood_quantity: number;
+    createdAt: string;
+    requestDate: string;
     status: string;
     hospitalName: string;
     priority: string;
   }[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<{
-    id: string;
+    bloodRequestId: string;
     patientName: string;
-    bloodGroup: string;
-    component: string;
-    quantity: number;
-    requestedDate: string;
-    requiredDate: string;
+    blood_group: string;
+    blood_component: string;
+    blood_quantity: number;
+    createdAt: string;
+    requestDate: string;
     status: string;
     hospitalName: string;
     priority: string;
@@ -109,10 +110,12 @@ const page = () => {
     const fetchRequests = async () => {
       try {
         setIsLoading(true);
-        // const data = await getBloodRequests();
+        const BloodRequests = await getBloodRequest();
+        const data=BloodRequests?.data;
 
-        const data = mockRequests;
-        setRequests(data);
+        // const data = mockRequests;
+        setRequests(data || []);
+        console.log("Blood Requests: ", data);
         applyFilters(data, activeTab, filters, searchTerm);
         setIsLoading(false);
       } catch (err) {
@@ -129,11 +132,11 @@ const page = () => {
     let filtered = [...data];
 
     if (tab === "active") {
-      filtered = filtered.filter(req => ["pending", "approved"].includes(req.status));
+      filtered = filtered.filter(req => ["Pending", "Approved"].includes(req.status));
     } else if (tab === "completed") {
-      filtered = filtered.filter(req => req.status === "completed");
+      filtered = filtered.filter(req => req.status === "Completed");
     } else if (tab === "rejected") {
-      filtered = filtered.filter(req => req.status === "rejected");
+      filtered = filtered.filter(req => req.status === "Rejected");
     }
 
     if (currentFilters.bloodGroup) {
@@ -158,7 +161,7 @@ const page = () => {
       const searchLower = search.toLowerCase();
       filtered = filtered.filter(req =>
         req.patientName.toLowerCase().includes(searchLower) ||
-        req.id.toLowerCase().includes(searchLower) ||
+        req.bloodRequestId.toLowerCase().includes(searchLower) ||
         req.hospitalName.toLowerCase().includes(searchLower)
       );
     }
@@ -186,28 +189,28 @@ const page = () => {
 
   const getStatusBadge = (status: any) => {
     switch (status) {
-      case "pending":
+      case "Pending":
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
             <Clock size={12} className="mr-1" />
             Pending
           </span>
         );
-      case "approved":
+      case "Approved":
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
             <Loader2 size={12} className="mr-1 animate-spin" />
             Processing
           </span>
         );
-      case "completed":
+      case "Completed":
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
             <CheckCircle size={12} className="mr-1" />
             Completed
           </span>
         );
-      case "rejected":
+      case "Rejected":
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
             <XCircle size={12} className="mr-1" />
@@ -481,24 +484,24 @@ const page = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredRequests.map((request) => (
-                    <tr key={request.id} className="hover:bg-gray-50">
+                    <tr key={request.bloodRequestId} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{request.id}</div>
+                        <div className="text-sm font-medium text-gray-900">{request.bloodRequestId}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{request.patientName}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{request.bloodGroup}</div>
-                        <div className="text-sm text-gray-500">{request.component} ({request.quantity} units)</div>
+                        <div className="text-sm text-gray-900">{request.blood_group}</div>
+                        <div className="text-sm text-gray-500">{request.blood_component} ({request.blood_quantity} units)</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{request.hospitalName}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500">
-                          <div>Requested: {new Date(request.requestedDate).toLocaleDateString()}</div>
-                          <div>Required: {new Date(request.requiredDate).toLocaleDateString()}</div>
+                          <div>Requested: {new Date(request.createdAt).toLocaleDateString()}</div>
+                          <div>Required: {new Date(request.requestDate).toLocaleDateString()}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -508,11 +511,11 @@ const page = () => {
                         {getPriorityBadge(request.priority)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Link href={`/blood-request/${request.id}`} className="text-blue-600 hover:text-blue-900 mr-4">
+                        <Link href={`blood-request/${request.bloodRequestId}`} className="text-blue-600 hover:text-blue-900 mr-4">
                           View
                         </Link>
                         {request.status === "pending" && (
-                          <Link href={`/blood-request/${request.id}/edit`} className="text-gray-600 hover:text-gray-900">
+                          <Link href={`blood-request/${request.bloodRequestId}/edit`} className="text-gray-600 hover:text-gray-900">
                             Edit
                           </Link>
                         )}

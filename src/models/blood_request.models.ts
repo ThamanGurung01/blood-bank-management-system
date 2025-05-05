@@ -14,7 +14,7 @@ export interface IBlood_Request extends Document {
     contactNumber: string;
     priorityLevel: "Normal" | "Urgent";
     requestDate: Date;
-    status: 'Pending' | 'Approved' | 'Rejected';
+    status: 'Pending'|'Completed' | 'Approved' | 'Rejected';
     document: string;
     notes: string;
     requestor: Schema.Types.ObjectId;
@@ -42,7 +42,7 @@ const BloodRequestSchema: Schema = new Schema({
     contactNumber: { type: String, required: true },
 
     priorityLevel: { type: String, enum: ['Normal', 'Urgent'], default: 'Normal' },
-    status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' },
+    status: { type: String, enum: ['Pending','Completed', 'Approved', 'Rejected'], default: 'Pending' },
     document: { type: String,default: "" },
     notes: { type: String },
     requestor: {

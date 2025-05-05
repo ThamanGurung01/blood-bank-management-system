@@ -9,7 +9,7 @@ import { IBlood_Request } from "@/models/blood_request.models";
 import { formDataDeform } from "@/utils/formDataDeform";
 import BloodRequest from "@/models/blood_request.models";
 import Blood from "@/models/blood.models";
-import BloodBank from "@/models/blood_bank.models";
+import "@/models/blood_bank.models";
 import { getLatLong } from "@/app/api/map/getLatLong";
 import { getReceivingBloodGroups } from "@/utils/bloodMatch";
 import { nearestDistance } from "@/utils/nearestDistance";
@@ -25,9 +25,6 @@ export const insertBloodRequest=async(formData:FormData)=>{
         const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
         if(!errors){
             const user=session.user.id;
-            const donorData=await Donor.findOne({user});
-            if(!donorData) return {success:false,message:"Blood bank not found"};
-            const donorId=donorData._id;
             const addressQuery=formData.get("hospitalAddress") as string;
             if(!addressQuery) return {success:false,message:"Hospital Address is required"};
             const deliveryAddress=await getLatLong(addressQuery);
@@ -82,7 +79,7 @@ export const insertBloodRequest=async(formData:FormData)=>{
             })));
             console.log(nearestBloodBank[0]);
             const BloodRequestId=await generateId("bloodRequest");
-            const cBloodRequest=await BloodRequest.create({...bloodRequestData,bloodRequestId:BloodRequestId,requestor:donorId,hospitalAddress:{latitude:deliveryAddress?.data?.lat,longitude:deliveryAddress?.data?.lon},blood_bank:nearestBloodBank[0]._id});
+            const cBloodRequest=await BloodRequest.create({...bloodRequestData,bloodRequestId:BloodRequestId,requestor:user,hospitalAddress:{latitude:deliveryAddress?.data?.lat,longitude:deliveryAddress?.data?.lon},blood_bank:nearestBloodBank[0]._id});
             console.log("Created Blood Request: ",cBloodRequest);
             if(!cBloodRequest) return {success:false,message:"Failed to create blood request"};
             return {success:true,message:`Blood request successfully created`,data:JSON.parse(JSON.stringify({
@@ -96,5 +93,21 @@ export const insertBloodRequest=async(formData:FormData)=>{
     } catch (error:any) {
         console.log("Insert Blood Request Error:", error);
         return {success:false,message:"Something went wrong"}
+}
+}
+export const getBloodRequest=async()=>{
+  try {
+      const session=await getServerSession(authOptions);
+      if(!session) return {success:false,message:"User not authenticated"};
+      if(session?.user.role!=="donor") return {success:false,message:"User not authorized"};
+      await connectToDb();
+      const user=session.user.id;
+      const bloodRequestData=await BloodRequest.find({requestor:user}).populate("blood_bank").sort({createdAt:-1});
+      console.log("Blood Request Data: ",bloodRequestData);
+      if(!bloodRequestData) return {success:false,message:"No blood request found"};
+      return {success:true,message:"Blood request fetched successfully",data:JSON.parse(JSON.stringify(bloodRequestData))};
+  } catch (error:any) {
+      console.log("Insert Blood Request Error:", error);
+      return {success:false,message:"Something went wrong"}
 }
 }
