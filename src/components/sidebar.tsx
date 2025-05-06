@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useSession,signOut } from 'next-auth/react';
-import {House,Droplet,Syringe,Package,Calendar,LogOut, History, Users } from "lucide-react";
+import {Heart,House,Droplet,Syringe,Package,Calendar,LogOut, History, Users } from "lucide-react";
 import "@/styles/sidebar.css"
 import { useRouter } from 'next/navigation';
 
@@ -65,7 +65,7 @@ const handleSignOut = () => {
       
       <div className={`sidebarOptionContainer ${selectedSidebarOption==="blood-stock" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("blood-stock","blood_bank")}>
         <div>
-        <Droplet className='sidebarIcons'/>
+        <Heart className='sidebarIcons'/>
         </div>
         <div className='sidebar'>
         Blood Stock
@@ -78,6 +78,15 @@ const handleSignOut = () => {
         </div>
         <div className='sidebar'>
         Blood Donation
+        </div>
+      </div>
+
+      <div className={`sidebarOptionContainer ${selectedSidebarOption==="blood_bank-request" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("blood_bank-request","blood_bank")}>
+        <div>
+        <Droplet className='sidebarIcons'/>
+        </div>
+        <div className='sidebar'>
+        Blood Requests
         </div>
       </div>
 
