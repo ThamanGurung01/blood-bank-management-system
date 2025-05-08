@@ -2,6 +2,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { AuthOptions } from "next-auth";
 import { connectToDb } from "@/utils/database";
 import User from "@/models/user.models";
+import Donor from "@/models/donor.models";
+import BloodBank from "@/models/blood_bank.models";
 import { AUser } from "@/types/userHandlerTypes";
 import { DefaultSession } from "next-auth";
 declare module "next-auth" {
@@ -34,7 +36,27 @@ export const authOptions: AuthOptions = {
         if (!isPasswordCorrect) {
           throw new Error("Incorrect password");
         }
-        return user;
+        if(user.role==="donor"){
+          const donorData=await Donor.findOne({user:user.id});
+          console.log(user.id);
+
+          console.log("donorData",donorData);
+          return {id:donorData?._id,
+            name:user.name,
+            email:user.email,
+            role: user.role
+          };
+        }else if(user.role==="blood_bank"){
+          const bloodBankData=await BloodBank.findOne({user:user.id});
+          console.log({...user,id:bloodBankData?._id});
+          return {id:bloodBankData?._id,
+            name:user.name,
+            email:user.email,
+            role: user.role
+          };
+        }else {
+          return user;
+        }
       }
     }),
   ],

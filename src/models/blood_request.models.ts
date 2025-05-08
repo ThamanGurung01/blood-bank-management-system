@@ -47,7 +47,7 @@ const BloodRequestSchema: Schema = new Schema({
     notes: { type: String },
     requestor: {
         type: Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Donor',
         required: true,
     },
     blood_bank:{

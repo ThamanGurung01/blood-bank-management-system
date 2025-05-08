@@ -76,7 +76,7 @@ const bloodRequestSchema = z.object({
   blood_quantity: z.preprocess((val)=>(val!==""?typeof val === "string" ? Number(val) : val:undefined),z.number({
     required_error: "Quantity is required",
   }).min(1,"Quantity must be at least 1")),
-  priorityLevel: z.enum(["Normal","urgent"]).default("Normal"),
+  priorityLevel: z.enum(["Normal","Urgent"]).default("Normal"),
   requestDate: z.string().min(1, "Request date is required"),
   document: z
   .any()

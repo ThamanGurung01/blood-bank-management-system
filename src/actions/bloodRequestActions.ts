@@ -97,15 +97,31 @@ export const insertBloodRequest=async(formData:FormData)=>{
 }
 export const getBloodRequest=async()=>{
   try {
+    console.log("----------\n");
       const session=await getServerSession(authOptions);
       if(!session) return {success:false,message:"User not authenticated"};
-      if(session?.user.role!=="donor") return {success:false,message:"User not authorized"};
+      console.log(session?.user.role !=="donor"||"blood_bank");
+      console.log(session?.user.role);
+      if(session?.user.role !== "donor" && session?.user.role !== "blood_bank") return {success:false,message:"User not authorized"};
+      console.log("Session: ",session);
       await connectToDb();
       const user=session.user.id;
-      const bloodRequestData=await BloodRequest.find({requestor:user}).populate("blood_bank").sort({createdAt:-1});
-      console.log("Blood Request Data: ",bloodRequestData);
+      console.log("User: ",user);
+if(session?.user.role==="donor"){
+  const bloodRequestData=await BloodRequest.find({requestor:user}).populate("blood_bank").sort({createdAt:-1});
+  console.log("Blood Request Data: ",bloodRequestData);
       if(!bloodRequestData) return {success:false,message:"No blood request found"};
       return {success:true,message:"Blood request fetched successfully",data:JSON.parse(JSON.stringify(bloodRequestData))};
+}else if(session?.user.role==="blood_bank"){
+  const bloodRequestData=await BloodRequest.find({blood_bank:user}).sort({createdAt:-1}).populate({path:"requestor",populate:{path:"user",model:"User"}}).sort({createdAt:-1});
+  console.log("Blood Request Data: ",bloodRequestData);
+      if(!bloodRequestData) return {success:false,message:"No blood request found"};
+      return {success:true,message:"Blood request fetched successfully",data:JSON.parse(JSON.stringify(bloodRequestData))};
+}else{
+  return {success:false,message:"User not authorized"};
+
+}
+      
   } catch (error:any) {
       console.log("Insert Blood Request Error:", error);
       return {success:false,message:"Something went wrong"}
