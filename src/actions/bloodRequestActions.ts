@@ -14,6 +14,7 @@ import { getLatLong } from "@/app/api/map/getLatLong";
 import { getReceivingBloodGroups } from "@/utils/bloodMatch";
 import { nearestDistance } from "@/utils/nearestDistance";
 import { generateId } from "@/utils/generateId";
+export type statusType="Pending"|"Approved"|"Rejected"|"Completed";
 export const insertBloodRequest=async(formData:FormData)=>{
     try {
         const session=await getServerSession(authOptions);
@@ -125,5 +126,22 @@ if(session?.user.role==="donor"){
   } catch (error:any) {
       console.log("Insert Blood Request Error:", error);
       return {success:false,message:"Something went wrong"}
+}
+}
+export const changeBloodRequestStatus=async(bloodRequestId:string,statusChange:statusType)=>{
+  try {
+    const session=await getServerSession(authOptions);
+    if(!session) return {success:false,message:"User not authenticated"};
+    if(session?.user.role!=="blood_bank") return {success:false,message:"User not authorized"};
+    if(!bloodRequestId||!statusChange) return {success:false,message:"data is invalid"};
+    await connectToDb();
+        const bloodBankId=session.user.id;
+        const bloodRequestData=await BloodRequest.findOneAndUpdate({blood_bank:bloodBankId,bloodRequestId:bloodRequestId},{status:statusChange},{new:true}).populate({path:"requestor",populate:{path:"user",model:"User"}}).sort({createdAt:-1});
+        console.log("Blood Request Data for changing status: ",bloodRequestData);
+      if(!bloodRequestData) return {success:false,message:"No blood request found"};
+      return {success:true,message:"Blood request updated successfully",data:JSON.parse(JSON.stringify(bloodRequestData))};
+} catch (error:any) {
+    console.log("Change status Blood Request Error:", error);
+    return {success:false,message:"Something went wrong"}
 }
 }
