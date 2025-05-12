@@ -1,7 +1,7 @@
 "use client"
 import { useState,useEffect } from 'react';
 import { Search, Filter, Calendar, User, Droplet, Clock, Check, X, AlertCircle } from 'lucide-react';
-import { getBloodRequest } from '@/actions/bloodRequestActions';
+import { changeBloodRequestStatus, getBloodRequest } from '@/actions/bloodRequestActions';
 
 interface BloodRequest {
 bloodRequestId:string;
@@ -54,10 +54,12 @@ const page = () => {
   // }
 
   const handleStatusChange = (requestId: string, newStatus: string): void => {
-    setRequests(requests.map((req: BloodRequest) =>
+    const updatedRequests = requests.map((req: BloodRequest) =>
       req.bloodRequestId === requestId ? { ...req, status: newStatus } : req
-    ));
-    setShowModal(false);
+    )
+    const updateSelectedRequest = updatedRequests.find((req: BloodRequest) => req.bloodRequestId === requestId);
+      setSelectedRequest(updateSelectedRequest ?? null);
+
   };
 
   const handleRequestClick = (request: BloodRequest): void => {
@@ -84,8 +86,7 @@ const page = () => {
       default: return null;
     }
   };
-  useEffect(() => {
-    const fetchRequests = async () => {
+      const fetchRequests = async () => {
       try {
         const BloodRequests = await getBloodRequest();
         const data=BloodRequests?.data;
@@ -97,6 +98,17 @@ const page = () => {
         console.error("Error fetching blood requests:", err);
       }
     };
+  const updateStatusBloodRequest = async (requestId: string, status: string) => {
+    try {
+     const response=await changeBloodRequestStatus(requestId,status);
+     console.log("Update Status Response: ",response);
+     await fetchRequests();
+     setShowModal(false);
+    } catch (error) {
+      console.error('Error updating status:', error);
+    }
+  };
+  useEffect(() => {
     fetchRequests();
   }, []);
   return (
@@ -333,6 +345,7 @@ const page = () => {
               </button>
               <button
                 className="px-4 py-2 bg-black text-white rounded-md"
+                onClick={()=>updateStatusBloodRequest(selectedRequest.bloodRequestId,selectedRequest.status)}
               >
                 Save Changes
               </button>

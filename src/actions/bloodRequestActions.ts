@@ -14,7 +14,6 @@ import { getLatLong } from "@/app/api/map/getLatLong";
 import { getReceivingBloodGroups } from "@/utils/bloodMatch";
 import { nearestDistance } from "@/utils/nearestDistance";
 import { generateId } from "@/utils/generateId";
-export type statusType="Pending"|"Approved"|"Rejected"|"Completed";
 export const insertBloodRequest=async(formData:FormData)=>{
     try {
         const session=await getServerSession(authOptions);
@@ -128,12 +127,17 @@ if(session?.user.role==="donor"){
       return {success:false,message:"Something went wrong"}
 }
 }
-export const changeBloodRequestStatus=async(bloodRequestId:string,statusChange:statusType)=>{
+export const changeBloodRequestStatus=async(bloodRequestId:string,statusChange:string)=>{
   try {
+    const statusType=["Pending","Approved","Rejected","Completed"];
     const session=await getServerSession(authOptions);
     if(!session) return {success:false,message:"User not authenticated"};
     if(session?.user.role!=="blood_bank") return {success:false,message:"User not authorized"};
     if(!bloodRequestId||!statusChange) return {success:false,message:"data is invalid"};
+    if(!statusType.includes(statusChange)) return {success:false,message:"Invalid status type"};
+        console.log("Session: ",session);
+        console.log("Blood Request ID: ",bloodRequestId);
+        console.log("Status Change: ",statusChange);
     await connectToDb();
         const bloodBankId=session.user.id;
         const bloodRequestData=await BloodRequest.findOneAndUpdate({blood_bank:bloodBankId,bloodRequestId:bloodRequestId},{status:statusChange},{new:true}).populate({path:"requestor",populate:{path:"user",model:"User"}}).sort({createdAt:-1});
