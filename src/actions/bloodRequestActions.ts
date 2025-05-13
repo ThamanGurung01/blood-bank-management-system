@@ -14,6 +14,7 @@ import { getLatLong } from "@/app/api/map/getLatLong";
 import { getReceivingBloodGroups } from "@/utils/bloodMatch";
 import { nearestDistance } from "@/utils/nearestDistance";
 import { generateId } from "@/utils/generateId";
+import { rejectBloodRequest } from "@/utils/rejectBloodRequest";
 export const insertBloodRequest=async(formData:FormData)=>{
     try {
         const session=await getServerSession(authOptions);
@@ -70,17 +71,17 @@ export const insertBloodRequest=async(formData:FormData)=>{
                 $unwind: "$blood_bank"
               }
             ]);
-            console.log("Blood Stock Data: ",bloodStockData);
+            // console.log("Blood Stock Data: ",bloodStockData);
             if(bloodStockData.length===0) return {success:false,message:"No blood available"};
             const nearestBloodBank=nearestDistance(bloodStockData,deliveryAddress.data,bloodRequestData.priorityLevel);
-            console.log(nearestBloodBank.map((b: { blood_bank: { blood_bank: string }; distance: number }) => ({
-              name: b.blood_bank.blood_bank,
-              distance: b.distance.toFixed(2) + ' km'
-            })));
-            console.log(nearestBloodBank[0]);
+            // console.log(nearestBloodBank.map((b: { blood_bank: { blood_bank: string }; distance: number }) => ({
+            //   name: b.blood_bank.blood_bank,
+            //   distance: b.distance.toFixed(2) + ' km'
+            // })));
+            // console.log(nearestBloodBank[0]);
             const BloodRequestId=await generateId("bloodRequest");
             const cBloodRequest=await BloodRequest.create({...bloodRequestData,bloodRequestId:BloodRequestId,requestor:user,hospitalAddress:{latitude:deliveryAddress?.data?.lat,longitude:deliveryAddress?.data?.lon},blood_bank:nearestBloodBank[0]._id,nearby_blood_banks:nearestBloodBank});
-            console.log("Created Blood Request: ",cBloodRequest);
+            // console.log("Created Blood Request: ",cBloodRequest);
             if(!cBloodRequest) return {success:false,message:"Failed to create blood request"};
             return {success:true,message:`Blood request successfully created`,data:JSON.parse(JSON.stringify({
               ...cBloodRequest.toObject(),
@@ -97,24 +98,17 @@ export const insertBloodRequest=async(formData:FormData)=>{
 }
 export const getBloodRequest=async()=>{
   try {
-    console.log("----------\n");
       const session=await getServerSession(authOptions);
       if(!session) return {success:false,message:"User not authenticated"};
-      console.log(session?.user.role !=="donor"||"blood_bank");
-      console.log(session?.user.role);
       if(session?.user.role !== "donor" && session?.user.role !== "blood_bank") return {success:false,message:"User not authorized"};
-      console.log("Session: ",session);
       await connectToDb();
       const user=session.user.id;
-      console.log("User: ",user);
 if(session?.user.role==="donor"){
   const bloodRequestData=await BloodRequest.find({requestor:user}).populate("blood_bank").sort({createdAt:-1});
-  console.log("Blood Request Data: ",bloodRequestData);
       if(!bloodRequestData) return {success:false,message:"No blood request found"};
       return {success:true,message:"Blood request fetched successfully",data:JSON.parse(JSON.stringify(bloodRequestData))};
 }else if(session?.user.role==="blood_bank"){
   const bloodRequestData=await BloodRequest.find({blood_bank:user}).sort({createdAt:-1}).populate({path:"requestor",populate:{path:"user",model:"User"}}).sort({createdAt:-1});
-  console.log("Blood Request Data: ",bloodRequestData);
       if(!bloodRequestData) return {success:false,message:"No blood request found"};
       return {success:true,message:"Blood request fetched successfully",data:JSON.parse(JSON.stringify(bloodRequestData))};
 }else{
@@ -135,55 +129,20 @@ export const changeBloodRequestStatus=async(bloodRequestId:string,statusChange:s
     if(session?.user.role!=="blood_bank") return {success:false,message:"User not authorized"};
     if(!bloodRequestId||!statusChange) return {success:false,message:"data is invalid"};
     if(!statusType.includes(statusChange)) return {success:false,message:"Invalid status type"};
-        console.log("Session: ",session);
-        console.log("Blood Request ID: ",bloodRequestId);
-        console.log("Status Change: ",statusChange);
     await connectToDb();
         const bloodBankId=session.user.id;
         const bloodRequestData=await BloodRequest.findOneAndUpdate({blood_bank:bloodBankId,bloodRequestId:bloodRequestId},{status:statusChange},{new:true}).populate({path:"requestor",populate:{path:"user",model:"User"}}).sort({createdAt:-1});
-        console.log("Blood Request Data for changing status: ",bloodRequestData);
       if(!bloodRequestData) return {success:false,message:"No blood request found"};
-      return {success:true,message:"Blood request updated successfully",data:JSON.parse(JSON.stringify(bloodRequestData))};
+      if(statusChange==="Rejected") {
+        console.log("inside rejected condn")
+      const response=await rejectBloodRequest(bloodBankId,bloodRequestId);
+       return {success:true,message:"Blood request updated successfully",data:response};
+        }else{
+     return {success:true,message:"Blood request updated successfully",data:JSON.parse(JSON.stringify(bloodRequestData))};
+     }
+      
 } catch (error:any) {
     console.log("Change status Blood Request Error:", error);
-    return {success:false,message:"Something went wrong"}
-}
-}
-export const rejectBloodRequest=async(bloodRequestId:string,formData:FormData)=>{
-  try {
-    if(!bloodRequestId) return {success:false,message:"Blood request id is required"};
-    console.log("Blood Request ID: ",bloodRequestId);
-    if(!formData) return {success:false,message:"Form data is invalid"};
-    console.log("Form Data: ",formData);
-    const session=await getServerSession(authOptions);
-    if(!session) return {success:false,message:"User not authenticated"};
-    if(session?.user.role!=="blood_bank") return {success:false,message:"User not authorized"};
-    await connectToDb();
-        const bloodBankId=session.user.id;
-        const bloodRequestData=await BloodRequest.findOneAndUpdate({bloodRequestId:bloodRequestId,blood_bank:bloodBankId,status:"Rejected",rejectedBy: { $ne: bloodBankId },},{
-      $set: {
-        rejectedBy: { $concatArrays: ["$rejectedBy", [bloodBankId]] },
-        redirected: {
-          $cond: {
-            if: { $lt: ["$redirected", 5] },
-            then: { $add: ["$redirected", 1] },
-            else: "$redirected"
-          }
-        }
-      }
-    },{new:true}).populate({path:"requestor",populate:{path:"user",model:"User"}}).sort({createdAt:-1});
-        console.log("Blood Request Data for rejecting: ",bloodRequestData);
-        if(!bloodRequestData) return {success:false,message:"No blood request found"};
-         const createRedirectedBloodRequest=await BloodRequest.create({
-          ...bloodRequestData.toObject(),
-          blood_bank:bloodBankId,
-          status:"Pending",
-        });
-        return {success:true,message:"Blood request redirected successfully",data:JSON.parse(JSON.stringify(createRedirectedBloodRequest))};
-       
-
-} catch (error:any) {
-    console.log("Redirecting Blood Request Error:", error);
     return {success:false,message:"Something went wrong"}
 }
 }

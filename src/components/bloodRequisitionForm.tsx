@@ -14,7 +14,6 @@ interface Prop {
 }
 
 const BloodRequisitionForm = ({formType}:Prop) => {
-  console.log("Form Type: ",formType);
   const router=useRouter();
   const [formData, setFormData] = useState({
     patientName: "",
@@ -88,6 +87,7 @@ const formdata = new FormData(e.target as HTMLFormElement);
   setValidationErrors(errors);
   if(!errors&&!fileError){
    const response:any=await insertBloodRequest(formdata);
+   console.log("Response: ",response);
   setBloodReqResponse(response);
 
     setIsSubmitting(true);
