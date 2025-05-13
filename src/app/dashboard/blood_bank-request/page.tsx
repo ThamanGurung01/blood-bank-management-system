@@ -18,12 +18,12 @@ createdAt:string;
 requestDate:string;
 priorityLevel:string;
 status:string;
+updatedStatus:string;
 notes:string;
 }
 
 const page = () => {
   const [requests, setRequests] = useState<BloodRequest[]>([]);
-
   const [statusFilter, setStatusFilter] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<BloodRequest | null>(null);
@@ -55,7 +55,7 @@ const page = () => {
 
   const handleStatusChange = (requestId: string, newStatus: string): void => {
     const updatedRequests = requests.map((req: BloodRequest) =>
-      req.bloodRequestId === requestId ? { ...req, status: newStatus } : req
+      req.bloodRequestId === requestId ? { ...req, updatedStatus: newStatus } : req
     )
     const updateSelectedRequest = updatedRequests.find((req: BloodRequest) => req.bloodRequestId === requestId);
       setSelectedRequest(updateSelectedRequest ?? null);
@@ -90,9 +90,12 @@ const page = () => {
       try {
         const BloodRequests = await getBloodRequest();
         const data=BloodRequests?.data;
-
+const updatedData = (data || []).map((item: BloodRequest) => ({
+  ...item,
+  updatedStatus: item.status
+}));
         // const data = mockRequests;
-        setRequests(data || []);
+        setRequests(updatedData || []);
         console.log("Blood Requests: ", data);
       } catch (err) {
         console.error("Error fetching blood requests:", err);
@@ -281,9 +284,9 @@ const page = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Current Status</p>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedRequest.status)} mt-1`}>
-                    {getStatusIcon(selectedRequest.status)}
-                    <span className="ml-1">{selectedRequest.status}</span>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedRequest.updatedStatus)} mt-1`}>
+                    {getStatusIcon(selectedRequest.updatedStatus)}
+                    <span className="ml-1">{selectedRequest.updatedStatus}</span>
                   </span>
                 </div>
                 <div>
@@ -296,37 +299,37 @@ const page = () => {
                 </div>
               </div>
 
-              <div className="mb-6">
+              <div className={!selectedRequest.notes ? 'hidden' : "mb-6"}>
                 <p className="text-sm text-gray-500 mb-1">Request Notes</p>
                 <p className="text-sm bg-gray-50 p-3 rounded-md">{selectedRequest.notes}</p>
               </div>
 
-              <div className="border-t border-gray-200 pt-4">
+              <div className={selectedRequest.status === 'Rejected' ? 'hidden' : "border-t border-gray-200 pt-4"}>
                 <p className="text-sm font-medium text-gray-700 mb-2">Update Status</p>
-                <div className="flex flex-wrap gap-2">
+                <div className={selectedRequest.status === 'Rejected' ? 'hidden' : 'flex flex-wrap gap-2'}>
                   <button
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.status === 'Pending' ? 'bg-gray-200 text-gray-800 border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.updatedStatus === 'Pending' ? 'bg-gray-200 text-gray-800 border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
                     onClick={() => handleStatusChange(selectedRequest.bloodRequestId, 'Pending')}
                   >
                     <Clock className="w-4 h-4 inline mr-1" />
                     Pending
                   </button>
                   <button
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.status === 'Approved' ? 'bg-gray-100 text-gray-800 border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.updatedStatus === 'Approved' ? 'bg-gray-100 text-gray-800 border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
                     onClick={() => handleStatusChange(selectedRequest.bloodRequestId, 'Approved')}
                   >
                     <Check className="w-4 h-4 inline mr-1" />
                     Approved
                   </button>
                   <button
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.status === 'Completed' ? 'bg-black text-white border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.updatedStatus === 'Completed' ? 'bg-black text-white border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
                     onClick={() => handleStatusChange(selectedRequest.bloodRequestId, 'Completed')}
                   >
                     <Check className="w-4 h-4 inline mr-1" />
                     Completed
                   </button>
                   <button
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.status === 'Rejected' ? 'bg-gray-700 text-white border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.updatedStatus === 'Rejected' ? 'bg-gray-700 text-white border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
                     onClick={() => handleStatusChange(selectedRequest.bloodRequestId, 'Rejected')}
                   >
                     <X className="w-4 h-4 inline mr-1" />
@@ -336,7 +339,7 @@ const page = () => {
               </div>
             </div>
 
-            <div className="px-6 py-3 border-t border-gray-200 flex justify-end">
+            <div className={selectedRequest.status === 'Rejected' ? 'hidden' : "px-6 py-3 border-t border-gray-200 flex justify-end"}>
               <button
                 onClick={() => setShowModal(false)}
                 className="px-4 py-2 bg-gray-100 text-gray-800 rounded-md mr-2"
@@ -345,7 +348,7 @@ const page = () => {
               </button>
               <button
                 className="px-4 py-2 bg-black text-white rounded-md"
-                onClick={()=>updateStatusBloodRequest(selectedRequest.bloodRequestId,selectedRequest.status)}
+                onClick={()=>updateStatusBloodRequest(selectedRequest.bloodRequestId,selectedRequest.updatedStatus)}
               >
                 Save Changes
               </button>
