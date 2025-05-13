@@ -17,6 +17,7 @@ export interface IBlood_Request extends Document {
     status: 'Pending'|'Completed' | 'Approved' | 'Rejected';
     document: string;
     notes: string;
+    redirected: number;
     requestor: Schema.Types.ObjectId;
     blood_bank: Schema.Types.ObjectId;
 }
@@ -45,6 +46,7 @@ const BloodRequestSchema: Schema = new Schema({
     status: { type: String, enum: ['Pending','Completed', 'Approved', 'Rejected'], default: 'Pending' },
     document: { type: String,default: "" },
     notes: { type: String },
+    redirected:{type:Number,default:0},
     requestor: {
         type: Schema.Types.ObjectId,
         ref: 'Donor',
@@ -54,7 +56,17 @@ const BloodRequestSchema: Schema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Blood_bank',
         required: true,
+    },
+    nearby_blood_banks: [{
+            type: Schema.Types.ObjectId,
+            ref: 'Blood_bank',
+    }],
+    rejectedBy:[
+        {
+        type: Schema.Types.ObjectId,
+        ref: 'Blood_bank',
     }
+    ]
 }, { timestamps: true });
 
 export default models.Blood_request || mongoose.model<IBlood_Request>('Blood_request', BloodRequestSchema);

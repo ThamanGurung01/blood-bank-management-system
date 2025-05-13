@@ -12,19 +12,19 @@ export const calculateBloodStock =(bloodData: IBlood[]) => {
         if (!bloodData) return { success: false, message: "Blood data is invalid" };
         bloodData.forEach((blood) => {
             if (blood.donation_type === "whole_blood") {
-                const units=parseInt(blood.blood_units);
+                const units=parseInt(blood.blood_units.toString());
                 bloodStock[0].units += units;
             } else if (blood.donation_type === "rbc") {
-                const units=parseInt(blood.blood_units);
+                const units=parseInt(blood.blood_units.toString());
                 bloodStock[1].units += units;
             } else if (blood.donation_type === "platelets") {
-                const units=parseInt(blood.blood_units);
+                const units=parseInt(blood.blood_units.toString());
                 bloodStock[2].units += units;
             } else if (blood.donation_type === "plasma") {
-                const units=parseInt(blood.blood_units);
+                const units=parseInt(blood.blood_units.toString());
                 bloodStock[3].units += units;
             } else if (blood.donation_type === "cryoprecipitate") {
-                const units=parseInt(blood.blood_units);
+                const units=parseInt(blood.blood_units.toString());
                 bloodStock[4].units += units;
             }
         });
