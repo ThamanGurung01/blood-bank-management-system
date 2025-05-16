@@ -24,7 +24,7 @@ try {
     const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
     if(!errors){
         const user=session.user.id;
-        const bloodBankData=await BloodBank.findOne({user});
+        const bloodBankData=await BloodBank.findOne({_id:user});
         if(!bloodBankData) return {success:false,message:"Blood bank not found"};
         const bloodBankId=bloodBankData._id;
         if(bloodDonationType==="new_blood_donation"){
@@ -72,7 +72,7 @@ export const getBloodStock=async(bloodType:string)=>{
     if(session?.user.role!=="blood_bank") return {success:false,message:"User not authorized"};
     const user=session.user.id;
     await connectToDb();
-    const bloodBankData=await BloodBank.findOne({user});
+    const bloodBankData=await BloodBank.findOne({_id:user});
     if(!bloodBankData) return {success:false,message:"Blood bank not found"};
     const bloodBankId=bloodBankData._id;
     await markExpiredBloodUnits();

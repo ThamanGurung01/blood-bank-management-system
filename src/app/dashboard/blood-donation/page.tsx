@@ -3,16 +3,18 @@ import { insertBloodDonation } from "@/actions/bloodDonationActions";
 import IValidation from "@/types/validationTypes";
 import { fromValidation } from "@/utils/validation";
 import { AlertCircle } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export default function page() {
 
   const bloodTypes = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
   const [existingDonor, setExistingDonor] = useState<boolean>(true);
   const [validationErrors, setValidationErrors] = useState<IValidation>();
-
+const formRef = useRef<HTMLFormElement>(null);
   const handleDonor = () => {
     setExistingDonor((c) => !c);
+    formRef.current?.reset();
+        setValidationErrors(undefined);
   }
   const handleSubmit = async (e: React.FormEvent) => {
     try {
@@ -29,6 +31,8 @@ export default function page() {
           const bloodDonationData = await insertBloodDonation(formdata, "new_blood_donation");
           console.log(bloodDonationData);
         }
+        formRef.current?.reset();
+        setValidationErrors(undefined);
       } else {
         console.log(errors);
       }
@@ -40,7 +44,7 @@ export default function page() {
   return (
     <div className="max-w-lg mx-auto p-6 bg-white shadow-lg rounded-xl initialPage">
       <h2 className="text-2xl font-bold mb-4">Blood Donation Form</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
         <div>
           <p className="select-none cursor-pointer" onClick={handleDonor}>{existingDonor ? "new Donor" : "existing Donor"}</p>
         </div>
@@ -238,6 +242,8 @@ export default function page() {
             type="date"
             name="collected_date"
             className="w-full p-2 border rounded"
+            min="2000-01-01"
+  max={new Date().toISOString().split("T")[0]}
           />
         </div>
         {validationErrors?.collected_date?.[0] && (
