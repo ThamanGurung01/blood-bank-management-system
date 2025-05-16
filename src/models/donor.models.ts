@@ -12,6 +12,7 @@ export interface IDonor extends Document{
     };
     contact:string;
     status:boolean;
+        last_donation_date:Date;
 }
 const DonorSchema=new Schema<IDonor>({
     donorId: { type: String, unique: true },
@@ -41,6 +42,9 @@ const DonorSchema=new Schema<IDonor>({
         type:Boolean,
         default:true
     },
+    last_donation_date:{
+    type:Date,
+},
     user:{
         type:Schema.Types.ObjectId,
         ref:'User',

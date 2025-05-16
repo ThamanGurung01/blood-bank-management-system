@@ -48,7 +48,11 @@ try {
             if(!existingDonor) return {success:false,message:"Donor not found"};
             const newBloodDonationData={...bloodDonationData,donor_name:existingDonor.user.name,donor_contact:existingDonor.contact};
             const cBloodDonation=await BloodDonation.create({...newBloodDonationData,blood_bank:bloodBankId});
-            // const uDonor=await Donor.findByIdAndUpdate(existingDonor._id,{$push:{donations:{bloodBank:bloodBankId,bloodDonation:cBloodDonation._id,date:newBloodDonationData.collected_date}}},{new:true});
+           const blood_collected_date = new Date(cBloodDonation.collected_date);
+            const lastDonationDate = existingDonor.last_donation_date ? new Date(existingDonor.last_donation_date) : null;
+            const latestDate = !lastDonationDate || blood_collected_date > lastDonationDate? blood_collected_date: lastDonationDate;
+            await Donor.findByIdAndUpdate(existingDonor._id, {last_donation_date: latestDate}, { new: true });
+
            const bloodExpiryDate=calculateExpiry(newBloodDonationData.donation_type,newBloodDonationData.collected_date);
             const cBlood=await Blood.create({...newBloodDonationData,blood_bank:bloodBankId,donor:existingDonor._id,expiry_date:bloodExpiryDate});
             console.log(typeof newBloodDonationData.blood_units);

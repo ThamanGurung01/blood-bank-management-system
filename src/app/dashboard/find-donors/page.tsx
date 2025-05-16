@@ -1,35 +1,61 @@
 "use client"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, Filter, User, Droplet } from "lucide-react";
+import { getDonor } from "@/actions/donorActions";
+import { IDonor } from "@/models/donor.models";
+interface Donor extends Omit<IDonor, 'user'> {
+  user: {
+    name: string;
+    email: string;
+    role: string;
+  };
+}
 const page = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [bloodType, setBloodType] = useState("");
   const [availability, setAvailability] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  
-  // Mock data for demonstration
-  const donors = [
-    { id: 1, name: "John Doe", bloodType: "A+", available: true, lastDonation: "2025-03-15", contactNumber: "555-1234" },
-    { id: 2, name: "Jane Smith", bloodType: "O-", available: false, lastDonation: "2025-04-01", contactNumber: "555-5678" },
-    { id: 3, name: "Mike Johnson", bloodType: "B+", available: true, lastDonation: "2025-02-22", contactNumber: "555-9012" },
-    { id: 4, name: "Sarah Williams", bloodType: "AB+", available: true, lastDonation: "2025-01-30", contactNumber: "555-3456" },
-    { id: 5, name: "Robert Brown", bloodType: "A-", available: false, lastDonation: "2025-03-25", contactNumber: "555-7890" }
-  ];
+  const [donors, setDonors] = useState<Donor[]>([]);
+  // const donors = [
+  //   { id: 1, name: "John Doe", bloodType: "A+", available: true, lastDonation: "2025-03-15", contactNumber: "555-1234" },
+  //   { id: 2, name: "Jane Smith", bloodType: "O-", available: false, lastDonation: "2025-04-01", contactNumber: "555-5678" },
+  //   { id: 3, name: "Mike Johnson", bloodType: "B+", available: true, lastDonation: "2025-02-22", contactNumber: "555-9012" },
+  //   { id: 4, name: "Sarah Williams", bloodType: "AB+", available: true, lastDonation: "2025-01-30", contactNumber: "555-3456" },
+  //   { id: 5, name: "Robert Brown", bloodType: "A-", available: false, lastDonation: "2025-03-25", contactNumber: "555-7890" }
+  // ];
   
   // Filter donors based on search criteria
   const filteredDonors = donors.filter(donor => {
-    const matchesSearch = donor.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesBloodType = bloodType === "" || donor.bloodType === bloodType;
+    const matchesSearch = donor.user.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesBloodType = bloodType === "" || donor.blood_group === bloodType;
     const matchesAvailability = 
       availability === "" || 
-      (availability === "available" && donor.available) || 
-      (availability === "unavailable" && !donor.available);
+      (availability === "available" && donor.status) || 
+      (availability === "unavailable" && !donor.status);
       
     return matchesSearch && matchesBloodType && matchesAvailability;
   });
 
   const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
   
+      const fetchRequests = async () => {
+        try {
+          const BloodRequests = await getDonor();
+          const data=BloodRequests?.data;
+  const updatedData = (data || []).map((item: Donor) => ({
+    ...item,
+    updatedStatus: item.status
+  }));
+          // const data = mockRequests;
+          setDonors(updatedData || []);
+          // console.log(updatedData);
+        } catch (err) {
+          console.error("Error fetching blood requests:", err);
+        }
+      };
+  useEffect(() => {
+fetchRequests();
+  },[]);
   return (
     <div className="bg-gray-50 p-10 min-h-screen initialPage">
       <div className="max-w-6xl mx-auto">
@@ -103,35 +129,35 @@ const page = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredDonors.length > 0 ? (
-                filteredDonors.map(donor => (
-                  <tr key={donor.id} className="hover:bg-gray-50">
+                filteredDonors.map((donor,index) => (
+                  <tr key={index} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
                           <User className="text-gray-500" size={20} />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{donor.name}</div>
-                          <div className="text-sm text-gray-500">ID: {donor.id}</div>
+                          <div className="text-sm font-medium text-gray-900">{donor.user.name}</div>
+                          <div className="text-sm text-gray-500">ID: {donor.donorId}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <Droplet size={18} className="mr-2 text-red-500" />
-                        <span className="font-medium">{donor.bloodType}</span>
+                        <span className="font-medium">{donor.blood_group}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${donor.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {donor.available ? 'Available' : 'Unavailable'}
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${donor.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {donor.status ? 'Available' : 'Unavailable'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {donor.lastDonation}
+                      {donor?.last_donation_date ? (typeof donor.last_donation_date === "string" ? donor.last_donation_date : donor.last_donation_date.toLocaleDateString()) : "N/A"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {donor.contactNumber}
+                      {donor.contact}
                     </td>
                   </tr>
                 ))

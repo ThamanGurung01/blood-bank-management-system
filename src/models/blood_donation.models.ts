@@ -10,6 +10,7 @@ export interface IBLood_Donation extends Document{
     donation_type:DonationType;
     blood_units:string;
     collected_date:Date;
+
     blood_bank:Schema.Types.ObjectId;
 }
 const BloodDonationSchema=new Schema<IBLood_Donation>({
@@ -33,6 +34,7 @@ donor_type:{
     type:String,
     default:"new",
 },
+
 blood_bank:{
     type:Schema.Types.ObjectId,
     ref:"blood_bank",
