@@ -5,14 +5,16 @@ export interface IDonor extends Document{
     user:Schema.Types.ObjectId;
     donorId:string;
     blood_group:string;
-    age:string;
+    age:number;
     location:{
         latitude:number;
         longitude:number;
     };
     contact:string;
     status:boolean;
-        last_donation_date:Date;
+    last_donation_date:Date;
+    donated_volume:number;
+    unsuccessful_donations:number;
 }
 const DonorSchema=new Schema<IDonor>({
     donorId: { type: String, unique: true },
@@ -21,7 +23,7 @@ const DonorSchema=new Schema<IDonor>({
         required:true
     },
     age:{
-        type:String,
+        type:Number,
         required:true},
     location:{
         latitude:{
@@ -44,7 +46,15 @@ const DonorSchema=new Schema<IDonor>({
     },
     last_donation_date:{
     type:Date,
-},
+    },
+    donated_volume:{
+        type:Number,
+        default:0
+    },
+    unsuccessful_donations:{
+        type:Number,
+        default:0
+    },
     user:{
         type:Schema.Types.ObjectId,
         ref:'User',

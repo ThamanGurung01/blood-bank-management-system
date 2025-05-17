@@ -8,9 +8,8 @@ export interface IBLood_Donation extends Document{
     donor_type:string;
     blood_type:string;
     donation_type:DonationType;
-    blood_units:string;
+    blood_units:number;
     collected_date:Date;
-
     blood_bank:Schema.Types.ObjectId;
 }
 const BloodDonationSchema=new Schema<IBLood_Donation>({
@@ -34,7 +33,23 @@ donor_type:{
     type:String,
     default:"new",
 },
-
+blood_type:{
+    type:String,
+    required:true,
+},
+blood_units:{
+    type:Number,
+    required:true,
+},
+donation_type:{
+    type:String,
+    enum:["whole_blood","rbc","platelets","plasma","cryoprecipitate"],
+    required:true,
+},
+collected_date:{
+    type:Date,
+    required:true,
+},
 blood_bank:{
     type:Schema.Types.ObjectId,
     ref:"blood_bank",

@@ -1,3 +1,5 @@
+import { parse } from "path"
+
 export const formDataDeform=(formData:FormData,type:string)=>{
     try{
 if(type==="user"){
@@ -33,6 +35,7 @@ if(type==="user"){
     
 }else if(type=== "existing_blood_donation"){
     return {
+        age:parseInt(formData.get("age")as string),
         donorId:formData.get("donor_id"),
         blood_type:formData.get("blood_type"),
         donation_type:formData.get("donation_type"),

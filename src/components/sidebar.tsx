@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useSession,signOut } from 'next-auth/react';
-import {Heart,House,Droplet,Syringe,Package,Calendar,LogOut, History, Users } from "lucide-react";
+import {Heart,House,Droplet,Syringe,Package,Calendar,LogOut, History, Users,BarChart2 } from "lucide-react";
 import "@/styles/sidebar.css"
 import { useRouter } from 'next/navigation';
 
@@ -158,6 +158,15 @@ const handleSignOut = () => {
         </div>
         <div className='sidebar'>
         Donation History
+        </div>
+      </div>
+
+      <div className={`sidebarOptionContainer ${selectedSidebarOption==="leaderboard" ? "selected" : "notSelected"}`} onClick={()=>handleSidebarSelect("leaderboard","donor")}>
+        <div>
+        <BarChart2 className='sidebarIcons'/>
+        </div>
+        <div className='sidebar'>
+        Leaderboard
         </div>
       </div>
 
