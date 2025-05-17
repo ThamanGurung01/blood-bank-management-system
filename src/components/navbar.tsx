@@ -47,13 +47,6 @@ const Navbar = () => {
   // };
 
   return (
-<<<<<<< HEAD
-    <div className="bg-white fixed left-0 top-0 w-full z-24">
-        <div className='w-full flex justify-between px-10 py-6 border-b-2 border-gray-300'>
-        <h1 className='text-3xl font-bold'>Blood Bank Management</h1>
-        <div>
-        <Link href={"/profile"}><img src="/defaultProfile.png" className='rounded-full w-10 h-10 border-2' alt="Profile" /></Link>
-=======
     <div className="fixed left-0 top-0 z-20 w-full bg-white shadow-sm">
       <div className="flex h-16 items-center justify-between border-b border-gray-200 px-4 md:px-6">
         <div className="flex items-center">
@@ -76,7 +69,6 @@ const Navbar = () => {
               BloodLink
             </h1>
           </div>
->>>>>>> 86f9f2d7a76b3288cb6365be6fd07c0d9865ed83
         </div>
 
         <div className="mx-4 hidden flex-1 md:block">
