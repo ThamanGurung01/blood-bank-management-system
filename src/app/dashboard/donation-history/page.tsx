@@ -925,7 +925,7 @@ export default function DonationHistoryPage() {
                   <span className="font-medium text-gray-800">43,000+</span>
                 </div>
                 <p className="mt-1 text-xs text-gray-600">
-                  Pints of donated blood are used each day in the U.S. You're part of this lifesaving effort.
+                  Pints of donated blood are used each day in the U.S. You&#39;re part of this lifesaving effort.
                 </p>
               </div>
             </div>
