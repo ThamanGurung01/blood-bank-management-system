@@ -12,6 +12,7 @@ import {getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { calculateBloodStock } from "@/utils/calculateBloodStock";
 import { markExpiredBloodUnits } from "@/jobs/markExpiredBlood";
+import { calculateWeightedScore } from "@/utils/calculateWeightedScore";
 export const insertBloodDonation=async(formData:FormData,bloodDonationType:string)=>{
 try {
     const session=await getServerSession(authOptions);
@@ -48,15 +49,27 @@ try {
             if(!existingDonor) return {success:false,message:"Donor not found"};
             const newBloodDonationData={...bloodDonationData,donor_name:existingDonor.user.name,donor_contact:existingDonor.contact};
             const cBloodDonation=await BloodDonation.create({...newBloodDonationData,blood_bank:bloodBankId});
+
+
+
+           const bloodExpiryDate=calculateExpiry(newBloodDonationData.donation_type,newBloodDonationData.collected_date);
+            const cBlood=await Blood.create({...newBloodDonationData,blood_bank:bloodBankId,donor:existingDonor._id,expiry_date:bloodExpiryDate});
+
+            const donations = await BloodDonation.find({ donorId: existingDonor.donorId },{ collected_date: 1, _id: 0 }).lean();
+
+            let donorScore = 0;
+            if(donations.length >0){
+            const donationsDate=donations.map(d => new Date(d.collected_date));
+            donorScore=calculateWeightedScore(existingDonor,donationsDate);
+            }
            const blood_collected_date = new Date(cBloodDonation.collected_date);
             const lastDonationDate = existingDonor.last_donation_date ? new Date(existingDonor.last_donation_date) : null;
             const latestDate = !lastDonationDate || blood_collected_date > lastDonationDate? blood_collected_date: lastDonationDate;
 
+            
             const updated_donated_volume = existingDonor.donated_volume + Number(newBloodDonationData.blood_units);
-            await Donor.findByIdAndUpdate(existingDonor._id, {last_donation_date: latestDate,donated_volume:updated_donated_volume}, { new: true });
+            await Donor.findByIdAndUpdate(existingDonor._id, {last_donation_date: latestDate,donated_volume:updated_donated_volume,score:donorScore}, { new: true });
 
-           const bloodExpiryDate=calculateExpiry(newBloodDonationData.donation_type,newBloodDonationData.collected_date);
-            const cBlood=await Blood.create({...newBloodDonationData,blood_bank:bloodBankId,donor:existingDonor._id,expiry_date:bloodExpiryDate});
             console.log(typeof newBloodDonationData.blood_units);
             console.log(cBlood);
            return {success:true,message:`Blood donation successfully created`};

@@ -1,5 +1,4 @@
 import { Schema,Document,model,models } from "mongoose";
-import { string } from "zod";
 export type Role= 'donor' | 'blood_bank' | 'admin';
 export interface IDonor extends Document{
     user:Schema.Types.ObjectId;
@@ -14,7 +13,9 @@ export interface IDonor extends Document{
     status:boolean;
     last_donation_date:Date;
     donated_volume:number;
+    weighted_score:number;
     unsuccessful_donations:number;
+    score?:number;
 }
 const DonorSchema=new Schema<IDonor>({
     donorId: { type: String, unique: true },
@@ -43,6 +44,10 @@ const DonorSchema=new Schema<IDonor>({
     status:{
         type:Boolean,
         default:true
+    },
+    weighted_score:{
+        type:Number,
+        default:0
     },
     last_donation_date:{
     type:Date,
