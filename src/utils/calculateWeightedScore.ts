@@ -14,12 +14,14 @@ export const calculateWeightedScore = (donor:IDonor ,donationDates:Date[])=>{
     recency: 0.15,
     reliab: 0.1,
   };
+ const normalizedScore =w.freq * frequency +w.cons * consistency +w.rarity * rarity +w.recency * recency +w.reliab * reliability;
 
-  return (
-    w.freq * frequency +
-    w.cons * consistency +
-    w.rarity * rarity +
-    w.recency * recency +
-    w.reliab * reliability
-  );
+ const totalDonations = donor.total_donations || 0;
+  const donatedVolume = donor.donated_volume || 0;
+
+  const base = totalDonations * 50 + donatedVolume * 0.1;
+  const multiplier = Math.pow(normalizedScore, 1.3);
+  const leaderboardScore = Math.floor(base * multiplier);
+
+  return leaderboardScore;
 }

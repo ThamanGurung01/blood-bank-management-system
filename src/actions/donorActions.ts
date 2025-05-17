@@ -26,7 +26,15 @@ try {
     const donors=await Donor.find({}).populate({path:"user",
     select:"name email role"
     }).lean();
-    return {success:true,data:JSON.parse(JSON.stringify(donors))};
+    const sortedDonors = donors.sort((a, b) => b.score - a.score);
+    const rankedDonors = sortedDonors.map((donor, index) => ({
+      ...donor,
+      rank: index + 1,
+    }));
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify(rankedDonors)),
+    };
 } catch (error:any) {
     console.log(error?.message);
     return {success:false,message:"Something went wrong"}

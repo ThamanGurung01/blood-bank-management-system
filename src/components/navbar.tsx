@@ -8,7 +8,7 @@ const Navbar = () => {
         <div className='w-full flex justify-between px-10 py-6 border-b-2 border-gray-300'>
         <h1 className='text-3xl font-bold'>Blood Bank Management</h1>
         <div>
-        <Link href={"/profile"}><img src="/blood.png" className='rounded-full w-10 h-10 border-2' alt="Profile" /></Link>
+        <Link href={"/profile"}><img src="/defaultProfile.png" className='rounded-full w-10 h-10 border-2' alt="Profile" /></Link>
         </div>
         </div>
     </div>

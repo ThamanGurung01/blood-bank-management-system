@@ -13,9 +13,10 @@ export interface IDonor extends Document{
     status:boolean;
     last_donation_date:Date;
     donated_volume:number;
-    weighted_score:number;
     unsuccessful_donations:number;
-    score?:number;
+    total_donations:number;
+    score:number;
+    profileImage:string;
 }
 const DonorSchema=new Schema<IDonor>({
     donorId: { type: String, unique: true },
@@ -45,20 +46,28 @@ const DonorSchema=new Schema<IDonor>({
         type:Boolean,
         default:true
     },
-    weighted_score:{
-        type:Number,
-        default:0
-    },
     last_donation_date:{
     type:Date,
     },
+    score:{
+        type:Number,
+        default:0
+    },
     donated_volume:{
+        type:Number,
+        default:0
+    },
+    total_donations:{
         type:Number,
         default:0
     },
     unsuccessful_donations:{
         type:Number,
         default:0
+    },
+    profileImage:{
+        type:String,
+        default:"/defaultProfile.png"
     },
     user:{
         type:Schema.Types.ObjectId,

@@ -55,5 +55,5 @@ blood_bank:{
     ref:"blood_bank",
     required:true,
 },
-})
+},{timestamps:true})
 export default models.Blood_donation || model<IBLood_Donation>("Blood_donation",BloodDonationSchema)
