@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { getDonorRank } from "@/actions/donorActions";
 import { IDonor } from "@/models/donor.models";
-import Page from "../page";
+
 interface Donor extends Omit<IDonor, "user"> {
   rank: number;
   user: {
