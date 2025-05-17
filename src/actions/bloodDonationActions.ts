@@ -57,10 +57,11 @@ try {
 
             const donations = await BloodDonation.find({ donorId: existingDonor.donorId },{ collected_date: 1, _id: 0 }).lean();
 
-            let donorScore = 0;
-            if(donations.length >0){
-            const donationsDate=donations.map(d => new Date(d.collected_date));
-            donorScore=calculateWeightedScore(existingDonor,donationsDate);
+            let donorScore = existingDonor.score;
+            if (donations.length > 0) {
+            const donationDates = donations.map(d => new Date(d.collected_date));
+            const calculatedScore = calculateWeightedScore(existingDonor, donationDates);
+            donorScore = Math.max(existingDonor.score, calculatedScore);
             }
            const blood_collected_date = new Date(cBloodDonation.collected_date);
             const lastDonationDate = existingDonor.last_donation_date ? new Date(existingDonor.last_donation_date) : null;
