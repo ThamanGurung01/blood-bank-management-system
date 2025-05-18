@@ -17,6 +17,7 @@ export interface IDonor extends Document{
     total_donations:number;
     score:number;
     profileImage:string;
+    next_eligible_donation_date:Date;
 }
 const DonorSchema=new Schema<IDonor>({
     donorId: { type: String, unique: true },
@@ -68,6 +69,10 @@ const DonorSchema=new Schema<IDonor>({
     profileImage:{
         type:String,
         default:"/defaultProfile.png"
+    },
+    next_eligible_donation_date:{
+        type:Date,
+        default:Date.now
     },
     user:{
         type:Schema.Types.ObjectId,

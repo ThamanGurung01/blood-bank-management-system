@@ -40,3 +40,17 @@ try {
     return {success:false,message:"Something went wrong"}
 }
 }
+
+export const getRecommendedDonors=async()=>{
+try {
+    await connectToDb();
+    const donors=await Donor.find({}).populate({path:"user",
+    select:"name email role"
+    }).lean();
+
+    return {success:true,data:JSON.parse(JSON.stringify(donors))};
+} catch (error:any) {
+    console.log(error?.message);
+    return {success:false,message:"Something went wrong"}
+}
+}

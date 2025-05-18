@@ -12,7 +12,8 @@ import {getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { calculateBloodStock } from "@/utils/calculateBloodStock";
 import { markExpiredBloodUnits } from "@/jobs/markExpiredBlood";
-import { calculateWeightedScore } from "@/utils/calculateWeightedScore";
+import { calculateWeightedScore } from "@/utils/calculateWeightedScore";import { calculateNextEligibleDate } from "@/utils/calculateNextEligibleDate";
+4
 export const insertBloodDonation=async(formData:FormData,bloodDonationType:string)=>{
 try {
     const session=await getServerSession(authOptions);
@@ -68,9 +69,12 @@ try {
             const lastDonationDate = existingDonor.last_donation_date ? new Date(existingDonor.last_donation_date) : null;
             const latestDate = !lastDonationDate || blood_collected_date >= lastDonationDate? blood_collected_date: lastDonationDate;
 
+
+            const nextEligibleDate = calculateNextEligibleDate(blood_collected_date, cBloodDonation.donation_type);
+            console.log("next eligible date"+nextEligibleDate);
             
             const updated_donated_volume = existingDonor.donated_volume + Number(newBloodDonationData.blood_units);
-            const updatedDonorData=await Donor.findByIdAndUpdate(existingDonor._id, {last_donation_date: latestDate,donated_volume:updated_donated_volume,score:donorScore,total_donations:donationCount}, { new: true });
+            const updatedDonorData=await Donor.findByIdAndUpdate(existingDonor._id, {last_donation_date: latestDate,donated_volume:updated_donated_volume,score:donorScore,total_donations:donationCount,next_eligible_donation_date:nextEligibleDate}, { new: true });
             console.log("check"+updatedDonorData);
             console.log(typeof newBloodDonationData.blood_units);
             console.log(cBlood);
