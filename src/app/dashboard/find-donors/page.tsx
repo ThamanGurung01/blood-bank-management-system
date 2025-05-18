@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react";
 import { Search, Filter, User, Droplet } from "lucide-react";
-import { getRecommendedDonors } from "@/actions/donorActions";
+import { getDonor, getRecommendedDonors } from "@/actions/donorActions";
 import { IDonor } from "@/models/donor.models";
 interface Donor extends Omit<IDonor, 'user'> {
   user: {
@@ -16,6 +16,9 @@ const page = () => {
   const [availability, setAvailability] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [donors, setDonors] = useState<Donor[]>([]);
+  const [showRecommended, setShowRecommended] = useState(false);
+  const [selectedBloodGroup, setSelectedBloodGroup] = useState("A+");
+  const [loading, setLoading] = useState(false);
   // const donors = [
   //   { id: 1, name: "John Doe", bloodType: "A+", available: true, lastDonation: "2025-03-15", contactNumber: "555-1234" },
   //   { id: 2, name: "Jane Smith", bloodType: "O-", available: false, lastDonation: "2025-04-01", contactNumber: "555-5678" },
@@ -23,46 +26,101 @@ const page = () => {
   //   { id: 4, name: "Sarah Williams", bloodType: "AB+", available: true, lastDonation: "2025-01-30", contactNumber: "555-3456" },
   //   { id: 5, name: "Robert Brown", bloodType: "A-", available: false, lastDonation: "2025-03-25", contactNumber: "555-7890" }
   // ];
-  
-  // Filter donors based on search criteria
+
   const filteredDonors = donors.filter(donor => {
     const matchesSearch = donor.user.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesBloodType = bloodType === "" || donor.blood_group === bloodType;
-    const matchesAvailability = 
-      availability === "" || 
-      (availability === "available" && donor.status) || 
+    const matchesAvailability =
+      availability === "" ||
+      (availability === "available" && donor.status) ||
       (availability === "unavailable" && !donor.status);
-      
+
     return matchesSearch && matchesBloodType && matchesAvailability;
   });
 
   const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
-  
-      const fetchRequests = async () => {
-        try {
-          const BloodRequests = await getRecommendedDonors();
-          const data=BloodRequests?.data;
-  const updatedData = (data || []).map((item: Donor) => ({
-    ...item,
-    updatedStatus: item.status
-  }));
-          // const data = mockRequests;
-          setDonors(updatedData || []);
-          // console.log(updatedData);
-        } catch (err) {
-          console.error("Error fetching blood requests:", err);
-        }
-      };
+  const fetchRequests = async () => {
+    try {
+      if (showRecommended) {
+        const BloodRequests = await getRecommendedDonors(selectedBloodGroup);
+        const data = BloodRequests?.data;
+        const updatedData: Donor[] = (data || []).map((item: any) => ({
+          donorId: item.donorId ?? item._id ?? "",
+          blood_group: item.blood_group,
+          age: item.age,
+          location: item.location,
+          status: item.status,
+          last_donation_date: item.last_donation_date,
+          contact: item.contact,
+          user: {
+            name: item.user?.name ?? "",
+            email: item.user?.email ?? "",
+            role: item.user?.role ?? "",
+          },
+          ...item,
+        }));
+        setDonors(updatedData || []);
+      } else if (!showRecommended) {
+        const BloodRequests = await getDonor();
+        const data = BloodRequests?.data;
+        const updatedData = (data || []).map((item: Donor) => ({
+          ...item,
+          updatedStatus: item.status
+        }));
+        // const data = mockRequests;
+        setDonors(updatedData || []);
+        // console.log(updatedData);
+      }
+    } catch (err) {
+      console.error("Error fetching blood requests:", err);
+    }
+  };
+
+  const handleBloodGroupChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedBloodGroup(e.target.value);
+  };
+
+
   useEffect(() => {
-fetchRequests();
-  },[]);
+    if (showRecommended && selectedBloodGroup) {
+      fetchRequests();
+    } else if (!showRecommended) {
+      fetchRequests();
+    }
+  }, [showRecommended, selectedBloodGroup]);
   return (
     <div className="bg-gray-50 p-10 min-h-screen initialPage">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Find Donor</h1>
         </div>
-        
+        <div className="flex items-center gap-4 mb-4">
+          <button
+            onClick={() => {
+              const newState = !showRecommended;
+              setShowRecommended(newState);
+              if (!newState) {
+                setSelectedBloodGroup("A+");
+              }
+            }}
+            className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+          >
+            {showRecommended ? "Show All Donors" : "Show Recommended Donors"}
+          </button>
+
+          {showRecommended && (
+            <select
+              value={selectedBloodGroup}
+              onChange={handleBloodGroupChange}
+              className="border p-2 rounded"
+              disabled={!showRecommended}
+            >
+              {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((bg) => (
+                <option key={bg} value={bg}>{bg}</option>
+              ))}
+            </select>
+          )}
+        </div>
         <div className="bg-white p-4 rounded-lg shadow mb-6">
           <div className="flex mb-4">
             <div className="relative flex-1">
@@ -75,7 +133,7 @@ fetchRequests();
               />
               <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
             </div>
-            <button 
+            <button
               className="ml-2 px-4 py-2 bg-gray-200 rounded-lg flex items-center"
               onClick={() => setShowFilters(!showFilters)}
             >
@@ -83,12 +141,12 @@ fetchRequests();
               Filters
             </button>
           </div>
-          
+
           {showFilters && (
             <div className="flex space-x-4">
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Blood Type</label>
-                <select 
+                <select
                   className="w-full p-2 border rounded-lg"
                   value={bloodType}
                   onChange={(e) => setBloodType(e.target.value)}
@@ -101,7 +159,7 @@ fetchRequests();
               </div>
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Availability</label>
-                <select 
+                <select
                   className="w-full p-2 border rounded-lg"
                   value={availability}
                   onChange={(e) => setAvailability(e.target.value)}
@@ -114,7 +172,7 @@ fetchRequests();
             </div>
           )}
         </div>
-        
+
         {/* Donors List */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
@@ -129,7 +187,7 @@ fetchRequests();
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredDonors.length > 0 ? (
-                filteredDonors.map((donor,index) => (
+                filteredDonors.map((donor, index) => (
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -154,7 +212,7 @@ fetchRequests();
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {donor?.last_donation_date ? (typeof donor.last_donation_date === "string" ? donor.last_donation_date : donor.last_donation_date.toLocaleDateString()) : "N/A"}
+                      {donor?.last_donation_date ? new Date(donor.last_donation_date).toISOString().split("T")[0] : "N/A"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {donor.contact}

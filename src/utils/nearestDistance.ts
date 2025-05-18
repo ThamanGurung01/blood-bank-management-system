@@ -8,7 +8,6 @@ export const nearestDistance = (bloodStockData:any,hospitalCoords:any,priority:s
         };
       
         const distance = Number(calculateDistance(hospitalCoords.lat,hospitalCoords.lon, bankCoords.lat, bankCoords.lon));
-      console.log("DIstance bet:",distance)
         return {
           ...item,
           distance
