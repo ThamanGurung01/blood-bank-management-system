@@ -83,7 +83,9 @@ try {
   const location = {
     latitude, longitude
   }
-  type==="signup"&& formdata.append("location", JSON.stringify(location));
+  if (type === "signup") {
+    formdata.append("location", JSON.stringify(location));
+  }
   const validation = fromValidation(formdata, type);
   const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
   setValidationErrors(errors);
