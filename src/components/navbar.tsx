@@ -71,7 +71,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        <div className="mx-4 hidden flex-1 md:block">
+        {/* <div className="mx-4 hidden flex-1 md:block">
           <div className="relative max-w-md">
             <div className="absolute inset-y-0 left-0 flex items-center pl-3">
               <Search size={18} className="text-gray-400" />
@@ -82,7 +82,7 @@ const Navbar = () => {
               className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-10 pr-4 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
             />
           </div>
-        </div>
+        </div> */}
 
         <div className="flex items-center gap-2">
           <div className="relative">

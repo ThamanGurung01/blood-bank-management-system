@@ -11,16 +11,16 @@ import { cosineSimilarity } from "@/utils/cosineSimilarity";
 import { calculateDistance } from "@/utils/calculateDistance";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-export const getDonor=async()=>{
+import {Schema} from "mongoose";
+export const getDonor=async(id:Schema.Types.ObjectId)=>{
 try {
     await connectToDb();
-    const donors=await Donor.find({
-      status:true,
-      next_eligible_donation_date: { $lte: new Date() },
+if(!id) return {success:false,message:"Donor id is required"};
+    const donors=await Donor.findOne({
+      _id:id
     }).populate({path:"user",
     select:"name email role"
     }).lean();
-
     return {success:true,data:JSON.parse(JSON.stringify(donors))};
 } catch (error:any) {
     console.log(error?.message);
