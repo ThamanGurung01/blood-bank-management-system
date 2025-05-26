@@ -173,8 +173,6 @@ const { data: session } = useSession();
 const fetchDonorData= async () => {
   if(session?.user?.id){
 const response=await getDonor(session.user.id);
-console.log("donor");
-console.log(response);
 setDonorData(response.data);
   }
 }
@@ -671,7 +669,7 @@ function BloodBankContent({ data }: { data: BloodBank }) {
             </div>
             <div className="px-6 py-4">
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                {data.inventory.map((item) => (
+                {/* {data.inventory.map((item) => (
                   <div
                     key={item.blood_group}
                     className={`rounded-lg p-4 text-center ${
@@ -707,13 +705,13 @@ function BloodBankContent({ data }: { data: BloodBank }) {
                       {item.status}
                     </span>
                   </div>
-                ))}
+                ))} */}
               </div>
 
               <div className="mt-8">
                 <h3 className="mb-4 text-lg font-medium">Critical Alerts</h3>
                 <div className="space-y-4">
-                  {data.inventory
+                  {/* {data.inventory
                     .filter((item) => item.status === "critical")
                     .map((item) => (
                       <div
@@ -742,7 +740,7 @@ function BloodBankContent({ data }: { data: BloodBank }) {
                         No critical shortages at this time
                       </p>
                     </div>
-                  )}
+                  )} */}
                 </div>
               </div>
             </div>
