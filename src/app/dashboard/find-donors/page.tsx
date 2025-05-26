@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react";
 import { Search, Filter, User, Droplet } from "lucide-react";
-import { getDonor, getRecommendedDonors } from "@/actions/donorActions";
+import { getAllDonor, getRecommendedDonors } from "@/actions/donorActions";
 import { IDonor } from "@/models/donor.models";
 interface Donor extends Omit<IDonor, 'user'> {
   user: {
@@ -61,7 +61,7 @@ const page = () => {
         }));
         setDonors(updatedData || []);
       } else if (!showRecommended) {
-        const BloodRequests = await getDonor();
+        const BloodRequests = await getAllDonor();
         const data = BloodRequests?.data;
         const updatedData = (data || []).map((item: Donor) => ({
           ...item,

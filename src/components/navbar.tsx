@@ -139,7 +139,7 @@ const Navbar = () => {
               <Image
                 width={32}
                 height={32}
-                src={session?.user?.image || "/blood.png"}
+                src={session?.user?.image || "/defaultProfile.png"}
                 alt="Profile"
                 className="h-8 w-8 rounded-full border border-gray-200 object-cover"
               />

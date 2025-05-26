@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import {
   User,
@@ -17,7 +17,11 @@ import {
   ChevronRight,
   Building,
 } from "lucide-react";
-
+import { redirect } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
+import { getDonor } from "@/actions/donorActions";
+import { IDonor } from "@/models/donor.models";
+import { IBlood_Bank } from "@/models/blood_bank.models";
 // Mock user data based on the signup form
 const userData = {
   name: "John Doe",
@@ -30,7 +34,7 @@ const userData = {
     latitude: 27.7172,
     longitude: 85.324,
   },
-  profile_picture: "/placeholder.svg?height=128&width=128",
+  profile_picture: "defaultProfile.png",
   donations: [
     {
       id: 1,
@@ -81,7 +85,7 @@ const bloodBankData = {
     latitude: 27.7172,
     longitude: 85.324,
   },
-  profile_picture: "/placeholder.svg?height=128&width=128",
+  profile_picture: "/defaultProfile.png",
   inventory: [
     { blood_group: "A+", units: 15, status: "adequate" },
     { blood_group: "A-", units: 5, status: "low" },
@@ -130,14 +134,68 @@ const bloodBankData = {
     },
   ],
 };
-
+interface Donor extends Omit<IDonor, "user"> {
+user:{
+  name:string;
+  email:string;
+}
+}
+interface BloodBank extends Omit<IBlood_Bank, "user"> {
+  user: {
+    name: string;
+    email: string;
+  };
+  inventory: Array<{
+    blood_group: string;
+    units: number;
+    status: string;
+  }>;
+  recentDonations?: Array<{
+    id: number;
+    date: string;
+    donor: string;
+    blood_group: string;
+    units: number;
+  }>;
+  upcomingDrives?: Array<{
+    id: number;
+    date: string;
+    location: string;
+    time: string;
+  }>;
+}
 export default function ProfilePage() {
   const [viewMode, setViewMode] = useState<"donor" | "blood_bank">("donor");
-  const data = viewMode === "donor" ? userData : bloodBankData;
+  const [donorData, setDonorData] = useState<Donor>({} as Donor);
+  const [bloodBankData, setBloodBankData] = useState<BloodBank>({} as BloodBank);
+const { data: session } = useSession();
 
+const fetchDonorData= async () => {
+  if(session?.user?.id){
+const response=await getDonor(session.user.id);
+console.log("donor");
+console.log(response);
+setDonorData(response.data);
+  }
+}
+const fetchBloodBankData = async () => {  
+
+}
+
+  useEffect(() => {
+
+    if (session?.user?.role === "blood_bank") {
+      setViewMode("blood_bank");
+      fetchBloodBankData();
+    } else {
+      setViewMode("donor");
+      fetchDonorData();
+          console.log("Session data:", session);
+    }
+  },[session]);
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="relative bg-red-600 pb-32">
+      <div className="relative bg-red-600">
         <div className="absolute inset-0 bg-gradient-to-r from-red-800 to-red-600 opacity-90" />
         <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
@@ -145,10 +203,13 @@ export default function ProfilePage() {
               Blood Bank Management System
             </h1>
             <div className="flex space-x-4">
-              <button className="inline-flex items-center rounded-md border border-transparent bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+              <button className="inline-flex items-center rounded-md border border-transparent bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              onClick={()=>{redirect("/dashboard")}}
+              >
                 Dashboard
               </button>
-              <button className="inline-flex items-center rounded-md border border-transparent bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+              <button className="inline-flex items-center rounded-md border border-transparent bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              onClick={()=>{signOut({ callbackUrl: "/" })}}>
                 Logout
               </button>
             </div>
@@ -183,14 +244,14 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div className="mx-auto -mt-8 max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
+      <div className="mx-auto mt-20 max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="rounded-lg border border-gray-200 bg-white shadow-sm lg:col-span-1">
             <div className="px-6 py-5">
               <div className="flex flex-col items-center">
                 <div className="relative h-32 w-32">
                   <Image
-                    src={data.profile_picture || "/placeholder.svg"}
+                    src={"/defaultProfile.png"}
                     alt="Profile"
                     fill
                     className="rounded-full border-4 border-white object-cover shadow-lg"
@@ -199,12 +260,12 @@ export default function ProfilePage() {
                     <Edit className="h-4 w-4" />
                   </button>
                 </div>
-                <h2 className="mt-4 text-2xl font-bold">{data.name}</h2>
+                <h2 className="mt-4 text-2xl font-bold">{""}</h2>
                 <div className="mt-1 flex items-center">
                   {viewMode === "donor" ? (
                     <span className="inline-flex items-center rounded-full bg-red-600 px-2.5 py-0.5 text-xs font-medium text-white">
                       <Droplet className="mr-1 h-3 w-3" />{" "}
-                      {(data as typeof userData).blood_group}
+                      {donorData.blood_group}
                     </span>
                   ) : (
                     <span className="inline-flex items-center rounded-full bg-blue-600 px-2.5 py-0.5 text-xs font-medium text-white">
@@ -220,21 +281,21 @@ export default function ProfilePage() {
                   <User className="mr-3 h-5 w-5 text-gray-500" />
                   <div>
                     <p className="text-sm text-gray-500">Full Name</p>
-                    <p className="font-medium">{data.name}</p>
+                    <p className="font-medium">{donorData?donorData.user?.name:"John"}</p>
                   </div>
                 </div>
                 <div className="flex items-center">
                   <Mail className="mr-3 h-5 w-5 text-gray-500" />
                   <div>
                     <p className="text-sm text-gray-500">Email</p>
-                    <p className="font-medium">{data.email}</p>
+                    <p className="font-medium">{donorData.user?.email??bloodBankData.user?.email}</p>
                   </div>
                 </div>
                 <div className="flex items-center">
                   <Phone className="mr-3 h-5 w-5 text-gray-500" />
                   <div>
                     <p className="text-sm text-gray-500">Contact</p>
-                    <p className="font-medium">{data.contact}</p>
+                    <p className="font-medium">{donorData.contact??bloodBankData.contact}</p>
                   </div>
                 </div>
                 <div className="flex items-center">
@@ -242,8 +303,8 @@ export default function ProfilePage() {
                   <div>
                     <p className="text-sm text-gray-500">Location</p>
                     <p className="font-medium">
-                      {data.location.latitude.toFixed(4)},{" "}
-                      {data.location.longitude.toFixed(4)}
+                      {donorData.location?.latitude.toFixed(4)??donorData.location?.latitude.toFixed(4)},{" "}
+                      {donorData.location?.longitude.toFixed(4)??donorData.location?.longitude.toFixed(4)}
                     </p>
                   </div>
                 </div>
@@ -253,7 +314,7 @@ export default function ProfilePage() {
                     <div>
                       <p className="text-sm text-gray-500">Age</p>
                       <p className="font-medium">
-                        {(data as typeof userData).age} years
+                        {donorData.age} years
                       </p>
                     </div>
                   </div>
@@ -269,7 +330,7 @@ export default function ProfilePage() {
 
           <div className="lg:col-span-2">
             {viewMode === "donor" ? (
-              <DonorContent data={userData} />
+              <DonorContent data={donorData} />
             ) : (
               <BloodBankContent data={bloodBankData} />
             )}
@@ -280,7 +341,7 @@ export default function ProfilePage() {
   );
 }
 
-function DonorContent({ data }: { data: typeof userData }) {
+function DonorContent({ data }: { data: Donor}) {
   const [activeTab, setActiveTab] = useState("overview");
 
   return (
@@ -334,34 +395,34 @@ function DonorContent({ data }: { data: typeof userData }) {
                 <div className="rounded-lg bg-red-50 p-4 text-center">
                   <Droplet className="mx-auto h-8 w-8 text-red-600" />
                   <p className="mt-2 text-2xl font-bold text-red-600">
-                    {data.stats.totalDonations}
+                    {data.total_donations}
                   </p>
                   <p className="text-sm text-gray-600">Total Donations</p>
                 </div>
                 <div className="rounded-lg bg-red-50 p-4 text-center">
                   <Heart className="mx-auto h-8 w-8 text-red-600" />
                   <p className="mt-2 text-2xl font-bold text-red-600">
-                    {data.stats.livesSaved}
+                    {data?0:"data.stats.livesSaved"}
                   </p>
                   <p className="text-sm text-gray-600">Lives Saved</p>
                 </div>
                 <div className="rounded-lg bg-red-50 p-4 text-center">
                   <Calendar className="mx-auto h-8 w-8 text-red-600" />
                   <p className="mt-2 text-sm font-medium text-red-600">
-                    {new Date(data.stats.lastDonation).toLocaleDateString()}
+                    {new Date(data.last_donation_date).toLocaleDateString()}
                   </p>
                   <p className="text-sm text-gray-600">Last Donation</p>
                 </div>
                 <div className="rounded-lg bg-red-50 p-4 text-center">
                   <Clock className="mx-auto h-8 w-8 text-red-600" />
                   <p className="mt-2 text-sm font-medium text-red-600">
-                    {new Date(data.stats.nextEligible).toLocaleDateString()}
+                    {new Date(data.next_eligible_donation_date).toLocaleDateString()}
                   </p>
                   <p className="text-sm text-gray-600">Next Eligible</p>
                 </div>
               </div>
 
-              <div className="mt-8">
+              {/* <div className="mt-8">
                 <h3 className="mb-4 text-lg font-medium">
                   Upcoming Appointment
                 </h3>
@@ -397,7 +458,7 @@ function DonorContent({ data }: { data: typeof userData }) {
                     </button>
                   </div>
                 )}
-              </div>
+              </div> */}
 
               <div className="mt-8">
                 <h3 className="mb-4 text-lg font-medium">
@@ -429,7 +490,7 @@ function DonorContent({ data }: { data: typeof userData }) {
           </div>
         )}
 
-        {activeTab === "donations" && (
+        {/* {activeTab === "donations" && (
           <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
             <div className="px-6 py-5 border-b border-gray-200">
               <h3 className="text-lg font-semibold leading-none tracking-tight">
@@ -484,9 +545,9 @@ function DonorContent({ data }: { data: typeof userData }) {
               </button>
             </div>
           </div>
-        )}
+        )} */}
 
-        {activeTab === "appointments" && (
+        {/* {activeTab === "appointments" && (
           <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
             <div className="px-6 py-5 border-b border-gray-200">
               <h3 className="text-lg font-semibold leading-none tracking-tight">
@@ -551,13 +612,15 @@ function DonorContent({ data }: { data: typeof userData }) {
               </button>
             </div>
           </div>
-        )}
+        )} */}
+
+        
       </div>
     </div>
   );
 }
 
-function BloodBankContent({ data }: { data: typeof bloodBankData }) {
+function BloodBankContent({ data }: { data: BloodBank }) {
   const [activeTab, setActiveTab] = useState("inventory");
 
   return (
@@ -703,7 +766,7 @@ function BloodBankContent({ data }: { data: typeof bloodBankData }) {
             </div>
             <div className="px-6 py-4">
               <div className="space-y-4">
-                {data.recentDonations.map((donation) => (
+                {data.recentDonations?.map((donation) => (
                   <div
                     key={donation.id}
                     className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
@@ -750,7 +813,7 @@ function BloodBankContent({ data }: { data: typeof bloodBankData }) {
             </div>
             <div className="px-6 py-4">
               <div className="space-y-4">
-                {data.upcomingDrives.map((drive) => (
+                {data.upcomingDrives?.map((drive) => (
                   <div
                     key={drive.id}
                     className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
