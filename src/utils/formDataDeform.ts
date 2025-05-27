@@ -28,6 +28,7 @@ if(type==="user"){
         donor_contact:formData.get("donor_contact"),
         blood_type:formData.get("blood_type"),
         donation_type:formData.get("donation_type"),
+        donor_address:formData.get("donor_address"),
         blood_units:parseInt(formData.get("blood_quantity")as string),
         collected_date:new Date(),
     }

@@ -37,11 +37,11 @@ const donor=await Donor.findOne({
     });
     const donorData=donor.toObject();
     if(!donor) return {success:false,message:"Donor not found"};
-    const donations = await BloodDonation.find({ donorId: donor.donorId }).populate('blood_bank', 'name').sort({ collected_date: -1 }).lean();
-    console.log("donations", donations);
+    const donations = await BloodDonation.find({ donorId: donor.donorId }).populate('blood_bank', 'blood_bank').sort({ collected_date: -1 }).lean();
     if(!donations || donations.length === 0) return {success:true,data:{...donorData, donations: []}};
     const formattedDonations = donations.map((donation, index) => ({id: index + 1,date: donation.collected_date? donation.collected_date.toISOString().split('T')[0]: 'Unknown Date',
-  location: donation.blood_bank?.name || 'Unknown Location',units: donation.blood_units,status: 'completed',}));
+  location: donation.blood_bank?.blood_bank || 'Unknown Location',units: donation.blood_units,status: 'completed',}));
+  console.log(donations);
     return {success:true,data:JSON.parse(JSON.stringify({...donorData, donations: formattedDonations}))};
 } catch (error:any) {
     console.log(error?.message);
