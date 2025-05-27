@@ -1,17 +1,12 @@
 "use server";
-import IValidation from "@/types/validationTypes";
 import { connectToDb } from "@/utils/database";
-import { fromValidation } from "@/utils/validation";
-import User, { IUser } from "@/models/user.models"
 import Donor, { IDonor } from "@/models/donor.models"
-import BloodBank, { IBlood_Bank } from "@/models/blood_bank.models"
 import BloodDonation from "@/models/blood_donation.models";
 import { bloodCompatibility, extractFeaturesFromDonor } from "@/utils/extractFeaturesFromDonor";
 import { cosineSimilarity } from "@/utils/cosineSimilarity";
 import { calculateDistance } from "@/utils/calculateDistance";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import {Schema} from "mongoose";
 export const getAllDonor=async()=>{
 try {
     await connectToDb();
@@ -21,6 +16,8 @@ try {
     }).populate({path:"user",
     select:"name email role"
     }).lean();
+    if(!donors || donors.length===0) return {success:false,message:"No donors found"};
+    
     return {success:true,data:JSON.parse(JSON.stringify(donors))};
     
 } catch (error:any) {
@@ -33,12 +30,19 @@ export const getDonor=async(id:string)=>{
 try {
     await connectToDb();
 if(!id) return {success:false,message:"Donor ID is required"};
-const donors=await Donor.findOne({
+const donor=await Donor.findOne({
       _id:id
     }).populate({path:"user",
     select:"name email role"
-    }).lean();
-    return {success:true,data:JSON.parse(JSON.stringify(donors))};
+    });
+    const donorData=donor.toObject();
+    if(!donor) return {success:false,message:"Donor not found"};
+    const donations = await BloodDonation.find({ donorId: donor.donorId }).populate('blood_bank', 'name').sort({ collected_date: -1 }).lean();
+    console.log("donations", donations);
+    if(!donations || donations.length === 0) return {success:true,data:{...donorData, donations: []}};
+    const formattedDonations = donations.map((donation, index) => ({id: index + 1,date: donation.collected_date? donation.collected_date.toISOString().split('T')[0]: 'Unknown Date',
+  location: donation.blood_bank?.name || 'Unknown Location',units: donation.blood_units,status: 'completed',}));
+    return {success:true,data:JSON.parse(JSON.stringify({...donorData, donations: formattedDonations}))};
 } catch (error:any) {
     console.log(error?.message);
     return {success:false,message:"Something went wrong"}

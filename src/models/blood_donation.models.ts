@@ -52,7 +52,7 @@ collected_date:{
 },
 blood_bank:{
     type:Schema.Types.ObjectId,
-    ref:"blood_bank",
+    ref:"Blood_bank",
     required:true,
 },
 },{timestamps:true})

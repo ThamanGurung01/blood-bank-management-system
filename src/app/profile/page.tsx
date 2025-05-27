@@ -134,11 +134,19 @@ const bloodBankData = {
     },
   ],
 };
+interface Donation {
+  id: number;
+  date: string;
+  location: string;
+  units: number;
+  status: string;
+}
 interface Donor extends Omit<IDonor, "user"> {
 user:{
   name:string;
   email:string;
 }
+donations:Donation[];
 }
 interface BloodBank extends Omit<IBlood_Bank, "user"> {
   user: {
@@ -488,7 +496,7 @@ function DonorContent({ data }: { data: Donor}) {
           </div>
         )}
 
-        {/* {activeTab === "donations" && (
+        {activeTab === "donations" && (
           <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
             <div className="px-6 py-5 border-b border-gray-200">
               <h3 className="text-lg font-semibold leading-none tracking-tight">
@@ -543,7 +551,7 @@ function DonorContent({ data }: { data: Donor}) {
               </button>
             </div>
           </div>
-        )} */}
+        )}
 
         {/* {activeTab === "appointments" && (
           <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
