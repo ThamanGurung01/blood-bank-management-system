@@ -12,7 +12,7 @@ export interface IBlood_Bank extends Document{
 const BloodBankSchema=new Schema<IBlood_Bank>({
     user:{
         type:Schema.Types.ObjectId,
-        ref:'user',
+        ref:'User',
        },
        blood_bank:{
         type:String,

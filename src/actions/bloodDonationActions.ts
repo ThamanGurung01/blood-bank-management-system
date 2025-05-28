@@ -96,7 +96,6 @@ export const getBloodStock=async(bloodType:string)=>{
     const bloodStock=await Blood.find({blood_bank:bloodBankId,blood_type:bloodType,status:"available"}).sort({createdAt:-1});
     if(!bloodStock) return {success:false,message:"Blood stock not found"};
     const bloodStockData=calculateBloodStock(bloodStock);
-    // console.log(bloodStockData);
     return {success:true,message:bloodStockData};
  }  catch(error){
     console.log("error "+error);

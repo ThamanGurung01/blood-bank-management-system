@@ -22,61 +22,10 @@ import { signOut, useSession } from "next-auth/react";
 import { getDonor } from "@/actions/donorActions";
 import { IDonor } from "@/models/donor.models";
 import { IBlood_Bank } from "@/models/blood_bank.models";
-// Mock user data based on the signup form
-const userData = {
-  name: "John Doe",
-  email: "john.doe@example.com",
-  contact: "9876543210",
-  role: "donor",
-  blood_group: "O+",
-  age: 28,
-  location: {
-    latitude: 27.7172,
-    longitude: 85.324,
-  },
-  profile_picture: "defaultProfile.png",
-  donations: [
-    {
-      id: 1,
-      date: "2023-12-15",
-      location: "NRCS Blood Bank",
-      units: 1,
-      status: "completed",
-    },
-    {
-      id: 2,
-      date: "2023-09-10",
-      location: "City Hospital",
-      units: 1,
-      status: "completed",
-    },
-    {
-      id: 3,
-      date: "2023-06-05",
-      location: "Community Center",
-      units: 1,
-      status: "completed",
-    },
-  ],
-  appointments: [
-    {
-      id: 1,
-      date: "2024-06-20",
-      time: "10:00 AM",
-      location: "NRCS Blood Bank",
-      status: "scheduled",
-    },
-  ],
-  stats: {
-    totalDonations: 3,
-    livesSaved: 9,
-    lastDonation: "2023-12-15",
-    nextEligible: "2024-03-15",
-  },
-};
+import { getBloodBank } from "@/actions/bloodBankActions";
 
-// Alternative data for blood bank role
-const bloodBankData = {
+
+const BloodBankData = {
   name: "NRCS Blood Bank",
   email: "info@nrcsbloodbank.org",
   contact: "9876543210",
@@ -185,20 +134,23 @@ setDonorData(response.data);
   }
 }
 const fetchBloodBankData = async () => {  
-
+  if(session?.user?.id){
+const response=await getBloodBank(session.user.id);
+setDonorData(response.data);
+  }
 }
 
   useEffect(() => {
-
     if (session?.user?.role === "blood_bank") {
+      setDonorData({} as Donor);
       setViewMode("blood_bank");
       fetchBloodBankData();
     } else {
+      setBloodBankData({} as BloodBank);
       setViewMode("donor");
       fetchDonorData();
-          console.log("Session data:", session);
     }
-  },[session]);
+  },[session,viewMode]);
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="relative bg-red-600">
@@ -287,7 +239,7 @@ const fetchBloodBankData = async () => {
                   <User className="mr-3 h-5 w-5 text-gray-500" />
                   <div>
                     <p className="text-sm text-gray-500">Full Name</p>
-                    <p className="font-medium">{donorData?donorData.user?.name:"John"}</p>
+                    <p className="font-medium">{donorData.user?.name??bloodBankData.user?.name}</p>
                   </div>
                 </div>
                 <div className="flex items-center">
