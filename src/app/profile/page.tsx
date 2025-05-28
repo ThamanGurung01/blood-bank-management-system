@@ -629,7 +629,7 @@ function BloodBankContent({ data }: { data: BloodBank }) {
             </div>
             <div className="px-6 py-4">
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                {/* {data.inventory.map((item) => (
+                {BloodBankData.inventory.map((item) => (
                   <div
                     key={item.blood_group}
                     className={`rounded-lg p-4 text-center ${
@@ -665,43 +665,7 @@ function BloodBankContent({ data }: { data: BloodBank }) {
                       {item.status}
                     </span>
                   </div>
-                ))} */}
-              </div>
-
-              <div className="mt-8">
-                <h3 className="mb-4 text-lg font-medium">Critical Alerts</h3>
-                <div className="space-y-4">
-                  {/* {data.inventory
-                    .filter((item) => item.status === "critical")
-                    .map((item) => (
-                      <div
-                        key={item.blood_group}
-                        className="flex items-center rounded-lg border border-red-200 bg-red-50 p-4"
-                      >
-                        <AlertCircle className="mr-4 h-6 w-6 text-red-600" />
-                        <div>
-                          <p className="font-medium text-red-800">
-                            Critical Shortage: {item.blood_group}
-                          </p>
-                          <p className="text-sm text-red-600">
-                            Only {item.units} units remaining. Urgent donations
-                            needed.
-                          </p>
-                        </div>
-                        <button className="ml-auto inline-flex items-center rounded-md bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                          Request Donors
-                        </button>
-                      </div>
-                    ))}
-                  {data.inventory.filter((item) => item.status === "critical")
-                    .length === 0 && (
-                    <div className="rounded-lg border border-gray-200 bg-white p-4 text-center">
-                      <p className="text-gray-500">
-                        No critical shortages at this time
-                      </p>
-                    </div>
-                  )} */}
-                </div>
+                ))}
               </div>
             </div>
             <div className="flex items-center px-6 py-4 border-t border-gray-200">
@@ -711,7 +675,6 @@ function BloodBankContent({ data }: { data: BloodBank }) {
             </div>
           </div>
         )}
-
         {activeTab === "donations" && (
           <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
             <div className="px-6 py-5 border-b border-gray-200">
