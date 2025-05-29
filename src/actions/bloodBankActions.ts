@@ -3,6 +3,7 @@ import { connectToDb } from "@/utils/database";
 import Donor, { IDonor } from "@/models/donor.models"
 import BloodBank from "@/models/blood_bank.models";
 import Blood from "@/models/blood.models";
+import BloodDonation from "@/models/blood_donation.models";
 export const getBloodBank=async(bloodBankId:string)=>{
 try {
     await connectToDb();
@@ -31,8 +32,18 @@ try {
     }
   }
 ]);
-    console.log("blood stock"+JSON.stringify(inventory));
-    return {success:true,data:JSON.parse(JSON.stringify({...bloodBank,inventory:inventory}))};
+const rawDonations = await BloodDonation.find({ blood_bank: bloodBankId })
+  .sort({ collected_date: -1 })
+  .exec();
+
+const recentDonations = rawDonations.map((donation, index) => ({
+  id: index + 1,
+  date: donation.collected_date.toISOString().split("T")[0], // YYYY-MM-DD
+  donor: donation.donor_name,
+  blood_group: donation.blood_type,
+  units: donation.blood_units,
+}));
+    return {success:true,data:JSON.parse(JSON.stringify({...bloodBank,inventory:inventory,recentDonations:recentDonations}))};
     
 } catch (error:any) {
     console.log(error?.message);

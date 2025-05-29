@@ -25,7 +25,7 @@ import { IBlood_Bank } from "@/models/blood_bank.models";
 import { getBloodBank } from "@/actions/bloodBankActions";
 
 
-const BloodBankData = {
+const BloodData = {
   name: "NRCS Blood Bank",
   email: "info@nrcsbloodbank.org",
   contact: "9876543210",
@@ -136,7 +136,7 @@ setDonorData(response.data);
 const fetchBloodBankData = async () => {  
   if(session?.user?.id){
 const response=await getBloodBank(session.user.id);
-setDonorData(response.data);
+setBloodBankData(response.data);
   }
 }
 
@@ -261,8 +261,8 @@ setDonorData(response.data);
                   <div>
                     <p className="text-sm text-gray-500">Location</p>
                     <p className="font-medium">
-                      {donorData.location?.latitude.toFixed(4)??donorData.location?.latitude.toFixed(4)},{" "}
-                      {donorData.location?.longitude.toFixed(4)??donorData.location?.longitude.toFixed(4)}
+                      {donorData.location?.latitude.toFixed(4)??bloodBankData.location?.latitude.toFixed(4)},{" "}
+                      {donorData.location?.longitude.toFixed(4)??bloodBankData.location?.longitude.toFixed(4)}
                     </p>
                   </div>
                 </div>
@@ -286,13 +286,19 @@ setDonorData(response.data);
             </div>
           </div>
 
-          <div className="lg:col-span-2">
-            {viewMode === "donor" ? (
-              <DonorContent data={donorData} />
-            ) : (
-              <BloodBankContent data={bloodBankData} />
-            )}
-          </div>
+<div className="lg:col-span-2">
+  {viewMode === "donor" ? (
+    donorData.donorId ? (
+      <DonorContent data={donorData} />
+    ) : (
+      <div>Loading donor data...</div>
+    )
+  ) : bloodBankData.blood_bank ? (
+    <BloodBankContent data={bloodBankData} />
+  ) : (
+    <div>Loading blood bank data...</div>
+  )}
+</div>
         </div>
       </div>
     </div>
@@ -301,7 +307,6 @@ setDonorData(response.data);
 
 function DonorContent({ data }: { data: Donor}) {
   const [activeTab, setActiveTab] = useState("overview");
-
   return (
     <div className="w-full">
       <div className="flex space-x-1 rounded-lg bg-gray-100 p-1">
@@ -580,7 +585,6 @@ function DonorContent({ data }: { data: Donor}) {
 
 function BloodBankContent({ data }: { data: BloodBank }) {
   const [activeTab, setActiveTab] = useState("inventory");
-
   return (
     <div className="w-full">
       <div className="flex space-x-1 rounded-lg bg-gray-100 p-1">
@@ -629,7 +633,7 @@ function BloodBankContent({ data }: { data: BloodBank }) {
             </div>
             <div className="px-6 py-4">
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                {BloodBankData.inventory.map((item) => (
+                {data.inventory.map((item) => (
                   <div
                     key={item.blood_group}
                     className={`rounded-lg p-4 text-center ${
