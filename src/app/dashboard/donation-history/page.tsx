@@ -26,7 +26,7 @@ interface DonationRecord {
   time: string;
   bloodType: string;
   donationType: string;
-  amount: number; // in units
+  amount: number;
   location: string;
   status: "successful" | "deferred" | "incomplete";
   notes?: string;
@@ -361,7 +361,6 @@ export default function DonationHistoryPage() {
               Lifetime
             </span>
           </div>
-          <p className="mt-1 text-sm text-gray-500">Successful donations</p>
         </div>
 
         <div className="rounded-xl bg-white p-6 shadow-md">
@@ -375,12 +374,9 @@ export default function DonationHistoryPage() {
             <p className="text-3xl font-bold text-gray-900">{totalUnits}</p>
             <span className="ml-2 text-sm text-gray-500">units</span>
           </div>
-          <p className="mt-1 text-sm text-gray-500">
-            Approx. {totalUnits * 450}ml of blood
-          </p>
         </div>
 
-        <div className="rounded-xl bg-white p-6 shadow-md">
+        {/* <div className="rounded-xl bg-white p-6 shadow-md">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-sm font-medium text-gray-500">
               Lives Impacted
@@ -436,7 +432,7 @@ export default function DonationHistoryPage() {
               ? `${totalDonations}/25 to Gold`
               : `${totalDonations}/10 to Silver`}
           </p>
-        </div>
+        </div> */}
       </div>
 
       <div className="mb-6 rounded-xl bg-white p-6 shadow-md">
@@ -494,8 +490,8 @@ export default function DonationHistoryPage() {
         </div>
 
         {lastDonation && (
-          <div className="mt-6 grid gap-6 md:grid-cols-3">
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <div className="mt-6 flex justify-center text-center">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 py-4 px-16">
               <h3 className="mb-2 text-sm font-medium text-gray-700">
                 Last Donation
               </h3>
@@ -518,7 +514,7 @@ export default function DonationHistoryPage() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+            {/* <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
               <h3 className="mb-2 text-sm font-medium text-gray-700">
                 Waiting Period
               </h3>
@@ -541,9 +537,8 @@ export default function DonationHistoryPage() {
                   </p>
                 </div>
               </div>
-            </div>
-
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+            </div> 
+                        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
               <h3 className="mb-2 text-sm font-medium text-gray-700">
                 Donation Location
               </h3>
@@ -561,6 +556,9 @@ export default function DonationHistoryPage() {
                 </div>
               </div>
             </div>
+            */}
+
+
           </div>
         )}
       </div>
@@ -889,7 +887,7 @@ export default function DonationHistoryPage() {
             </div>
           </div>
 
-          <div className="rounded-xl bg-white p-6 shadow-md md:col-span-2">
+          {/* <div className="rounded-xl bg-white p-6 shadow-md md:col-span-2">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-medium text-gray-800">
                 Achievements & Milestones
@@ -1085,7 +1083,7 @@ export default function DonationHistoryPage() {
                 )}
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       )}
 
