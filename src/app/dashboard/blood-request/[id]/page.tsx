@@ -1,16 +1,23 @@
 "use client";
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FileText, ArrowLeft, Download, Printer, Clock, CheckCircle } from 'lucide-react';
 import { use } from 'react';
+import { getUserBloodRequest } from '@/actions/bloodRequestActions';
+import { IBlood_Request } from '@/models/blood_request.models';
 
 interface Props {
   params: Promise<{ id: string }>;
 }
-  
+  interface Blood_Request extends Omit<IBlood_Request,"blood_bank"> {
+    blood_bank:{
+      blood_bank: string;
+    };
+createdAt: Date;
+  }
   const page=({ params }: Props)=> {
     const { id } = use(params);
-  console.log(id);
-  const data = {
+  const [data,setData]=useState<Blood_Request>();
+  const Data = {
     bloodRequestId: "REQ-2025050501",
     status: "Approved" as "Approved" | "Pending" | "Processing" | "Rejected", // or "Pending", "Processing", "Rejected"
     patientName: "John Doe",
@@ -55,6 +62,15 @@ interface Props {
         </span>
       );
     };
+    const fetchBloodRequestDetails = async (id: string) => {
+    const response=await getUserBloodRequest(id);
+    setData(response.data);
+}
+    useEffect(() => {
+      if(id){
+        fetchBloodRequestDetails(id);
+      }
+    }, [id]);
     return (
       <div className="max-w-4xl mx-auto py-8 px-4 initialPage">
       <div className="flex justify-between items-center mb-6">
@@ -79,14 +95,16 @@ interface Props {
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Blood Requisition Details</h1>
             <p className="text-gray-600 mt-1">
-              Request ID: <span className="font-medium">{data.bloodRequestId}</span>
+              Request ID: <span className="font-medium">{data?.bloodRequestId}</span>
             </p>
           </div>
           <div className="flex flex-col items-end">
-            {getStatusBadge(data.status)}
+            {data?.status && ["Pending", "Processing", "Approved", "Rejected"].includes(data.status)
+              ? getStatusBadge(data.status as "Pending" | "Processing" | "Approved" | "Rejected")
+              : getStatusBadge("Pending")}
             <span className="text-sm text-gray-500 mt-2 flex items-center">
               <Clock size={14} className="mr-1" />
-              Submitted: {data.submittedDate}
+              Submitted: {data?.createdAt ? new Date(data.createdAt).toLocaleString() : ""}
             </span>
           </div>
         </div>
@@ -98,19 +116,19 @@ interface Props {
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-gray-600">Patient Name</p>
-                  <p className="font-medium">{data.patientName}</p>
+                  <p className="font-medium">{data?.patientName}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Contact Number</p>
-                  <p className="font-medium">{data.contactNumber}</p>
+                  <p className="font-medium">{data?.contactNumber}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Hospital Name</p>
-                  <p className="font-medium">{data.hospitalName}</p>
+                  <p className="font-medium">{data?.hospitalName}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Hospital/Delivery Address</p>
-                  <p className="font-medium">{data.hospitalAddress}</p>
+                  <p className="font-medium">{data?.address}</p>
                 </div>
               </div>
             </div>
@@ -121,30 +139,30 @@ interface Props {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-600">Blood Group</p>
-                    <p className="font-medium">{data.blood_group}</p>
+                    <p className="font-medium">{data?.blood_group}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Quantity (Units)</p>
-                    <p className="font-medium">{data.blood_quantity}</p>
+                    <p className="font-medium">{data?.blood_quantity}</p>
                   </div>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Blood Component</p>
-                  <p className="font-medium">{formatBloodComponent(data.blood_component as keyof typeof formats)}</p>
+                  <p className="font-medium">{formatBloodComponent(data?.blood_component as keyof typeof formats)}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-600">Required Date</p>
-                    <p className="font-medium">{data.requestDate}</p>
+                    <p className="font-medium">{data?.requestDate ? new Date(data.requestDate).toLocaleDateString() : ""}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Priority Level</p>
-                    <p className="font-medium">{data.priorityLevel}</p>
+                    <p className="font-medium">{data?.priorityLevel}</p>
                   </div>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Blood Bank</p>
-                  <p className="font-medium">{data.bloodBankName}</p>
+                  <p className="font-medium">{data?.blood_bank.blood_bank}</p>
                 </div>
               </div>
             </div>
@@ -155,72 +173,27 @@ interface Props {
             <div className="space-y-6">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Notes</p>
-                <p className="bg-gray-50 p-3 rounded">{data.notes || "No additional notes provided."}</p>
+                <p className="bg-gray-50 p-3 rounded">{data?.notes || "No additional notes provided."}</p>
               </div>
               
-              <div>
+              {/* <div>
                 <p className="text-sm text-gray-600 mb-2">Requisition Document</p>
-                <a href={data.documentUrl} className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                <a href={data?.documentUrl} className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
                   <FileText className="text-gray-400 mr-3" size={24} />
                   <div>
                     <p className="font-medium">Blood_Requisition_Document.pdf</p>
                     <p className="text-sm text-gray-500">Click to view or download</p>
                   </div>
                 </a>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <h2 className="text-lg font-semibold mb-4 pb-2 border-b border-gray-200">Status Timeline</h2>
-            <div className="space-y-4">
-              <div className="flex">
-                <div className="flex-shrink-0 mr-3">
-                  <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                    <CheckCircle size={16} className="text-green-600" />
-                  </div>
-                </div>
-                <div>
-                  <p className="font-medium">Request Submitted</p>
-                  <p className="text-sm text-gray-500">{data.submittedDate}, 10:30 AM</p>
-                </div>
-              </div>
-              
-              <div className="flex">
-                <div className="flex-shrink-0 mr-3">
-                  <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Clock size={16} className="text-blue-600" />
-                  </div>
-                </div>
-                <div>
-                  <p className="font-medium">Processing Started</p>
-                  <p className="text-sm text-gray-500">{data.submittedDate}, 11:45 AM</p>
-                </div>
-              </div>
-              
-              <div className="flex">
-                <div className="flex-shrink-0 mr-3">
-                  <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                    <CheckCircle size={16} className="text-green-600" />
-                  </div>
-                </div>
-                <div>
-                  <p className="font-medium">Request Approved</p>
-                  <p className="text-sm text-gray-500">{data.lastUpdated}, 9:15 AM</p>
-                </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
 
         <div className="bg-gray-50 px-6 py-4 flex justify-between items-center border-t">
-          <p className="text-sm text-gray-500">Last Updated: {data.lastUpdated}</p>
           <div className="flex space-x-3">
             <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
               Contact Blood Bank
-            </button>
-            <button className="px-4 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50">
-              Track Status
             </button>
           </div>
         </div>

@@ -113,9 +113,7 @@ const page = () => {
         const BloodRequests = await getBloodRequest();
         const data=BloodRequests?.data;
 
-        // const data = mockRequests;
         setRequests(data || []);
-        console.log("Blood Requests: ", data);
         applyFilters(data, activeTab, filters, searchTerm);
         setIsLoading(false);
       } catch (err) {

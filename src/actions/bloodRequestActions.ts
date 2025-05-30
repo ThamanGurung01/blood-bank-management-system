@@ -80,7 +80,7 @@ export const insertBloodRequest=async(formData:FormData)=>{
             // })));
             // console.log(nearestBloodBank[0]);
             const BloodRequestId=await generateId("bloodRequest");
-            const cBloodRequest=await BloodRequest.create({...bloodRequestData,bloodRequestId:BloodRequestId,requestor:user,hospitalAddress:{latitude:deliveryAddress?.data?.lat,longitude:deliveryAddress?.data?.lon},blood_bank:nearestBloodBank[0]._id,nearby_blood_banks:nearestBloodBank});
+            const cBloodRequest=await BloodRequest.create({...bloodRequestData,bloodRequestId:BloodRequestId,requestor:user,address:addressQuery,hospitalAddress:{latitude:deliveryAddress?.data?.lat,longitude:deliveryAddress?.data?.lon},blood_bank:nearestBloodBank[0]._id,nearby_blood_banks:nearestBloodBank});
             // console.log("Created Blood Request: ",cBloodRequest);
             if(!cBloodRequest) return {success:false,message:"Failed to create blood request"};
             return {success:true,message:`Blood request successfully created`,data:JSON.parse(JSON.stringify({
@@ -94,6 +94,8 @@ export const insertBloodRequest=async(formData:FormData)=>{
     } catch (error:any) {
         console.log("Insert Blood Request Error:", error);
         return {success:false,message:"Something went wrong"}
+
+
 }
 }
 export const getBloodRequest=async()=>{
@@ -144,5 +146,22 @@ export const changeBloodRequestStatus=async(bloodRequestId:string,statusChange:s
 } catch (error:any) {
     console.log("Change status Blood Request Error:", error);
     return {success:false,message:"Something went wrong"}
+}
+}
+
+export const getUserBloodRequest=async(id:string)=>{
+  try {
+      const session=await getServerSession(authOptions);
+      if(!session) return {success:false,message:"User not authenticated"};
+      if(session?.user.role !== "donor" && session?.user.role !== "blood_bank") return {success:false,message:"User not authorized"};
+      await connectToDb();
+      const user=session.user.id;
+      const bloodRequestData=await BloodRequest.findOne({bloodRequestId:id}).populate("blood_bank");
+      if(!bloodRequestData) return {success:false,message:"No blood request found"};
+      return {success:true,message:"Blood request fetched successfully",data:JSON.parse(JSON.stringify(bloodRequestData))};
+      
+  } catch (error:any) {
+      console.log("Insert Blood Request Error:", error);
+      return {success:false,message:"Something went wrong"}
 }
 }

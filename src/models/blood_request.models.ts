@@ -8,6 +8,7 @@ export interface IBlood_Request extends Document {
         latitude: number;
         longitude: number;
     };
+    address:string;
     blood_group: string;
     blood_component: DonationType;
     blood_quantity: number;
@@ -26,6 +27,7 @@ const BloodRequestSchema: Schema = new Schema({
     bloodRequestId: { type: String, unique: true },
     patientName: { type: String, required: true },
     hospitalName: { type: String, required: true },
+    address: { type: String, required: true },
     hospitalAddress: {
         latitude: {
             type: Number,
