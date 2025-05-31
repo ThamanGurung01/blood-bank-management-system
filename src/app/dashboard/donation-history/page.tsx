@@ -19,18 +19,20 @@ import {
   User,
   BarChart2,
 } from "lucide-react";
+import { getDonor } from "@/actions/donorActions";
+import { getBloodDonations } from "@/actions/bloodDonationActions";
+import { useSession } from "next-auth/react";
+import { DonationType, IBLood_Donation } from "@/models/blood_donation.models";
 
-interface DonationRecord {
-  id: string;
-  date: string;
-  time: string;
-  bloodType: string;
-  donationType: string;
-  amount: number;
-  location: string;
-  status: "successful" | "deferred" | "incomplete";
-  notes?: string;
-  staffName?: string;
+interface DonationRecord extends Omit<IBLood_Donation,"blood_bank"> {
+  blood_bank: {
+    blood_bank: string;
+  }
+  donation_type:DonationType
+}
+interface DonorData{
+    next_eligible_donation_date:Date;
+  last_donation_date: Date;
 }
 
 export default function DonationHistoryPage() {
@@ -39,120 +41,122 @@ export default function DonationHistoryPage() {
     []
   );
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"list" | "stats">("list");
+const [donorData, setDonorData] = useState<DonorData>({}as DonorData);
+const { data: session } = useSession();
+const DonationTypes: DonationType[] = [
+  "whole_blood",
+  "rbc",
+  "platelets",
+  "plasma",
+  "cryoprecipitate"
+];
+const DonationTypeLabels: Record<DonationType, string> = {
+  whole_blood: "Whole Blood",
+  rbc: "Red Blood Cells",
+  platelets: "Platelets",
+  plasma: "Plasma",
+  cryoprecipitate: "Cryoprecipitate",
+};
 
   // Mock data for demonstration
-  const mockDonations: DonationRecord[] = [
-    {
-      id: "DON-2025-001",
-      date: "2025-05-10",
-      time: "09:30",
-      bloodType: "A+",
-      donationType: "Whole Blood",
-      amount: 1,
-      location: "Main Blood Center",
-      status: "successful",
-      staffName: "Dr. Sarah Johnson",
-    },
-    {
-      id: "DON-2025-002",
-      date: "2025-03-15",
-      time: "14:45",
-      bloodType: "A+",
-      donationType: "Platelets",
-      amount: 1,
-      location: "Community Hospital",
-      status: "successful",
-      staffName: "Dr. Michael Chen",
-    },
-    {
-      id: "DON-2024-012",
-      date: "2024-12-20",
-      time: "11:15",
-      bloodType: "A+",
-      donationType: "Plasma",
-      amount: 1,
-      location: "Mobile Blood Drive - University",
-      status: "successful",
-      staffName: "Dr. Emily Rodriguez",
-    },
-    {
-      id: "DON-2024-008",
-      date: "2024-10-05",
-      time: "10:00",
-      bloodType: "A+",
-      donationType: "Whole Blood",
-      amount: 1,
-      location: "Main Blood Center",
-      status: "successful",
-      staffName: "Dr. James Wilson",
-    },
-    {
-      id: "DON-2024-005",
-      date: "2024-08-12",
-      time: "15:30",
-      bloodType: "A+",
-      donationType: "Double Red Cells",
-      amount: 2,
-      location: "Regional Medical Center",
-      status: "successful",
-      staffName: "Dr. Lisa Thompson",
-    },
-    {
-      id: "DON-2024-003",
-      date: "2024-06-28",
-      time: "13:00",
-      bloodType: "A+",
-      donationType: "Whole Blood",
-      amount: 1,
-      location: "Community Hospital",
-      status: "deferred",
-      notes: "Low hemoglobin levels",
-      staffName: "Dr. Robert Garcia",
-    },
-    {
-      id: "DON-2024-001",
-      date: "2024-04-15",
-      time: "09:45",
-      bloodType: "A+",
-      donationType: "Platelets",
-      amount: 1,
-      location: "Main Blood Center",
-      status: "successful",
-      staffName: "Dr. Sarah Johnson",
-    },
-    {
-      id: "DON-2023-010",
-      date: "2023-12-01",
-      time: "11:30",
-      bloodType: "A+",
-      donationType: "Whole Blood",
-      amount: 1,
-      location: "Mobile Blood Drive - City Hall",
-      status: "incomplete",
-      notes: "Donor felt dizzy during donation",
-      staffName: "Dr. David Brown",
-    },
-  ];
+  // const mockDonations: DonationRecord[] = [
+  //   {
+  //     id: "DON-2025-001",
+  //     date: "2025-05-10",
+  //     time: "09:30",
+  //     bloodType: "A+",
+  //     donationType: "Whole Blood",
+  //     amount: 1,
+  //     location: "Main Blood Center",
+  //   },
+  //   {
+  //     id: "DON-2025-002",
+  //     date: "2025-03-15",
+  //     time: "14:45",
+  //     bloodType: "A+",
+  //     donationType: "Platelets",
+  //     amount: 1,
+  //     location: "Community Hospital",
+  //   },
+  //   {
+  //     id: "DON-2024-012",
+  //     date: "2024-12-20",
+  //     time: "11:15",
+  //     bloodType: "A+",
+  //     donationType: "Plasma",
+  //     amount: 1,
+  //     location: "Mobile Blood Drive - University",
+  //   },
+  //   {
+  //     id: "DON-2024-008",
+  //     date: "2024-10-05",
+  //     time: "10:00",
+  //     bloodType: "A+",
+  //     donationType: "Whole Blood",
+  //     amount: 1,
+  //     location: "Main Blood Center",
+  //   },
+  //   {
+  //     id: "DON-2024-005",
+  //     date: "2024-08-12",
+  //     time: "15:30",
+  //     bloodType: "A+",
+  //     donationType: "Double Red Cells",
+  //     amount: 2,
+  //     location: "Regional Medical Center",
+  //     staffName: "Dr. Lisa Thompson",
+  //   },
+  //   {
+  //     id: "DON-2024-003",
+  //     date: "2024-06-28",
+  //     time: "13:00",
+  //     bloodType: "A+",
+  //     donationType: "Whole Blood",
+  //     amount: 1,
+  //     location: "Community Hospital",
+  //     notes: "Low hemoglobin levels",
+  //     staffName: "Dr. Robert Garcia",
+  //   },
+  //   {
+  //     id: "DON-2024-001",
+  //     date: "2024-04-15",
+  //     time: "09:45",
+  //     bloodType: "A+",
+  //     donationType: "Platelets",
+  //     amount: 1,
+  //     location: "Main Blood Center",
+  //     staffName: "Dr. Sarah Johnson",
+  //   },
+  //   {
+  //     id: "DON-2023-010",
+  //     date: "2023-12-01",
+  //     time: "11:30",
+  //     bloodType: "A+",
+  //     donationType: "Whole Blood",
+  //     amount: 1,
+  //     location: "Mobile Blood Drive - City Hall",
+  //     notes: "Donor felt dizzy during donation",
+  //     staffName: "Dr. David Brown",
+  //   },
+  // ];
 
   useEffect(() => {
-    // Simulate API call to fetch donation history
     const fetchDonationHistory = async () => {
+      if(!session?.user?.id) return;
       setIsLoading(true);
       try {
-        // Simulate network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setDonations(mockDonations);
+          const response = await getBloodDonations(session.user.id);
+          const donorData= await getDonor(session.user.id);
+        setDonorData(donorData.data);
+        setDonations(response.data);
         applyFilters(
-          mockDonations,
+          response.data,
           searchTerm,
-          statusFilter,
           typeFilter,
-          dateFilter
         );
       } catch (error) {
         console.error("Error fetching donation history:", error);
@@ -162,43 +166,18 @@ export default function DonationHistoryPage() {
     };
 
     fetchDonationHistory();
-  }, []);
+  }, [session]);
 
   const applyFilters = (
     data: DonationRecord[],
     search: string,
-    status: string,
     type: string,
-    date: string
   ) => {
     let filtered = [...data];
 
-    // Apply status filter
-    if (status !== "all") {
-      filtered = filtered.filter((donation) => donation.status === status);
-    }
-
     // Apply donation type filter
     if (type !== "all") {
-      filtered = filtered.filter((donation) => donation.donationType === type);
-    }
-
-    // Apply date filter
-    if (date !== "all") {
-      const now = new Date();
-      const cutoffDate = new Date();
-
-      if (date === "3months") {
-        cutoffDate.setMonth(now.getMonth() - 3);
-      } else if (date === "6months") {
-        cutoffDate.setMonth(now.getMonth() - 6);
-      } else if (date === "1year") {
-        cutoffDate.setFullYear(now.getFullYear() - 1);
-      }
-
-      filtered = filtered.filter(
-        (donation) => new Date(donation.date) >= cutoffDate
-      );
+      filtered = filtered.filter((donation) => donation.donation_type === type);
     }
 
     // Apply search filter
@@ -206,9 +185,8 @@ export default function DonationHistoryPage() {
       const searchLower = search.toLowerCase();
       filtered = filtered.filter(
         (donation) =>
-          donation.id.toLowerCase().includes(searchLower) ||
-          donation.location.toLowerCase().includes(searchLower) ||
-          donation.donationType.toLowerCase().includes(searchLower)
+          donation.blood_bank.blood_bank.toLowerCase().includes(searchLower) ||
+          donation.donation_type.toLowerCase().includes(searchLower)
       );
     }
 
@@ -218,107 +196,54 @@ export default function DonationHistoryPage() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
-    applyFilters(donations, value, statusFilter, typeFilter, dateFilter);
-  };
-
-  const handleStatusFilterChange = (value: string) => {
-    setStatusFilter(value);
-    applyFilters(donations, searchTerm, value, typeFilter, dateFilter);
+    applyFilters(donations, value, typeFilter);
   };
 
   const handleTypeFilterChange = (value: string) => {
     setTypeFilter(value);
-    applyFilters(donations, searchTerm, statusFilter, value, dateFilter);
-  };
-
-  const handleDateFilterChange = (value: string) => {
-    setDateFilter(value);
-    applyFilters(donations, searchTerm, statusFilter, typeFilter, value);
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "successful":
-        return (
-          <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-            <CheckCircle className="mr-1 h-3 w-3" />
-            Successful
-          </span>
-        );
-      case "deferred":
-        return (
-          <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
-            <AlertCircle className="mr-1 h-3 w-3" />
-            Deferred
-          </span>
-        );
-      case "incomplete":
-        return (
-          <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
-            <AlertCircle className="mr-1 h-3 w-3" />
-            Incomplete
-          </span>
-        );
-      default:
-        return null;
-    }
+    applyFilters(donations, searchTerm, value);
   };
 
   // Calculate donation statistics
-  const totalDonations = donations.filter(
-    (d) => d.status === "successful"
-  ).length;
+  const totalDonations = donations.length;
   const totalUnits = donations
-    .filter((d) => d.status === "successful")
-    .reduce((sum, donation) => sum + donation.amount, 0);
-  const livesImpacted = totalUnits * 3; // Estimate: each unit can help up to 3 people
+    .reduce((sum, donation) => sum + donation.blood_units, 0);
+  const livesImpacted = totalUnits * 3;
   const lastDonation =
-    donations.length > 0 ? new Date(donations[0].date) : null;
-  const donationTypes = [...new Set(donations.map((d) => d.donationType))];
+    donations.length > 0 ? new Date(donations[0].collected_date) : null;
 
   // Calculate eligibility for next donation
-  const calculateNextEligibleDate = () => {
-    if (!lastDonation) return null;
+  // const calculateNextEligibleDate = () => {
+  //   if (!lastDonation) return null;
 
-    const nextEligibleDate = new Date(lastDonation);
-    const lastDonationType = donations[0].donationType;
+  //   const nextEligibleDate = new Date(lastDonation);
+  //   const lastDonationType = donations[0].donation_type;
 
-    // Add waiting period based on donation type
-    switch (lastDonationType) {
-      case "Whole Blood":
-        nextEligibleDate.setDate(nextEligibleDate.getDate() + 56); // 56 days
-        break;
-      case "Platelets":
-        nextEligibleDate.setDate(nextEligibleDate.getDate() + 7); // 7 days
-        break;
-      case "Plasma":
-        nextEligibleDate.setDate(nextEligibleDate.getDate() + 28); // 28 days
-        break;
-      case "Double Red Cells":
-        nextEligibleDate.setDate(nextEligibleDate.getDate() + 112); // 112 days
-        break;
-      default:
-        nextEligibleDate.setDate(nextEligibleDate.getDate() + 56); // Default to 56 days
-    }
+  //   // Add waiting period based on donation type
+  //   switch (lastDonationType) {
+  //     case "Whole Blood":
+  //       nextEligibleDate.setDate(nextEligibleDate.getDate() + 56); // 56 days
+  //       break;
+  //     case "Platelets":
+  //       nextEligibleDate.setDate(nextEligibleDate.getDate() + 7); // 7 days
+  //       break;
+  //     case "Plasma":
+  //       nextEligibleDate.setDate(nextEligibleDate.getDate() + 28); // 28 days
+  //       break;
+  //     case "Double Red Cells":
+  //       nextEligibleDate.setDate(nextEligibleDate.getDate() + 112); // 112 days
+  //       break;
+  //     default:
+  //       nextEligibleDate.setDate(nextEligibleDate.getDate() + 56); // Default to 56 days
+  //   }
 
-    return nextEligibleDate;
-  };
+  //   return nextEligibleDate;
+  // };
 
-  const nextEligibleDate = calculateNextEligibleDate();
-  const isEligibleNow = nextEligibleDate
-    ? new Date() >= nextEligibleDate
+  const isEligibleNow = donorData.next_eligible_donation_date
+    ? new Date() >= donorData.next_eligible_donation_date
     : false;
 
-  // Determine donor level based on number of donations
-  const getDonorLevel = () => {
-    if (totalDonations >= 50)
-      return { level: "Platinum", color: "bg-gray-200" };
-    if (totalDonations >= 25) return { level: "Gold", color: "bg-yellow-100" };
-    if (totalDonations >= 10) return { level: "Silver", color: "bg-gray-100" };
-    return { level: "Bronze", color: "bg-amber-100" };
-  };
-
-  const donorLevel = getDonorLevel();
 
   if (isLoading) {
     return (
@@ -466,9 +391,9 @@ export default function DonationHistoryPage() {
                       ? "You are eligible to donate now!"
                       : "Next eligible donation date:"}
                   </p>
-                  {!isEligibleNow && nextEligibleDate && (
+                  {!isEligibleNow && donorData.next_eligible_donation_date && (
                     <p>
-                      {nextEligibleDate.toLocaleDateString("en-US", {
+                      {new Date(donorData.next_eligible_donation_date).toLocaleDateString("en-US", {
                         weekday: "long",
                         year: "numeric",
                         month: "long",
@@ -508,7 +433,9 @@ export default function DonationHistoryPage() {
                     })}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {donations[0].donationType}
+                    {
+                    DonationTypeLabels[donations[0].donation_type]
+                    }
                   </p>
                 </div>
               </div>
@@ -606,44 +533,17 @@ export default function DonationHistoryPage() {
 
             <div className="flex flex-wrap gap-2">
               <select
-                value={statusFilter}
-                onChange={(e) => handleStatusFilterChange(e.target.value)}
-                className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-              >
-                <option value="all">All Status</option>
-                <option value="successful">Successful</option>
-                <option value="deferred">Deferred</option>
-                <option value="incomplete">Incomplete</option>
-              </select>
-
-              <select
                 value={typeFilter}
                 onChange={(e) => handleTypeFilterChange(e.target.value)}
                 className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
               >
                 <option value="all">All Types</option>
-                {donationTypes.map((type) => (
+                {DonationTypes.map((type) => (
                   <option key={type} value={type}>
-                    {type}
+                    {DonationTypeLabels[type]}
                   </option>
                 ))}
               </select>
-
-              <select
-                value={dateFilter}
-                onChange={(e) => handleDateFilterChange(e.target.value)}
-                className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-              >
-                <option value="all">All Time</option>
-                <option value="3months">Last 3 Months</option>
-                <option value="6months">Last 6 Months</option>
-                <option value="1year">Last Year</option>
-              </select>
-
-              <button className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                <Download className="h-4 w-4" />
-                Export
-              </button>
             </div>
           </div>
 
@@ -654,9 +554,6 @@ export default function DonationHistoryPage() {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                        Donation ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                         Date & Time
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -665,25 +562,14 @@ export default function DonationHistoryPage() {
                       <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                         Location
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                        Actions
-                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 bg-white">
-                    {filteredDonations.map((donation) => (
-                      <tr key={donation.id} className="hover:bg-gray-50">
-                        <td className="whitespace-nowrap px-6 py-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {donation.id}
-                          </div>
-                        </td>
+                    {filteredDonations.map((donation,index) => (
+                      <tr key={index} className="hover:bg-gray-50">
                         <td className="whitespace-nowrap px-6 py-4">
                           <div className="text-sm text-gray-900">
-                            {new Date(donation.date).toLocaleDateString(
+                            {new Date(donation.collected_date).toLocaleDateString(
                               "en-US",
                               {
                                 year: "numeric",
@@ -693,47 +579,37 @@ export default function DonationHistoryPage() {
                             )}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {donation.time}
+                            {new Date(donation?.collected_date).toLocaleTimeString([], {
+  hour: '2-digit',
+  minute: '2-digit',
+})}
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">
                           <div className="flex items-center">
                             <div
                               className={`mr-2 h-2 w-2 rounded-full ${
-                                donation.donationType === "Whole Blood"
+                                donation.donation_type === "whole_blood"
                                   ? "bg-red-500"
-                                  : donation.donationType === "Platelets"
+                                  : donation.donation_type === "platelets"
                                   ? "bg-yellow-500"
-                                  : donation.donationType === "Plasma"
+                                  : donation.donation_type === "plasma"
                                   ? "bg-blue-500"
                                   : "bg-purple-500"
                               }`}
                             ></div>
                             <div className="text-sm text-gray-900">
-                              {donation.donationType}
+                              {DonationTypeLabels[donation.donation_type]}
                             </div>
                           </div>
                           <div className="text-sm text-gray-500">
-                            {donation.amount} unit(s)
+                            {donation.blood_units} unit(s)
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">
                           <div className="text-sm text-gray-900">
-                            {donation.location}
+                            {donation.blood_bank.blood_bank}
                           </div>
-                          {donation.staffName && (
-                            <div className="text-sm text-gray-500">
-                              Staff: {donation.staffName}
-                            </div>
-                          )}
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4">
-                          {getStatusBadge(donation.status)}
-                        </td>
-                        <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                          <button className="text-blue-600 hover:text-blue-900">
-                            View Details
-                          </button>
                         </td>
                       </tr>
                     ))}
@@ -750,7 +626,6 @@ export default function DonationHistoryPage() {
                 </h3>
                 <p className="mb-6 text-gray-500">
                   {searchTerm ||
-                  statusFilter !== "all" ||
                   typeFilter !== "all" ||
                   dateFilter !== "all"
                     ? "No donations match your search criteria."
@@ -775,28 +650,33 @@ export default function DonationHistoryPage() {
                   type: "Whole Blood",
                   color: "bg-red-500",
                   count: donations.filter(
-                    (d) => d.donationType === "Whole Blood"
+                    (d) => d.donation_type === "whole_blood"
                   ).length,
                 },
                 {
                   type: "Platelets",
                   color: "bg-yellow-500",
-                  count: donations.filter((d) => d.donationType === "Platelets")
+                  count: donations.filter((d) => d.donation_type === "platelets")
                     .length,
                 },
                 {
                   type: "Plasma",
                   color: "bg-blue-500",
-                  count: donations.filter((d) => d.donationType === "Plasma")
+                  count: donations.filter((d) => d.donation_type === "plasma")
                     .length,
                 },
                 {
-                  type: "Double Red Cells",
-                  color: "bg-purple-500",
-                  count: donations.filter(
-                    (d) => d.donationType === "Double Red Cells"
-                  ).length,
+                  type: "RBC",
+                  color: "bg-blue-500",
+                  count: donations.filter((d) => d.donation_type === "rbc")
+                    .length,
                 },
+                {
+                  type: "Cryoprecipitate",
+                  color: "bg-blue-500",
+                  count: donations.filter((d) => d.donation_type === "cryoprecipitate")
+                    .length,
+                }
               ].map((item) => (
                 <div key={item.type} className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -834,36 +714,36 @@ export default function DonationHistoryPage() {
                 {[
                   {
                     year: "2023",
-                    count: donations.filter((d) => d.date.startsWith("2023"))
+                    count: donations.filter((d) => new Date(d.collected_date).getFullYear() === 2023)
                       .length,
                   },
                   {
                     year: "2024 Q1",
                     count: donations.filter(
-                      (d) => d.date >= "2024-01-01" && d.date <= "2024-03-31"
+                      (d) =>new Date(d.collected_date).toISOString().split('T')[0]  >= "2024-01-01" && new Date(d.collected_date).toISOString().split('T')[0] <= "2024-03-31"
                     ).length,
                   },
                   {
                     year: "2024 Q2",
                     count: donations.filter(
-                      (d) => d.date >= "2024-04-01" && d.date <= "2024-06-30"
+                      (d) => new Date(d.collected_date).toISOString().split('T')[0] >= "2024-04-01" && new Date(d.collected_date).toISOString().split('T')[0]<= "2024-06-30"
                     ).length,
                   },
                   {
                     year: "2024 Q3",
                     count: donations.filter(
-                      (d) => d.date >= "2024-07-01" && d.date <= "2024-09-30"
+                      (d) => new Date(d.collected_date).toISOString().split('T')[0] >= "2024-07-01" && new Date(d.collected_date).toISOString().split('T')[0] <= "2024-09-30"
                     ).length,
                   },
                   {
                     year: "2024 Q4",
                     count: donations.filter(
-                      (d) => d.date >= "2024-10-01" && d.date <= "2024-12-31"
+                      (d) =>new Date(d.collected_date).toISOString().split('T')[0] >= "2024-10-01" && new Date(d.collected_date).toISOString().split('T')[0] <= "2024-12-31"
                     ).length,
                   },
                   {
                     year: "2025",
-                    count: donations.filter((d) => d.date.startsWith("2025"))
+                    count: donations.filter((d) => new Date(d.collected_date).getFullYear() === 2025)
                       .length,
                   },
                 ].map((item, index) => (

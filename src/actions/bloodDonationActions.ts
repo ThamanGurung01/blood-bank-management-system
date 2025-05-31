@@ -101,3 +101,16 @@ export const getBloodStock=async(bloodType:string)=>{
     console.log("error "+error);
  } 
 }
+export const getBloodDonations=async(id:string)=>{
+try {
+    if(!id) return {success:false,message:"Blood bank id is invalid"};
+    await connectToDb();
+    const donorData=await Donor.findOne({_id:id}).populate({path:"user",select:"name email role"})
+    if(!donorData) return {success:false,message:"Donor not found"};
+    const bloodDonationData=await BloodDonation.find({donorId:donorData.donorId}).populate("blood_bank","blood_bank").sort({collected_date:-1}).lean();
+    return {success:true,data:JSON.parse(JSON.stringify(bloodDonationData))};
+} catch (error:any) {
+    console.log(error?.message);
+    return {success:false,message:"Something went wrong"}
+}
+}
