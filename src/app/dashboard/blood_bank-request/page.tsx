@@ -2,8 +2,10 @@
 import { useState,useEffect } from 'react';
 import { Search, Filter, Calendar, User, Droplet, Clock, Check, X, AlertCircle } from 'lucide-react';
 import { changeBloodRequestStatus, getBloodRequest } from '@/actions/bloodRequestActions';
+import { Schema } from 'mongoose';
 
 interface BloodRequest {
+  _id:string;
 bloodRequestId:string;
 requestor:{
   user:{
@@ -59,7 +61,6 @@ const page = () => {
     )
     const updateSelectedRequest = updatedRequests.find((req: BloodRequest) => req.bloodRequestId === requestId);
       setSelectedRequest(updateSelectedRequest ?? null);
-
   };
 
   const handleRequestClick = (request: BloodRequest): void => {
@@ -101,9 +102,9 @@ const updatedData = (data || []).map((item: BloodRequest) => ({
         console.error("Error fetching blood requests:", err);
       }
     };
-  const updateStatusBloodRequest = async (requestId: string, status: string) => {
+  const updateStatusBloodRequest = async (brObjectId:string,requestId: string, status: string) => {
     try {
-     const response=await changeBloodRequestStatus(requestId,status);
+     const response=await changeBloodRequestStatus(brObjectId,requestId,status);
      console.log("Update Status Response: ",response);
      await fetchRequests();
      setShowModal(false);
@@ -348,7 +349,7 @@ const updatedData = (data || []).map((item: BloodRequest) => ({
               </button>
               <button
                 className="px-4 py-2 bg-black text-white rounded-md"
-                onClick={()=>updateStatusBloodRequest(selectedRequest.bloodRequestId,selectedRequest.updatedStatus)}
+                onClick={()=>updateStatusBloodRequest(selectedRequest._id,selectedRequest.bloodRequestId,selectedRequest.updatedStatus)}
               >
                 Save Changes
               </button>

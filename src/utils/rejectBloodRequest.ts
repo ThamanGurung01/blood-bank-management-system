@@ -1,7 +1,7 @@
 import BloodRequest from "@/models/blood_request.models";
-export const rejectBloodRequest=async(bloodBankId:string,bloodRequestId:string)=>{
+export const rejectBloodRequest=async(brObjectId:string,bloodBankId:string,bloodRequestId:string)=>{
   try {
-        const bloodRequestData=await BloodRequest.findOneAndUpdate({bloodRequestId:bloodRequestId,blood_bank:bloodBankId,status:"Rejected",rejectedBy: { $ne: bloodBankId },},
+        const bloodRequestData=await BloodRequest.findOneAndUpdate({_id:brObjectId,bloodRequestId:bloodRequestId,blood_bank:bloodBankId,status:"Rejected",rejectedBy: { $ne: bloodBankId },},
           [{
       $set: {
         rejectedBy: { $concatArrays: ["$rejectedBy", [bloodBankId]] },
@@ -14,7 +14,7 @@ export const rejectBloodRequest=async(bloodBankId:string,bloodRequestId:string)=
         }
       }}]
     ,{new:true}).populate({path:"requestor",populate:{path:"user",model:"User"}}).sort({createdAt:-1});
-    console.log("bloodRequestData",bloodRequestData);
+if(bloodRequestData>=5) return "Blood request has been redirected too many times.";
 const newBloodRequestData = bloodRequestData.toObject();
 delete newBloodRequestData._id;
 
@@ -28,7 +28,7 @@ const nextBloodBank = allNearbyBanks.find((bankId: any) =>
 );
 console.log("nextBloodBank",nextBloodBank);
 if (!nextBloodBank) {
-  return { success: false, message: "No nearby blood banks available for redirection." };
+  return "No nearby blood banks available for redirection.";
 }
 newBloodRequestData.blood_bank = nextBloodBank;
 newBloodRequestData.status = "Pending";

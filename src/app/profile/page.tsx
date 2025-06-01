@@ -91,11 +91,11 @@ interface Donation {
   status: string;
 }
 interface Donor extends Omit<IDonor, "user"> {
-user:{
-  name:string;
-  email:string;
-}
-donations:Donation[];
+  user: {
+    name: string;
+    email: string;
+  }
+  donations: Donation[];
 }
 interface BloodBank extends Omit<IBlood_Bank, "user"> {
   user: {
@@ -125,20 +125,20 @@ export default function ProfilePage() {
   const [viewMode, setViewMode] = useState<"donor" | "blood_bank">("donor");
   const [donorData, setDonorData] = useState<Donor>({} as Donor);
   const [bloodBankData, setBloodBankData] = useState<BloodBank>({} as BloodBank);
-const { data: session } = useSession();
+  const { data: session } = useSession();
 
-const fetchDonorData= async () => {
-  if(session?.user?.id){
-const response=await getDonor(session.user.id);
-setDonorData(response.data);
+  const fetchDonorData = async () => {
+    if (session?.user?.id) {
+      const response = await getDonor(session.user.id);
+      setDonorData(response.data);
+    }
   }
-}
-const fetchBloodBankData = async () => {  
-  if(session?.user?.id){
-const response=await getBloodBank(session.user.id);
-setBloodBankData(response.data);
+  const fetchBloodBankData = async () => {
+    if (session?.user?.id) {
+      const response = await getBloodBank(session.user.id);
+      setBloodBankData(response.data);
+    }
   }
-}
 
   useEffect(() => {
     if (session?.user?.role === "blood_bank") {
@@ -150,7 +150,7 @@ setBloodBankData(response.data);
       setViewMode("donor");
       fetchDonorData();
     }
-  },[session,viewMode]);
+  }, [session, viewMode]);
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="relative bg-red-600">
@@ -162,12 +162,12 @@ setBloodBankData(response.data);
             </h1>
             <div className="flex space-x-4">
               <button className="inline-flex items-center rounded-md border border-transparent bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-              onClick={()=>{redirect("/dashboard")}}
+                onClick={() => { redirect("/dashboard") }}
               >
                 Dashboard
               </button>
               <button className="inline-flex items-center rounded-md border border-transparent bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-              onClick={()=>{signOut({ callbackUrl: "/" })}}>
+                onClick={() => { signOut({ callbackUrl: "/" }) }}>
                 Logout
               </button>
             </div>
@@ -180,21 +180,19 @@ setBloodBankData(response.data);
           <div className="rounded-md bg-white p-2 shadow-md">
             <button
               onClick={() => setViewMode("donor")}
-              className={`mr-2 inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${
-                viewMode === "donor"
+              className={`mr-2 inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${viewMode === "donor"
                   ? "bg-red-600 text-white hover:bg-red-700"
                   : "bg-white text-gray-700 hover:bg-gray-50"
-              } focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2`}
+                } focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2`}
             >
               Donor View
             </button>
             <button
               onClick={() => setViewMode("blood_bank")}
-              className={`inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${
-                viewMode === "blood_bank"
+              className={`inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${viewMode === "blood_bank"
                   ? "bg-red-600 text-white hover:bg-red-700"
                   : "bg-white text-gray-700 hover:bg-gray-50"
-              } focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2`}
+                } focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2`}
             >
               Blood Bank View
             </button>
@@ -239,30 +237,39 @@ setBloodBankData(response.data);
                   <User className="mr-3 h-5 w-5 text-gray-500" />
                   <div>
                     <p className="text-sm text-gray-500">Full Name</p>
-                    <p className="font-medium">{donorData.user?.name??bloodBankData.user?.name}</p>
+                    <p className="font-medium">{donorData.user?.name ?? bloodBankData.user?.name}</p>
                   </div>
                 </div>
                 <div className="flex items-center">
                   <Mail className="mr-3 h-5 w-5 text-gray-500" />
                   <div>
                     <p className="text-sm text-gray-500">Email</p>
-                    <p className="font-medium">{donorData.user?.email??bloodBankData.user?.email}</p>
+                    <p className="font-medium">{donorData.user?.email ?? bloodBankData.user?.email}</p>
                   </div>
                 </div>
                 <div className="flex items-center">
                   <Phone className="mr-3 h-5 w-5 text-gray-500" />
                   <div>
                     <p className="text-sm text-gray-500">Contact</p>
-                    <p className="font-medium">{donorData.contact??bloodBankData.contact}</p>
+                    <p className="font-medium">{donorData.contact ?? bloodBankData.contact}</p>
                   </div>
                 </div>
+
+                {viewMode === "blood_bank" && (
+                  <div className="flex items-center">
+                    <Building className="mr-3 h-5 w-5 text-gray-500" />
+                    <div>
+                      <p className="text-sm text-gray-500">Blood Bank</p>
+                      <p className="font-medium">{bloodBankData.blood_bank}</p>
+                    </div>
+                  </div>)}
                 <div className="flex items-center">
                   <MapPin className="mr-3 h-5 w-5 text-gray-500" />
                   <div>
                     <p className="text-sm text-gray-500">Location</p>
                     <p className="font-medium">
-                      {donorData.location?.latitude.toFixed(4)??bloodBankData.location?.latitude.toFixed(4)},{" "}
-                      {donorData.location?.longitude.toFixed(4)??bloodBankData.location?.longitude.toFixed(4)}
+                      {donorData.location?.latitude.toFixed(4) ?? bloodBankData.location?.latitude.toFixed(4)},{" "}
+                      {donorData.location?.longitude.toFixed(4) ?? bloodBankData.location?.longitude.toFixed(4)}
                     </p>
                   </div>
                 </div>
@@ -286,57 +293,54 @@ setBloodBankData(response.data);
             </div>
           </div>
 
-<div className="lg:col-span-2">
-  {viewMode === "donor" ? (
-    donorData.donorId ? (
-      <DonorContent data={donorData} />
-    ) : (
-      <div>Loading donor data...</div>
-    )
-  ) : bloodBankData.blood_bank ? (
-    <BloodBankContent data={bloodBankData} />
-  ) : (
-    <div>Loading blood bank data...</div>
-  )}
-</div>
+          <div className="lg:col-span-2">
+            {viewMode === "donor" ? (
+              donorData.donorId ? (
+                <DonorContent data={donorData} />
+              ) : (
+                <div>Loading donor data...</div>
+              )
+            ) : bloodBankData.blood_bank ? (
+              <BloodBankContent data={bloodBankData} />
+            ) : (
+              <div>Loading blood bank data...</div>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function DonorContent({ data }: { data: Donor}) {
+function DonorContent({ data }: { data: Donor }) {
   const [activeTab, setActiveTab] = useState("overview");
   return (
     <div className="w-full">
       <div className="flex space-x-1 rounded-lg bg-gray-100 p-1">
         <button
           onClick={() => setActiveTab("overview")}
-          className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${
-            activeTab === "overview"
+          className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${activeTab === "overview"
               ? "bg-white shadow text-gray-900"
               : "text-gray-500 hover:text-gray-900"
-          }`}
+            }`}
         >
           Overview
         </button>
         <button
           onClick={() => setActiveTab("donations")}
-          className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${
-            activeTab === "donations"
+          className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${activeTab === "donations"
               ? "bg-white shadow text-gray-900"
               : "text-gray-500 hover:text-gray-900"
-          }`}
+            }`}
         >
           Donation History
         </button>
         <button
           onClick={() => setActiveTab("appointments")}
-          className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${
-            activeTab === "appointments"
+          className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${activeTab === "appointments"
               ? "bg-white shadow text-gray-900"
               : "text-gray-500 hover:text-gray-900"
-          }`}
+            }`}
         >
           Appointments
         </button>
@@ -365,7 +369,7 @@ function DonorContent({ data }: { data: Donor}) {
                 <div className="rounded-lg bg-red-50 p-4 text-center">
                   <Heart className="mx-auto h-8 w-8 text-red-600" />
                   <p className="mt-2 text-2xl font-bold text-red-600">
-                    {data?0:"data.stats.livesSaved"}
+                    {data ? 0 : "data.stats.livesSaved"}
                   </p>
                   <p className="text-sm text-gray-600">Lives Saved</p>
                 </div>
@@ -577,7 +581,7 @@ function DonorContent({ data }: { data: Donor}) {
           </div>
         )} */}
 
-        
+
       </div>
     </div>
   );
@@ -590,31 +594,28 @@ function BloodBankContent({ data }: { data: BloodBank }) {
       <div className="flex space-x-1 rounded-lg bg-gray-100 p-1">
         <button
           onClick={() => setActiveTab("inventory")}
-          className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${
-            activeTab === "inventory"
+          className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${activeTab === "inventory"
               ? "bg-white shadow text-gray-900"
               : "text-gray-500 hover:text-gray-900"
-          }`}
+            }`}
         >
           Blood Inventory
         </button>
         <button
           onClick={() => setActiveTab("donations")}
-          className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${
-            activeTab === "donations"
+          className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${activeTab === "donations"
               ? "bg-white shadow text-gray-900"
               : "text-gray-500 hover:text-gray-900"
-          }`}
+            }`}
         >
           Recent Donations
         </button>
         <button
           onClick={() => setActiveTab("drives")}
-          className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${
-            activeTab === "drives"
+          className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${activeTab === "drives"
               ? "bg-white shadow text-gray-900"
               : "text-gray-500 hover:text-gray-900"
-          }`}
+            }`}
         >
           Blood Drives
         </button>
@@ -636,35 +637,32 @@ function BloodBankContent({ data }: { data: BloodBank }) {
                 {data.inventory.map((item) => (
                   <div
                     key={item.blood_group}
-                    className={`rounded-lg p-4 text-center ${
-                      item.status === "critical"
+                    className={`rounded-lg p-4 text-center ${item.status === "critical"
                         ? "bg-red-100"
                         : item.status === "low"
-                        ? "bg-yellow-50"
-                        : "bg-green-50"
-                    }`}
+                          ? "bg-yellow-50"
+                          : "bg-green-50"
+                      }`}
                   >
                     <Droplet
-                      className={`mx-auto h-8 w-8 ${
-                        item.status === "critical"
+                      className={`mx-auto h-8 w-8 ${item.status === "critical"
                           ? "text-red-600"
                           : item.status === "low"
-                          ? "text-yellow-600"
-                          : "text-green-600"
-                      }`}
+                            ? "text-yellow-600"
+                            : "text-green-600"
+                        }`}
                     />
                     <p className="mt-2 text-2xl font-bold">
                       {item.blood_group}
                     </p>
                     <p className="text-lg font-medium">{item.units} units</p>
                     <span
-                      className={`mt-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium text-white ${
-                        item.status === "critical"
+                      className={`mt-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium text-white ${item.status === "critical"
                           ? "bg-red-600"
                           : item.status === "low"
-                          ? "bg-yellow-600"
-                          : "bg-green-600"
-                      }`}
+                            ? "bg-yellow-600"
+                            : "bg-green-600"
+                        }`}
                     >
                       {item.status}
                     </span>

@@ -123,7 +123,7 @@ if(session?.user.role==="donor"){
       return {success:false,message:"Something went wrong"}
 }
 }
-export const changeBloodRequestStatus=async(bloodRequestId:string,statusChange:string)=>{
+export const changeBloodRequestStatus=async(brObjectId:string,bloodRequestId:string,statusChange:string)=>{
   try {
     const statusType=["Pending","Approved","Rejected","Completed"];
     const session=await getServerSession(authOptions);
@@ -132,12 +132,15 @@ export const changeBloodRequestStatus=async(bloodRequestId:string,statusChange:s
     if(!bloodRequestId||!statusChange) return {success:false,message:"data is invalid"};
     if(!statusType.includes(statusChange)) return {success:false,message:"Invalid status type"};
     await connectToDb();
+    if(!brObjectId) return {success:false,message:"Blood request id is invalid"};
         const bloodBankId=session.user.id;
-        const bloodRequestData=await BloodRequest.findOneAndUpdate({blood_bank:bloodBankId,bloodRequestId:bloodRequestId},{status:statusChange},{new:true}).populate({path:"requestor",populate:{path:"user",model:"User"}}).sort({createdAt:-1});
+        const bloodRequestData=await BloodRequest.findOneAndUpdate({blood_bank:bloodBankId,bloodRequestId:bloodRequestId,_id:brObjectId},{status:statusChange},{new:true}).populate({path:"requestor",populate:{path:"user",model:"User"}}).sort({createdAt:-1});
       if(!bloodRequestData) return {success:false,message:"No blood request found"};
       if(statusChange==="Rejected") {
         console.log("inside rejected condn")
-      const response=await rejectBloodRequest(bloodBankId,bloodRequestId);
+      const response=await rejectBloodRequest(brObjectId,bloodBankId,bloodRequestId);
+      if(!response) return {success:false,message:"Failed to reject blood request"};
+      if(typeof response === "string") return {success:false,message:response};
        return {success:true,message:"Blood request updated successfully",data:response};
         }else{
      return {success:true,message:"Blood request updated successfully",data:JSON.parse(JSON.stringify(bloodRequestData))};
@@ -156,7 +159,7 @@ export const getUserBloodRequest=async(id:string)=>{
       if(session?.user.role !== "donor" && session?.user.role !== "blood_bank") return {success:false,message:"User not authorized"};
       await connectToDb();
       const user=session.user.id;
-      const bloodRequestData=await BloodRequest.findOne({bloodRequestId:id}).populate("blood_bank");
+      const bloodRequestData=await BloodRequest.findOne({_id:id}).populate("blood_bank");
       if(!bloodRequestData) return {success:false,message:"No blood request found"};
       return {success:true,message:"Blood request fetched successfully",data:JSON.parse(JSON.stringify(bloodRequestData))};
       

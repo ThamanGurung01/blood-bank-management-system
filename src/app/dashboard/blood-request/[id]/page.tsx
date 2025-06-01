@@ -8,15 +8,17 @@ import { IBlood_Request } from '@/models/blood_request.models';
 interface Props {
   params: Promise<{ id: string }>;
 }
-  interface Blood_Request extends Omit<IBlood_Request,"blood_bank"> {
-    blood_bank:{
-      blood_bank: string;
-    };
-createdAt: Date;
-  }
-  const page=({ params }: Props)=> {
-    const { id } = use(params);
-  const [data,setData]=useState<Blood_Request>();
+interface Blood_Request extends Omit<IBlood_Request, "blood_bank"> {
+  blood_bank: {
+    blood_bank: string;
+    contact: string;
+  };
+  createdAt: Date;
+}
+const page = ({ params }: Props) => {
+  const { id } = use(params);
+  const [data, setData] = useState<Blood_Request>();
+  const [showBloodbankDetails, setShowBloodbankDetails] = useState(false);
   const Data = {
     bloodRequestId: "REQ-2025050501",
     status: "Approved" as "Approved" | "Pending" | "Processing" | "Rejected", // or "Pending", "Processing", "Rejected"
@@ -49,30 +51,30 @@ createdAt: Date;
   };
 
   const getStatusBadge = (status: "Pending" | "Processing" | "Approved" | "Rejected") => {
-      const statusStyles = {
-        Pending: "bg-yellow-100 text-yellow-800",
-        Processing: "bg-blue-100 text-blue-800",
-        Approved: "bg-green-100 text-green-800",
-        Rejected: "bg-red-100 text-red-800",
-      };
-      
-      return (
-        <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusStyles[status] || "bg-gray-100 text-gray-800"}`}>
-          {status}
-        </span>
-      );
+    const statusStyles = {
+      Pending: "bg-yellow-100 text-yellow-800",
+      Processing: "bg-blue-100 text-blue-800",
+      Approved: "bg-green-100 text-green-800",
+      Rejected: "bg-red-100 text-red-800",
     };
-    const fetchBloodRequestDetails = async (id: string) => {
-    const response=await getUserBloodRequest(id);
-    setData(response.data);
-}
-    useEffect(() => {
-      if(id){
-        fetchBloodRequestDetails(id);
-      }
-    }, [id]);
+
     return (
-      <div className="max-w-4xl mx-auto py-8 px-4 initialPage">
+      <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusStyles[status] || "bg-gray-100 text-gray-800"}`}>
+        {status}
+      </span>
+    );
+  };
+  const fetchBloodRequestDetails = async (id: string) => {
+    const response = await getUserBloodRequest(id);
+    setData(response.data);
+  }
+  useEffect(() => {
+    if (id) {
+      fetchBloodRequestDetails(id);
+    }
+  }, [id]);
+  return (
+    <div className="max-w-4xl mx-auto py-8 px-4 initialPage">
       <div className="flex justify-between items-center mb-6">
         <button onClick={() => window.history.back()} className="flex items-center text-gray-600 hover:text-gray-900">
           <ArrowLeft className="mr-2" size={20} />
@@ -175,7 +177,7 @@ createdAt: Date;
                 <p className="text-sm text-gray-600 mb-1">Notes</p>
                 <p className="bg-gray-50 p-3 rounded">{data?.notes || "No additional notes provided."}</p>
               </div>
-              
+
               {/* <div>
                 <p className="text-sm text-gray-600 mb-2">Requisition Document</p>
                 <a href={data?.documentUrl} className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
@@ -192,14 +194,28 @@ createdAt: Date;
 
         <div className="bg-gray-50 px-6 py-4 flex justify-between items-center border-t">
           <div className="flex space-x-3">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              onClick={() => setShowBloodbankDetails(true)}>
+
               Contact Blood Bank
             </button>
           </div>
         </div>
+        {showBloodbankDetails && (
+          <div>
+            <div className="bg-white p-6 rounded-lg shadow-md mt-4">
+              <h2 className="text-lg font-semibold mb-4">Blood Bank Contact Details</h2>
+              <p className="text-sm text-gray-600">Blood Bank Name: {data?.blood_bank.blood_bank}</p>
+              <p className="text-sm text-gray-600">Contact Number: {data?.blood_bank.contact || "Not available"}</p>
+              <button onClick={() => setShowBloodbankDetails(false)} className="mt-4 px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300">
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
 
-    );
-  }
-  export default page
+  );
+}
+export default page

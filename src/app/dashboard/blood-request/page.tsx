@@ -9,6 +9,7 @@ import { getBloodRequest } from "@/actions/bloodRequestActions";
 const page = () => {
   const router = useRouter();
   const [requests, setRequests] = useState<{
+    _id:string;
     bloodRequestId: string;
     patientName: string;
     blood_group: string;
@@ -21,6 +22,7 @@ const page = () => {
     priority: string;
   }[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<{
+    _id:string;
     bloodRequestId: string;
     patientName: string;
     blood_group: string;
@@ -112,7 +114,6 @@ const page = () => {
         setIsLoading(true);
         const BloodRequests = await getBloodRequest();
         const data=BloodRequests?.data;
-
         setRequests(data || []);
         applyFilters(data, activeTab, filters, searchTerm);
         setIsLoading(false);
@@ -509,11 +510,11 @@ const page = () => {
                         {getPriorityBadge(request.priority)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Link href={`blood-request/${request.bloodRequestId}`} className="text-blue-600 hover:text-blue-900 mr-4">
+                        <Link href={`blood-request/${request._id}`} className="text-blue-600 hover:text-blue-900 mr-4">
                           View
                         </Link>
                         {request.status === "pending" && (
-                          <Link href={`blood-request/${request.bloodRequestId}/edit`} className="text-gray-600 hover:text-gray-900">
+                          <Link href={`blood-request/${request._id}/edit`} className="text-gray-600 hover:text-gray-900">
                             Edit
                           </Link>
                         )}
