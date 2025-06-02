@@ -1,27 +1,27 @@
 "use client"
-import { useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Filter, Calendar, User, Droplet, Clock, Check, X, AlertCircle } from 'lucide-react';
 import { changeBloodRequestStatus, getBloodRequest } from '@/actions/bloodRequestActions';
 import { Schema } from 'mongoose';
 
 interface BloodRequest {
-  _id:string;
-bloodRequestId:string;
-requestor:{
-  user:{
-    name:string;
+  _id: string;
+  bloodRequestId: string;
+  requestor: {
+    user: {
+      name: string;
+    };
   };
-};
-hospitalName:string;
-blood_group:string;
-blood_quantity:number;
-blood_component:string;
-createdAt:string;
-requestDate:string;
-priorityLevel:string;
-status:string;
-updatedStatus:string;
-notes:string;
+  hospitalName: string;
+  blood_group: string;
+  blood_quantity: number;
+  blood_component: string;
+  createdAt: string;
+  requestDate: string;
+  priorityLevel: string;
+  status: string;
+  updatedStatus: string;
+  notes: string;
 }
 
 const page = () => {
@@ -56,14 +56,18 @@ const page = () => {
   // }
 
   const handleStatusChange = (requestId: string, newStatus: string): void => {
+    console.log("Request ID:", requestId);
     const updatedRequests = requests.map((req: BloodRequest) =>
-      req.bloodRequestId === requestId ? { ...req, updatedStatus: newStatus } : req
+      req._id === requestId ? { ...req, updatedStatus: newStatus } : req
     )
-    const updateSelectedRequest = updatedRequests.find((req: BloodRequest) => req.bloodRequestId === requestId);
-      setSelectedRequest(updateSelectedRequest ?? null);
+    // console.log("Updated Requests: ", updatedRequests);
+    const updateSelectedRequest = updatedRequests.find((req: BloodRequest) => req._id === requestId);
+    // console.log("Update Selected Request: ", updateSelectedRequest);
+    setSelectedRequest(updateSelectedRequest ?? null);
   };
 
   const handleRequestClick = (request: BloodRequest): void => {
+    console.log("Request clicked:", request);
     setSelectedRequest(request);
     setShowModal(true);
   };
@@ -87,27 +91,25 @@ const page = () => {
       default: return null;
     }
   };
-      const fetchRequests = async () => {
-      try {
-        const BloodRequests = await getBloodRequest();
-        const data=BloodRequests?.data;
-const updatedData = (data || []).map((item: BloodRequest) => ({
-  ...item,
-  updatedStatus: item.status
-}));
-        // const data = mockRequests;
-        setRequests(updatedData || []);
-        console.log("Blood Requests: ", data);
-      } catch (err) {
-        console.error("Error fetching blood requests:", err);
-      }
-    };
-  const updateStatusBloodRequest = async (brObjectId:string,requestId: string, status: string) => {
+  const fetchRequests = async () => {
     try {
-     const response=await changeBloodRequestStatus(brObjectId,requestId,status);
-     console.log("Update Status Response: ",response);
-     await fetchRequests();
-     setShowModal(false);
+      const BloodRequests = await getBloodRequest();
+      const data = BloodRequests?.data;
+      const updatedData = (data || []).map((item: BloodRequest) => ({
+        ...item,
+        updatedStatus: item.status
+      }));
+      // const data = mockRequests;
+      setRequests(updatedData || []);
+    } catch (err) {
+      console.error("Error fetching blood requests:", err);
+    }
+  };
+  const updateStatusBloodRequest = async (brObjectId: string, requestId: string, status: string) => {
+    try {
+      const response = await changeBloodRequestStatus(brObjectId, requestId, status);
+      await fetchRequests();
+      setShowModal(false);
     } catch (error) {
       console.error('Error updating status:', error);
     }
@@ -172,7 +174,7 @@ const updatedData = (data || []).map((item: BloodRequest) => ({
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredRequests.length > 0 ? (
-                  filteredRequests.map((request,index) => (
+                  filteredRequests.map((request, index) => (
                     <tr
                       key={index}
                       className={`cursor-pointer hover:bg-gray-50 ${request.priorityLevel === "Urgent" ? 'bg-red-400 hover:bg-red-300' : ''}`}
@@ -305,42 +307,60 @@ const updatedData = (data || []).map((item: BloodRequest) => ({
                 <p className="text-sm bg-gray-50 p-3 rounded-md">{selectedRequest.notes}</p>
               </div>
 
-              <div className={selectedRequest.status === 'Rejected' ? 'hidden' : "border-t border-gray-200 pt-4"}>
+              <div className={selectedRequest.status !== 'Pending' ? 'hidden' : "border-t border-gray-200 pt-4"}>
                 <p className="text-sm font-medium text-gray-700 mb-2">Update Status</p>
-                <div className={selectedRequest.status === 'Rejected' ? 'hidden' : 'flex flex-wrap gap-2'}>
+                <div className={'flex flex-wrap gap-2'}>
                   <button
                     className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.updatedStatus === 'Pending' ? 'bg-gray-200 text-gray-800 border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
-                    onClick={() => handleStatusChange(selectedRequest.bloodRequestId, 'Pending')}
+                    onClick={() => handleStatusChange(selectedRequest._id, 'Pending')}
                   >
                     <Clock className="w-4 h-4 inline mr-1" />
                     Pending
                   </button>
                   <button
                     className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.updatedStatus === 'Approved' ? 'bg-gray-100 text-gray-800 border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
-                    onClick={() => handleStatusChange(selectedRequest.bloodRequestId, 'Approved')}
+                    onClick={() => handleStatusChange(selectedRequest._id, 'Approved')}
                   >
                     <Check className="w-4 h-4 inline mr-1" />
                     Approved
                   </button>
                   <button
                     className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.updatedStatus === 'Completed' ? 'bg-black text-white border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
-                    onClick={() => handleStatusChange(selectedRequest.bloodRequestId, 'Completed')}
+                    onClick={() => handleStatusChange(selectedRequest._id, 'Completed')}
                   >
                     <Check className="w-4 h-4 inline mr-1" />
                     Completed
                   </button>
                   <button
                     className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.updatedStatus === 'Rejected' ? 'bg-gray-700 text-white border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
-                    onClick={() => handleStatusChange(selectedRequest.bloodRequestId, 'Rejected')}
+                    onClick={() => handleStatusChange(selectedRequest._id, 'Rejected')}
                   >
                     <X className="w-4 h-4 inline mr-1" />
                     Rejected
                   </button>
                 </div>
               </div>
+
+              {selectedRequest.status === "Pending" ? (
+                <div className={selectedRequest.updatedStatus === 'Pending' ? 'hidden' : 'flex flex-wrap gap-2 flex-col'}>
+                  <p className="text-sm text-gray-500 mt-4">Add Note <span className='text-red-500'>*</span></p>
+                  <textarea
+                    className="w-full min-h-[150px] p-4 rounded-2xl border border-gray-200 bg-white shadow-sm text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
+                    placeholder={"Note"}
+                  />
+
+                </div>
+              ) : (
+                <div>
+                  <p className="text-sm text-gray-500">Note</p>
+                  <p className="font-medium break-words max-w-full">{"Noted weoaafjosjfoewjfewoarjoewajroewjaroweajreowarjowarjowarjowjroweajrowaejrowajroweiajroewiajrowaejrefrawerwerrawerawerwareraewreawr"}</p>
+                </div>
+              )
+
+              }
             </div>
 
-            <div className={selectedRequest.status === 'Rejected' ? 'hidden' : "px-6 py-3 border-t border-gray-200 flex justify-end"}>
+            <div className={selectedRequest.status !== 'Pending' ? 'hidden' : "px-6 py-3 border-t border-gray-200 flex justify-end"}>
               <button
                 onClick={() => setShowModal(false)}
                 className="px-4 py-2 bg-gray-100 text-gray-800 rounded-md mr-2"
@@ -349,7 +369,7 @@ const updatedData = (data || []).map((item: BloodRequest) => ({
               </button>
               <button
                 className="px-4 py-2 bg-black text-white rounded-md"
-                onClick={()=>updateStatusBloodRequest(selectedRequest._id,selectedRequest.bloodRequestId,selectedRequest.updatedStatus)}
+                onClick={() => updateStatusBloodRequest(selectedRequest._id, selectedRequest.bloodRequestId, selectedRequest.updatedStatus)}
               >
                 Save Changes
               </button>
