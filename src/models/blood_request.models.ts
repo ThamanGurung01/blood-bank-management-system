@@ -15,8 +15,9 @@ export interface IBlood_Request extends Document {
     contactNumber: string;
     priorityLevel: "Normal" | "Urgent";
     requestDate: Date;
-    status: 'Pending'|'Completed' | 'Approved' | 'Rejected';
+    status: 'Pending'|'Successful'|'Unsuccessful' | 'Approved' | 'Rejected';
     document: string;
+    bloodBankNotes: string;
     notes: string;
     redirected: number;
     requestor: Schema.Types.ObjectId;
@@ -43,9 +44,9 @@ const BloodRequestSchema: Schema = new Schema({
     blood_component: { type: String, enum: ["whole_blood","rbc","platelets","plasma","cryoprecipitate"], required: true },
     blood_quantity: { type: Number, required: true },
     contactNumber: { type: String, required: true },
-
+    bloodBankNotes:{type: String, default: "" },
     priorityLevel: { type: String, enum: ['Normal', 'Urgent'], default: 'Normal' },
-    status: { type: String, enum: ['Pending','Completed', 'Approved', 'Rejected'], default: 'Pending' },
+    status: { type: String, enum: ['Pending','Successful','Unsuccessful', 'Approved', 'Rejected'], default: 'Pending' },
     document: { type: String,default: "" },
     notes: { type: String },
     redirected:{type:Number,default:0},

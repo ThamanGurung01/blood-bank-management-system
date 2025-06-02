@@ -22,6 +22,7 @@ interface BloodRequest {
   status: string;
   updatedStatus: string;
   notes: string;
+  bloodBankNotes: string;
 }
 
 const page = () => {
@@ -30,7 +31,8 @@ const page = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<BloodRequest | null>(null);
   const [showModal, setShowModal] = useState(false);
-
+  const [bloodBankStatusNote, setBloodBankStatusNote] = useState('');
+  const [noteError, setNoteError] = useState("");
   const filteredRequests = requests.filter(request => {
     const matchesStatus = statusFilter === 'All' || request.status === statusFilter;
     const matchesSearch =
@@ -56,7 +58,6 @@ const page = () => {
   // }
 
   const handleStatusChange = (requestId: string, newStatus: string): void => {
-    console.log("Request ID:", requestId);
     const updatedRequests = requests.map((req: BloodRequest) =>
       req._id === requestId ? { ...req, updatedStatus: newStatus } : req
     )
@@ -67,8 +68,9 @@ const page = () => {
   };
 
   const handleRequestClick = (request: BloodRequest): void => {
-    console.log("Request clicked:", request);
+    // console.log("Request clicked:", request);
     setSelectedRequest(request);
+    setBloodBankStatusNote(request.bloodBankNotes || '');
     setShowModal(true);
   };
 
@@ -76,7 +78,8 @@ const page = () => {
     switch (status) {
       case 'Pending': return 'bg-gray-200 text-gray-800';
       case 'Approved': return 'bg-gray-100 text-gray-800';
-      case 'Completed': return 'bg-black text-white';
+      case 'Successful': return 'bg-black text-white';
+      case 'Unsuccessful': return 'bg-gray-500 text-white';
       case 'Rejected': return 'bg-gray-700 text-white';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -86,7 +89,8 @@ const page = () => {
     switch (status) {
       case 'Pending': return <Clock className="w-4 h-4" />;
       case 'Approved': return <Check className="w-4 h-4" />;
-      case 'Completed': return <Check className="w-4 h-4" />;
+      case 'Successful': return <Check className="w-4 h-4" />;
+      case 'Unsuccessful': return <X className="w-4 h-4" />;
       case 'Rejected': return <X className="w-4 h-4" />;
       default: return null;
     }
@@ -105,11 +109,32 @@ const page = () => {
       console.error("Error fetching blood requests:", err);
     }
   };
-  const updateStatusBloodRequest = async (brObjectId: string, requestId: string, status: string) => {
+  const updateStatusBloodRequest = async (brObjectId: string, requestId: string, status: string,prevStatus:string) => {
     try {
-      const response = await changeBloodRequestStatus(brObjectId, requestId, status);
-      await fetchRequests();
-      setShowModal(false);
+      if(status!==prevStatus){
+        console.log("status ", status);
+      console.log("prevStatus ", prevStatus);
+        if (bloodBankStatusNote) {
+
+        setNoteError("");
+        const response = await changeBloodRequestStatus(brObjectId, requestId, status, bloodBankStatusNote);
+        console.log("Response from changeBloodRequestStatus:", response);
+        await fetchRequests();
+        setShowModal(false);
+        setSelectedRequest(null);
+        setBloodBankStatusNote('');
+      } else {
+
+
+        setNoteError("Please add a note before saving the status.");
+      }
+      }else{
+        if(status==="Pending"){
+          setNoteError('Select a status other than Pending');
+        }else{
+        setNoteError('Select a status to update');
+        }
+      }
     } catch (error) {
       console.error('Error updating status:', error);
     }
@@ -150,7 +175,8 @@ const page = () => {
                 <option value="All">All Statuses</option>
                 <option value="Pending">Pending</option>
                 <option value="Approved">Approved</option>
-                <option value="Completed">Completed</option>
+                <option value="Successful">Successful</option>
+                <option value="Unsuccessful">Unsuccessful</option>
                 <option value="Rejected">Rejected</option>
               </select>
             </div>
@@ -250,7 +276,7 @@ const page = () => {
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <h3 className="text-lg font-medium text-gray-900">Request Details</h3>
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => {setShowModal(false); setSelectedRequest(null); setBloodBankStatusNote(''); setNoteError('');}}
                 className="text-gray-400 hover:text-gray-500"
               >
                 <X className="w-5 h-5" />
@@ -307,70 +333,91 @@ const page = () => {
                 <p className="text-sm bg-gray-50 p-3 rounded-md">{selectedRequest.notes}</p>
               </div>
 
-              <div className={selectedRequest.status !== 'Pending' ? 'hidden' : "border-t border-gray-200 pt-4"}>
+              <div className={selectedRequest.status !== 'Pending' && selectedRequest.status!=='Approved' ? 'hidden' : "border-t border-gray-200 pt-4"}>
                 <p className="text-sm font-medium text-gray-700 mb-2">Update Status</p>
                 <div className={'flex flex-wrap gap-2'}>
                   <button
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.updatedStatus === 'Pending' ? 'bg-gray-200 text-gray-800 border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
+                    className={`${selectedRequest.status==='Approved'?'hidden':''} px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.updatedStatus === 'Pending' ? 'bg-gray-200 text-gray-800 border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
                     onClick={() => handleStatusChange(selectedRequest._id, 'Pending')}
                   >
                     <Clock className="w-4 h-4 inline mr-1" />
                     Pending
                   </button>
                   <button
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.updatedStatus === 'Approved' ? 'bg-gray-100 text-gray-800 border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
+                    className={`${selectedRequest.status==='Approved'?'hidden':''} px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.updatedStatus === 'Approved' ? 'bg-gray-100 text-gray-800 border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
                     onClick={() => handleStatusChange(selectedRequest._id, 'Approved')}
                   >
                     <Check className="w-4 h-4 inline mr-1" />
                     Approved
                   </button>
+                  {selectedRequest.status==="Approved"&&(<>
                   <button
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.updatedStatus === 'Completed' ? 'bg-black text-white border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
-                    onClick={() => handleStatusChange(selectedRequest._id, 'Completed')}
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.updatedStatus === 'Successful' ? 'bg-black text-white border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
+                    onClick={() => handleStatusChange(selectedRequest._id, 'Successful')}
                   >
                     <Check className="w-4 h-4 inline mr-1" />
-                    Completed
+                    Successful
                   </button>
                   <button
-                    className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.updatedStatus === 'Rejected' ? 'bg-gray-700 text-white border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
-                    onClick={() => handleStatusChange(selectedRequest._id, 'Rejected')}
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.updatedStatus === 'Unsuccessful' ? 'bg-black text-white border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
+                    onClick={() => handleStatusChange(selectedRequest._id, 'Unsuccessful')}
                   >
+                    <Check className="w-4 h-4 inline mr-1" />
+                    Unsuccessful
+                  </button>
+                  </>)}
+                  <button
+                    className={`${selectedRequest.status==='Approved'?'hidden':''} px-3 py-2 rounded-md text-sm font-medium ${selectedRequest.updatedStatus === 'Rejected' ? 'bg-gray-700 text-white border-2 border-gray-400' : 'bg-gray-100 text-gray-800'}`}
+                    onClick={() => handleStatusChange(selectedRequest._id, 'Rejected')}>
                     <X className="w-4 h-4 inline mr-1" />
                     Rejected
                   </button>
                 </div>
               </div>
 
-              {selectedRequest.status === "Pending" ? (
+              {selectedRequest.status === "Pending" || selectedRequest.status === "Approved"? (
                 <div className={selectedRequest.updatedStatus === 'Pending' ? 'hidden' : 'flex flex-wrap gap-2 flex-col'}>
                   <p className="text-sm text-gray-500 mt-4">Add Note <span className='text-red-500'>*</span></p>
                   <textarea
                     className="w-full min-h-[150px] p-4 rounded-2xl border border-gray-200 bg-white shadow-sm text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
-                    placeholder={"Note"}
-                  />
-
+                    value={bloodBankStatusNote}
+                    onChange={(e) => setBloodBankStatusNote(e.target.value)}
+                    placeholder={"Note"} ></textarea>
+                  {noteError && (
+                    <div className="rounded-md bg-red-50 p-2">
+                      <div className="flex">
+                        <div className="flex-shrink-0">
+                          <AlertCircle className="h-5 w-5 text-red-400" />
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm text-red-700">
+                            {noteError? noteError : "Something went wrong, please try again!"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div>
-                  <p className="text-sm text-gray-500">Note</p>
-                  <p className="font-medium break-words max-w-full">{"Noted weoaafjosjfoewjfewoarjoewajroewjaroweajreowarjowarjowarjowjroweajrowaejrowajroweiajroewiajrowaejrefrawerwerrawerawerwareraewreawr"}</p>
+                  <p className="text-sm text-gray-500 mt-4">Note</p>
+                  <p className="font-medium break-words max-w-full">{selectedRequest.bloodBankNotes?selectedRequest.bloodBankNotes:"Empty!"}</p>
                 </div>
               )
 
               }
             </div>
 
-            <div className={selectedRequest.status !== 'Pending' ? 'hidden' : "px-6 py-3 border-t border-gray-200 flex justify-end"}>
+            <div className={selectedRequest.status !== 'Pending' && selectedRequest.status!=='Approved' ? 'hidden' : "px-6 py-3 border-t border-gray-200 flex justify-end"}>
               <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 bg-gray-100 text-gray-800 rounded-md mr-2"
-              >
+                onClick={() => {setShowModal(false); setSelectedRequest(null); setBloodBankStatusNote(''); setNoteError('');}}
+                className="px-4 py-2 bg-gray-100 text-gray-800 rounded-md mr-2">
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-black text-white rounded-md"
-                onClick={() => updateStatusBloodRequest(selectedRequest._id, selectedRequest.bloodRequestId, selectedRequest.updatedStatus)}
-              >
+              className="px-4 py-2 bg-black text-white rounded-md"
+                onClick={() => updateStatusBloodRequest(selectedRequest._id, selectedRequest.bloodRequestId, selectedRequest.updatedStatus, selectedRequest.status)}
+                >
                 Save Changes
               </button>
             </div>
