@@ -50,11 +50,12 @@ const page = ({ params }: Props) => {
     return formats[component] || component;
   };
 
-  const getStatusBadge = (status: "Pending" | "Processing" | "Approved" | "Rejected") => {
+  const getStatusBadge = (status: "Pending" | "Approved" | "Successful" | "Unsuccessful" | "Rejected") => {
     const statusStyles = {
       Pending: "bg-yellow-100 text-yellow-800",
-      Processing: "bg-blue-100 text-blue-800",
-      Approved: "bg-green-100 text-green-800",
+      Approved: "bg-blue-100 text-blue-800",
+      Successful: "bg-green-100 text-green-800",
+      Unsuccessful: "bg-red-100 text-red-500",
       Rejected: "bg-red-100 text-red-800",
     };
 
@@ -101,8 +102,8 @@ const page = ({ params }: Props) => {
             </p>
           </div>
           <div className="flex flex-col items-end">
-            {data?.status && ["Pending", "Processing", "Approved", "Rejected"].includes(data.status)
-              ? getStatusBadge(data.status as "Pending" | "Processing" | "Approved" | "Rejected")
+            {data?.status && ["Pending", "Approved", "Successful","Unsuccessful", "Rejected"].includes(data.status)
+              ? getStatusBadge(data.status as "Pending" | "Approved" | "Successful" | "Unsuccessful" | "Rejected")
               : getStatusBadge("Pending")}
             <span className="text-sm text-gray-500 mt-2 flex items-center">
               <Clock size={14} className="mr-1" />
@@ -177,7 +178,10 @@ const page = ({ params }: Props) => {
                 <p className="text-sm text-gray-600 mb-1">Notes</p>
                 <p className="bg-gray-50 p-3 rounded">{data?.notes || "No additional notes provided."}</p>
               </div>
-
+              <div>
+                <h2 className="text-lg font-semibold mb-4 pb-2 border-b border-gray-200">Blood Bank Note</h2>
+                <p className="bg-gray-50 p-3 rounded">{data?.bloodBankNotes || "No notes from the blood bank."}</p>
+              </div>
               {/* <div>
                 <p className="text-sm text-gray-600 mb-2">Requisition Document</p>
                 <a href={data?.documentUrl} className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">

@@ -137,8 +137,9 @@ export const changeBloodRequestStatus=async(brObjectId:string,bloodRequestId:str
         const bloodBankId=session.user.id;
         const bloodRequestData=await BloodRequest.findOneAndUpdate({blood_bank:bloodBankId,bloodRequestId:bloodRequestId,_id:brObjectId},{status:statusChange,bloodBankNotes:bloodBankStatusNotes},{new:true}).populate({path:"requestor",populate:{path:"user",model:"User"}}).sort({createdAt:-1});
       if(!bloodRequestData) return {success:false,message:"No blood request found"};
+      
       if(statusChange==="Rejected") {
-        console.log("inside rejected condn")
+      if(bloodRequestData>=5) return {success:false,message:"Blood request already redirected 5 times"};
       const response=await rejectBloodRequest(brObjectId,bloodBankId,bloodRequestId);
       if(!response) return {success:false,message:"Failed to reject blood request"};
       if(typeof response === "string") return {success:false,message:response};

@@ -14,7 +14,6 @@ export const rejectBloodRequest=async(brObjectId:string,bloodBankId:string,blood
         }
       }}]
     ,{new:true}).populate({path:"requestor",populate:{path:"user",model:"User"}}).sort({createdAt:-1});
-if(bloodRequestData>=5) return "Blood request has been redirected too many times.";
 const newBloodRequestData = bloodRequestData.toObject();
 delete newBloodRequestData._id;
 

@@ -41,7 +41,6 @@ const page = () => {
   const [filters, setFilters] = useState({
     bloodGroup: "",
     component: "",
-    dateRange: "all",
   });
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -132,8 +131,10 @@ const page = () => {
 
     if (tab === "active") {
       filtered = filtered.filter(req => ["Pending", "Approved"].includes(req.status));
-    } else if (tab === "completed") {
-      filtered = filtered.filter(req => req.status === "Completed");
+    } else if (tab === "successful") {
+      filtered = filtered.filter(req => req.status === "Successful");
+    }  else if (tab === "unsuccessful") {
+      filtered = filtered.filter(req => req.status === "Unsuccessful");
     } else if (tab === "rejected") {
       filtered = filtered.filter(req => req.status === "Rejected");
     }
@@ -145,23 +146,12 @@ const page = () => {
     if (currentFilters.component) {
       filtered = filtered.filter(req => req.component === currentFilters.component);
     }
-
-    if (currentFilters.dateRange === "month") {
-      const lastMonth = new Date();
-      lastMonth.setMonth(lastMonth.getMonth() - 1);
-      filtered = filtered.filter(req => new Date(req.requestedDate) >= lastMonth);
-    } else if (currentFilters.dateRange === "week") {
-      const lastWeek = new Date();
-      lastWeek.setDate(lastWeek.getDate() - 7);
-      filtered = filtered.filter(req => new Date(req.requestedDate) >= lastWeek);
-    }
-
     if (search) {
       const searchLower = search.toLowerCase();
       filtered = filtered.filter(req =>
-        req.patientName.toLowerCase().includes(searchLower) ||
-        req.bloodRequestId.toLowerCase().includes(searchLower) ||
-        req.hospitalName.toLowerCase().includes(searchLower)
+        req?.patientName?.toLowerCase().includes(searchLower) ||
+        req?.bloodRequestId?.toLowerCase().includes(searchLower) ||
+        req?.hospitalName?.toLowerCase().includes(searchLower)
       );
     }
 
@@ -180,8 +170,7 @@ const page = () => {
     applyFilters(requests, activeTab, newFilters, searchTerm);
   };
 
-  const handleSearch = (e: any) => {
-    const value = e.target.value;
+  const handleSearch = (value:string) => {
     setSearchTerm(value);
     applyFilters(requests, activeTab, filters, value);
   };
@@ -202,11 +191,18 @@ const page = () => {
             Processing
           </span>
         );
-      case "Completed":
+      case "Successful":
         return (
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
             <CheckCircle size={12} className="mr-1" />
-            Completed
+            Successful
+          </span>
+        );
+        case "Unsuccessful":
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-500">
+            <XCircle size={12} className="mr-1" />
+            Unsuccessful
           </span>
         );
       case "Rejected":
@@ -266,13 +262,22 @@ const page = () => {
                 Active Requests
               </button>
               <button
-                className={`py-4 px-6 font-medium text-sm border-b-2 ${activeTab === "completed"
+                className={`py-4 px-6 font-medium text-sm border-b-2 ${activeTab === "successful"
                     ? "border-blue-500 text-blue-600"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   }`}
-                onClick={() => handleTabChange("completed")}
+                onClick={() => handleTabChange("successful")}
               >
-                Completed
+                Successful
+              </button>
+                            <button
+                className={`py-4 px-6 font-medium text-sm border-b-2 ${activeTab === "unsuccessful"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  }`}
+                onClick={() => handleTabChange("unsuccessful")}
+              >
+                Unsuccessful
               </button>
               <button
                 className={`py-4 px-6 font-medium text-sm border-b-2 ${activeTab === "rejected"
@@ -308,7 +313,7 @@ const page = () => {
                 placeholder="Search by patient name, reference ID or hospital..."
                 className="pl-10 pr-4 py-2 border rounded-lg w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 value={searchTerm}
-                onChange={handleSearch}
+                onChange={(e)=> handleSearch(e.target.value)}
               />
             </div>
             <div className="relative">
@@ -366,21 +371,6 @@ const page = () => {
                     </select>
                   </div>
 
-                  <div className="mb-4">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Date Range
-                    </label>
-                    <select
-                      name="dateRange"
-                      value={filters.dateRange}
-                      onChange={handleFilterChange}
-                      className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    >
-                      <option value="all">All Time</option>
-                      <option value="month">Last Month</option>
-                      <option value="week">Last Week</option>
-                    </select>
-                  </div>
 
                   <button
                     className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none"
@@ -388,12 +378,10 @@ const page = () => {
                       setFilters({
                         bloodGroup: "",
                         component: "",
-                        dateRange: "all"
                       });
                       applyFilters(requests, activeTab, {
                         bloodGroup: "",
                         component: "",
-                        dateRange: "all"
                       }, searchTerm);
                     }}
                   >
@@ -435,8 +423,10 @@ const page = () => {
               <p className="text-gray-500 mb-6">
                 {activeTab === "active"
                   ? "You don't have any active blood requests."
-                  : activeTab === "completed"
-                    ? "You don't have any completed blood requests."
+                  : activeTab === "successful"
+                    ? "You don't have any successful blood requests."
+                    :activeTab === "unsuccessful"
+                      ? "You don't have any unsuccessful blood requests."
                     : activeTab === "rejected"
                       ? "You don't have any rejected blood requests."
                       : "No blood requests match your search criteria."}
@@ -485,7 +475,9 @@ const page = () => {
                   {filteredRequests.map((request,index) => (
                     <tr key={index} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{request.bloodRequestId}</div>
+                        <div className="text-sm font-medium text-gray-900 cursor-pointer" onClick={(e)=>{setSearchTerm(request.bloodRequestId);
+                        handleSearch(request.bloodRequestId);
+                        }}>{request.bloodRequestId}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{request.patientName}</div>
