@@ -633,7 +633,9 @@ function BloodBankContent({ data }: { data: BloodBank }) {
               </p>
             </div>
             <div className="px-6 py-4">
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {data?.inventory?.length?
+                (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                 {data.inventory.map((item) => (
                   <div
                     key={item.blood_group}
@@ -668,8 +670,17 @@ function BloodBankContent({ data }: { data: BloodBank }) {
                     </span>
                   </div>
                 ))}
+                  </div>
+                ):(
+              <div className="flex items-center justify-center h-[300px] w-full">
+                  <div className="text-center text-gray-500">
+                    <Droplet className="mx-auto mb-2 h-10 w-10 text-gray-400" />
+                    <p className="text-lg font-semibold">No inventory data available</p>
+                    <p className="text-sm">Check back later or add new blood stock.</p>
+                  </div>
+                </div>
+              )}
               </div>
-            </div>
             <div className="flex items-center px-6 py-4 border-t border-gray-200">
               <button className="inline-flex w-full items-center justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                 Update Inventory

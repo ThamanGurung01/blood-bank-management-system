@@ -15,7 +15,11 @@ try {
     if(!bloodBank || bloodBank.length===0) return {success:false,message:"No blood bank found"};
     const inventory = await Blood.aggregate([
   {
-    $group: {
+    $match: {
+      status: "available"
+    }
+    },
+   {$group: {
       _id: {
         blood_group: "$blood_type",
         status: "$status"
@@ -43,7 +47,7 @@ const recentDonations = rawDonations.map((donation, index) => ({
   blood_group: donation.blood_type,
   units: donation.blood_units,
 }));
-    return {success:true,data:JSON.parse(JSON.stringify({...bloodBank,inventory:inventory,recentDonations:recentDonations}))};
+    return {success:true,data:JSON.parse(JSON.stringify({...bloodBank,inventory:inventory??[],recentDonations:recentDonations}))};
     
 } catch (error:any) {
     console.log(error?.message);

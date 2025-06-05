@@ -283,9 +283,9 @@ const Sidebar = () => {
             />
             <SidebarItem
               icon={<Package size={20} />}
-              label="Blood Supply"
-              isSelected={selectedSidebarOption === "blood-supply"}
-              onClick={() => handleSidebarSelect("blood-supply", "blood_bank")}
+              label="Donation Schedule"
+              isSelected={selectedSidebarOption === "blood_bank-donation_schedule"}
+              onClick={() => handleSidebarSelect("blood_bank-donation_schedule", "blood_bank")}
             />
             <SidebarItem
               icon={<Calendar size={20} />}
@@ -335,7 +335,7 @@ const Sidebar = () => {
 
       {/* Bottom section with stats and sign out */}
       <div className="mt-auto border-t border-gray-200 p-3">
-        <div className="mb-4 rounded-lg bg-gray-50 p-3">
+        {/* <div className="mb-4 rounded-lg bg-gray-50 p-3">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-sm font-medium text-gray-700">Blood Availability</span>
             <span className="text-xs font-medium text-green-600">85%</span>
@@ -350,7 +350,7 @@ const Sidebar = () => {
               Active
             </span>
           </div>
-        </div>
+        </div> */}
 
         <SidebarItem
           icon={<LogOut size={20} />}
