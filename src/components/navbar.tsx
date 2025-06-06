@@ -1,29 +1,10 @@
-// "use client"
-// import React from 'react'
-// import { usePathname } from 'next/navigation';
-// import Link from 'next/link';
-// const Navbar = () => {
-//   return (
-//     <div className="bg-white fixed left-0 top-0 w-full z-24">
-//         <div className='w-full flex justify-between px-10 py-6 border-b-2 border-gray-300'>
-//         <h1 className='text-3xl font-bold'>Blood Bank Management</h1>
-//         <div>
-//         <Link href={"/profile"}><img src="/blood.png" className='rounded-full w-10 h-10 border-2' alt="Profile" /></Link>
-//         </div>
-//         </div>
-//     </div>
-//   )
-// }
-
-// export default Navbar
-
 "use client";
 
 import { useState } from "react";
 // import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { Bell, ChevronDown, Search, Menu, X } from "lucide-react";
+import { Bell, Menu, X } from "lucide-react";
 import Image from "next/image";
 
 const Navbar = () => {
@@ -86,13 +67,17 @@ const Navbar = () => {
 
         <div className="flex items-center gap-2">
           <div className="relative">
-            <button
+           {session?.user?.role !== "admin" && (
+             <button
               className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-100"
               onClick={() => setShowNotifications(!showNotifications)}
             >
               <Bell size={18} />
               <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500"></span>
             </button>
+           )
+            
+           }
 
             {showNotifications && (
               <div className="absolute right-0 mt-2 w-80 rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
@@ -131,11 +116,12 @@ const Navbar = () => {
 
           <div className="h-6 border-l border-gray-300"></div>
 
-          <Link
+          {session?.user?.role!=="admin"?(
+            <Link
             href="/profile"
             className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-gray-100"
           >
-            <div className="relative">
+            <div className="relative cursor-pointer">
               <Image
                 width={32}
                 height={32}
@@ -145,7 +131,7 @@ const Navbar = () => {
               />
               <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-green-500"></div>
             </div>
-            <div className="hidden md:block">
+            <div className="hidden md:block select-none">
               <p className="text-sm font-medium text-gray-700">
                 {session?.user?.name || "User"}
               </p>
@@ -153,8 +139,31 @@ const Navbar = () => {
                 {session?.user?.role || "Guest"}
               </p>
             </div>
-            <ChevronDown size={16} className="hidden text-gray-400 md:block" />
           </Link>
+          ):(
+            <>
+              <div className="relative">
+                <Image
+                  width={32}
+                  height={32}
+                  src={session?.user?.image || "/defaultProfile.png"}
+                  alt="Profile"
+                  className="h-8 w-8 rounded-full border border-gray-200 object-cover"
+                />
+                <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-green-500"></div>
+              </div>
+              <div className="hidden md:block select-none">
+                <p className="text-sm font-medium text-gray-700">
+                  {session?.user?.name || "User"}
+                </p>
+                <p className="text-xs text-gray-500 capitalize">
+                  {session?.user?.role || "Guest"}
+                </p>
+              </div>
+            </>
+          )
+
+          }
         </div>
       </div>
 

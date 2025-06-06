@@ -9,7 +9,7 @@ import { fromValidation } from "@/utils/validation";
 import IValidation from "@/types/validationTypes";
 import { ACCEPTED_IMAGE_TYPES } from "@/utils/validation";
 import { createUser } from "@/actions/userActions";
-import { signIn ,useSession} from "next-auth/react";
+import { getSession, signIn ,useSession} from "next-auth/react";
 import { useSearchParams,useRouter } from "next/navigation";
 
 const Map = dynamic(() => import("@/components/map"), { ssr: false });
@@ -76,6 +76,7 @@ const {data:session}=useSession();
     const value = e.target?.value;
     setDropdownValue(value);
   }
+
   const handleSubmit = async(e: React.FormEvent) => {
 try {
   e.preventDefault();
@@ -97,17 +98,33 @@ router.push("/");
 console.log(response);
 }else if(type==="login"){
 const credentials=Object.fromEntries(formdata);
-await signIn("credentials",credentials);
-router.push("/dashboard");
+const res = await signIn("credentials", {
+    ...credentials,
+    redirect: false,
+  });
+
+  if (!res || !res.ok) {
+    console.error("Login failed:", res?.error);
+    return;
+  }
+
+  const session = await getSession();
+  const role = session?.user?.role;
+
+  let destination = "/dashboard";
+  if (role === "admin") {
+    destination = "/admin/dashboard";
+  } else if (role === "donor" || role === "blood_bank") {
+    destination = "/dashboard";
+  }
+
+  router.push(destination);
 }
   }
 } catch (error:any) {
   throw new Error(error.message);
 }
   };
-  if(session){
-    console.log(session);
-  }
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       {/* Left Column - Form */}

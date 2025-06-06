@@ -24,7 +24,7 @@ export const authOptions: AuthOptions = {
         email: { label: "email", type: "text", placeholder: "jsmith@example.com" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Missing credentials");
         }
@@ -37,26 +37,32 @@ export const authOptions: AuthOptions = {
           throw new Error("Incorrect password");
         }
         if(user.role==="donor"){
-          const donorData=await Donor.findOne({user:user.id});
-          console.log(user.id);
-
-          console.log("donorData",donorData);
-          return {id:donorData?._id,
-            name:user.name,
-            email:user.email,
+          const donorData=await Donor.findOne({user:user._id});
+          if (!donorData) return null;
+          return {
+            id: donorData._id,
+            name: user.name,
+            email: user.email,
             role: user.role
           };
-        }else if(user.role==="blood_bank"){
-          const bloodBankData=await BloodBank.findOne({user:user.id});
-          console.log({...user,id:bloodBankData?._id});
-          return {id:bloodBankData?._id,
-            name:user.name,
-            email:user.email,
+        } else if(user.role==="blood_bank"){
+          const bloodBankData=await BloodBank.findOne({user:user._id});
+          if (!bloodBankData) return null;
+          return {
+            id: bloodBankData._id,
+            name: user.name,
+            email: user.email,
             role: user.role
           };
-        }else {
-          return user;
+        } else if(user.role==="admin"){
+          return {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+          };
         }
+        return null;
       }
     }),
   ],
@@ -70,7 +76,7 @@ export const authOptions: AuthOptions = {
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
-        token.role = (user as AUser).role;
+        token.role = (user as unknown as AUser).role;
       }
       return token;
     },
@@ -81,9 +87,9 @@ export const authOptions: AuthOptions = {
       }
       return session;
     },
-    async redirect({ baseUrl }) {
-      return `${baseUrl}/dashboard`;
-    },
+    // async redirect({ baseUrl }) {
+    //   return `${baseUrl}/dashboard`;
+    // },
   },
   session: {
     strategy: "jwt",
