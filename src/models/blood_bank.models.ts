@@ -8,6 +8,7 @@ export interface IBlood_Bank extends Document{
     longitude:number;
 };
     contact:string;
+    verified:boolean;
 }
 const BloodBankSchema=new Schema<IBlood_Bank>({
     user:{
@@ -31,6 +32,10 @@ const BloodBankSchema=new Schema<IBlood_Bank>({
     contact:{
         type:String,
         required:true
+    },
+    verified:{
+        type:Boolean,
+        default:false
     }
 },{timestamps:true});
 export default models.Blood_bank || model<IBlood_Bank>("Blood_bank",BloodBankSchema);

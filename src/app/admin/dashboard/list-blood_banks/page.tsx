@@ -2,42 +2,37 @@
 import { useEffect, useState } from "react";
 import { Search, Filter, User, Droplet, SquarePen } from "lucide-react";
 import { getAllDonor } from "@/actions/donorActions";
-import { IDonor } from "@/models/donor.models";
-interface Donor extends Omit<IDonor, 'user'> {
+import { IBlood_Bank } from "@/models/blood_bank.models";
+import { getAllBloodBanks } from "@/actions/bloodBankActions";
+interface BloodBank extends Omit<IBlood_Bank, 'user'> {
   user: {
     name: string;
     email: string;
     role: string;
   };
+  createdAt?: string;
 }
 const page = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [bloodType, setBloodType] = useState("");
-  const [availability, setAvailability] = useState("");
+  const [verification, setVerification] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [donors, setDonors] = useState<Donor[]>([]);
+  const [bloodBanks, setBloodBank] = useState<BloodBank[]>([]);
 
-  const filteredDonors = donors.filter(donor => {
-    const matchesSearch = donor.user.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesBloodType = bloodType === "" || donor.blood_group === bloodType;
-    const matchesAvailability =
-      availability === "" ||
-      (availability === "available" && donor.status) ||
-      (availability === "unavailable" && !donor.status);
+  const filteredBloodBanks = bloodBanks.filter(bloodBank => {
+    const matchesSearch = bloodBank.user.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesVerification =
+      verification === "" ||
+      (verification === "verified" && bloodBank.verified) ||
+      (verification === "unverified" && !bloodBank.verified);
 
-    return matchesSearch && matchesBloodType && matchesAvailability;
+    return matchesSearch && matchesVerification;
   });
 
-  const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
   const fetchRequests = async () => {
     try {
-        const BloodRequests = await getAllDonor();
-        const data = BloodRequests?.data;
-        const updatedData = (data || []).map((item: Donor) => ({
-          ...item,
-          updatedStatus: item.status
-        }));
-        setDonors(updatedData || []);
+      const BloodBankData = await getAllBloodBanks();
+      const data = BloodBankData?.data;
+      setBloodBank(data || []);
     } catch (err) {
       console.error("Error fetching blood requests:", err);
     }
@@ -45,7 +40,7 @@ const page = () => {
 
 
   useEffect(() => {
-      fetchRequests();
+    fetchRequests();
   }, []);
   return (
     <div className="bg-gray-50 p-10 min-h-screen initialPage">
@@ -76,7 +71,7 @@ const page = () => {
 
           {showFilters && (
             <div className="flex space-x-4">
-              <div className="flex-1">
+              {/* <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Blood Type</label>
                 <select
                   className="w-full p-2 border rounded-lg"
@@ -88,39 +83,38 @@ const page = () => {
                     <option key={type} value={type}>{type}</option>
                   ))}
                 </select>
-              </div>
+              </div> */}
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Availability</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Verifications</label>
                 <select
                   className="w-full p-2 border rounded-lg"
-                  value={availability}
-                  onChange={(e) => setAvailability(e.target.value)}
+                  value={verification}
+                  onChange={(e) => setVerification(e.target.value)}
                 >
                   <option value="">All</option>
-                  <option value="available">Available</option>
-                  <option value="unavailable">Unavailable</option>
+                  <option value="verified">Verified</option>
+                  <option value="unverified">Unverified</option>
                 </select>
               </div>
             </div>
           )}
         </div>
 
-        {/* Donors List */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Donor</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Blood Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Donation</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Manager</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Blood Bank Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">created At</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Edit</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredDonors.length > 0 ? (
-                filteredDonors.map((donor, index) => (
+              {filteredBloodBanks.length > 0 ? (
+                filteredBloodBanks.map((bloodBank, index) => (
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -128,30 +122,26 @@ const page = () => {
                           <User className="text-gray-500" size={20} />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{donor.user.name}</div>
-                          <div className="text-sm text-gray-500">ID: {donor.donorId}</div>
+                          <div className="font-medium text-gray-900">{bloodBank.user.name}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <Droplet size={18} className="mr-2 text-red-500" />
-                        <span className="font-medium">{donor.blood_group}</span>
-                      </div>
+                      {bloodBank.blood_bank ? bloodBank.blood_bank : "N/A"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {bloodBank.contact}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${donor.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {donor.status ? 'Available' : 'Unavailable'}
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${bloodBank.verified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {bloodBank.verified ? 'Verified' : 'Unverified'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {donor?.last_donation_date ? new Date(donor.last_donation_date).toISOString().split("T")[0] : "N/A"}
+                      {bloodBank?.createdAt ? new Date(bloodBank.createdAt).toISOString().split("T")[0] : "N/A"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {donor.contact}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <SquarePen size={18} className="mr-2 hover:text-black cursor-pointer"/> 
+                      <SquarePen size={18} className="mr-2 hover:text-black cursor-pointer" />
                     </td>
                   </tr>
                 ))

@@ -31,13 +31,9 @@ const page = () => {
   const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
   const fetchRequests = async () => {
     try {
-        const BloodRequests = await getAllDonor();
-        const data = BloodRequests?.data;
-        const updatedData = (data || []).map((item: Donor) => ({
-          ...item,
-          updatedStatus: item.status
-        }));
-        setDonors(updatedData || []);
+        const donorData = await getAllDonor();
+        const data = donorData?.data;
+        setDonors(data || []);
     } catch (err) {
       console.error("Error fetching blood requests:", err);
     }

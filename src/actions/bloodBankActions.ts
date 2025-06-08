@@ -54,3 +54,21 @@ const recentDonations = rawDonations.map((donation, index) => ({
     return {success:false,message:"Something went wrong"}
 }
 }
+
+export const getAllBloodBanks=async()=>{
+try {
+    await connectToDb();
+  const bloodBanks=await BloodBank.find({}).populate(
+    {
+    path:"user",
+    select:"name email role"
+    }).lean().sort({createdAt:-1});
+    if(!bloodBanks || bloodBanks.length===0) return {success:false,message:"No Blood Bank found"};
+    
+    return {success:true,data:JSON.parse(JSON.stringify(bloodBanks))};
+    
+} catch (error:any) {
+    console.log(error?.message);
+    return {success:false,message:"Something went wrong"}
+}
+}
