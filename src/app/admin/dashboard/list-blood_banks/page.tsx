@@ -1,7 +1,6 @@
 "use client"
 import { useEffect, useState } from "react";
 import { Search, Filter, User, Droplet, SquarePen } from "lucide-react";
-import { getAllDonor } from "@/actions/donorActions";
 import { IBlood_Bank } from "@/models/blood_bank.models";
 import { getAllBloodBanks } from "@/actions/bloodBankActions";
 interface BloodBank extends Omit<IBlood_Bank, 'user'> {
