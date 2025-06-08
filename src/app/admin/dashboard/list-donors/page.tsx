@@ -16,7 +16,6 @@ const page = () => {
   const [availability, setAvailability] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [donors, setDonors] = useState<Donor[]>([]);
-  const [selectedBloodGroup, setSelectedBloodGroup] = useState("A+");
 
   const filteredDonors = donors.filter(donor => {
     const matchesSearch = donor.user.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -47,7 +46,7 @@ const page = () => {
 
   useEffect(() => {
       fetchRequests();
-  }, [ selectedBloodGroup]);
+  }, []);
   return (
     <div className="bg-gray-50 p-10 min-h-screen initialPage">
       <div className="max-w-6xl mx-auto">
