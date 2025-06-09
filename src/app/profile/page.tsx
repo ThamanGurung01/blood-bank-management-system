@@ -13,7 +13,6 @@ import {
   Edit,
   Award,
   Heart,
-  AlertCircle,
   ChevronRight,
   Building,
   CheckCircle,
@@ -25,66 +24,6 @@ import { getDonor } from "@/actions/donorActions";
 import { IDonor } from "@/models/donor.models";
 import { IBlood_Bank } from "@/models/blood_bank.models";
 import { getBloodBank } from "@/actions/bloodBankActions";
-
-
-const BloodData = {
-  name: "NRCS Blood Bank",
-  email: "info@nrcsbloodbank.org",
-  contact: "9876543210",
-  role: "blood_bank",
-  location: {
-    latitude: 27.7172,
-    longitude: 85.324,
-  },
-  profile_picture: "/defaultProfile.png",
-  inventory: [
-    { blood_group: "A+", units: 15, status: "adequate" },
-    { blood_group: "A-", units: 5, status: "low" },
-    { blood_group: "B+", units: 20, status: "adequate" },
-    { blood_group: "B-", units: 3, status: "critical" },
-    { blood_group: "O+", units: 25, status: "adequate" },
-    { blood_group: "O-", units: 8, status: "low" },
-    { blood_group: "AB+", units: 10, status: "adequate" },
-    { blood_group: "AB-", units: 2, status: "critical" },
-  ],
-  recentDonations: [
-    {
-      id: 1,
-      date: "2024-05-15",
-      donor: "Sarah Johnson",
-      blood_group: "O+",
-      units: 1,
-    },
-    {
-      id: 2,
-      date: "2024-05-14",
-      donor: "Michael Chen",
-      blood_group: "A+",
-      units: 1,
-    },
-    {
-      id: 3,
-      date: "2024-05-14",
-      donor: "Emily Rodriguez",
-      blood_group: "B-",
-      units: 1,
-    },
-  ],
-  upcomingDrives: [
-    {
-      id: 1,
-      date: "2024-06-01",
-      location: "City Center Mall",
-      time: "10:00 AM - 4:00 PM",
-    },
-    {
-      id: 2,
-      date: "2024-06-15",
-      location: "University Campus",
-      time: "9:00 AM - 3:00 PM",
-    },
-  ],
-};
 interface Donation {
   id: number;
   date: string;
@@ -128,11 +67,10 @@ export default function ProfilePage() {
   const [donorData, setDonorData] = useState<Donor>({} as Donor);
   const [bloodBankData, setBloodBankData] = useState<BloodBank>({} as BloodBank);
   const { data: session } = useSession();
-
   const fetchDonorData = async () => {
     if (session?.user?.id) {
       const response = await getDonor(session.user.id);
-      setDonorData(response.data);
+      if (response.success && response.data) setDonorData(JSON.parse(JSON.stringify(response.data)));
     }
   }
   const fetchBloodBankData = async () => {
@@ -720,7 +658,10 @@ function BloodBankContent({ data }: { data: BloodBank }) {
             </div>
             <div className="px-6 py-4">
               <div className="space-y-4">
-                {data.recentDonations?.map((donation) => (
+                {data?.recentDonations?.length ?
+                (
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                    {data.recentDonations?.map((donation) => (
                   <div
                     key={donation.id}
                     className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
@@ -742,6 +683,17 @@ function BloodBankContent({ data }: { data: BloodBank }) {
                     </button>
                   </div>
                 ))}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-[300px] w-full">
+                    <div className="text-center text-gray-500">
+                      <Droplet className="mx-auto mb-2 h-10 w-10 text-gray-400" />
+                      <p className="text-lg font-semibold">No recent Donations</p>
+                      <p className="text-sm">Check back later</p>
+                    </div>
+                  </div>
+                )}
+                
               </div>
             </div>
             <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
@@ -767,7 +719,10 @@ function BloodBankContent({ data }: { data: BloodBank }) {
             </div>
             <div className="px-6 py-4">
               <div className="space-y-4">
-                {data.upcomingDrives?.map((drive) => (
+                {data?.upcomingDrives?.length ?
+                (
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                   {data.upcomingDrives?.map((drive) => (
                   <div
                     key={drive.id}
                     className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
@@ -789,6 +744,17 @@ function BloodBankContent({ data }: { data: BloodBank }) {
                     </div>
                   </div>
                 ))}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-[200px] w-full">
+                    <div className="text-center text-gray-500">
+                      <Droplet className="mx-auto mb-2 h-10 w-10 text-gray-400" />
+                      <p className="text-lg font-semibold">No Blood Drive Events</p>
+                      <p className="text-sm">Check back later or Add new event</p>
+                    </div>
+                  </div>
+                )}
+                
               </div>
 
               <div className="mt-6 rounded-lg border border-gray-200 bg-white p-4">

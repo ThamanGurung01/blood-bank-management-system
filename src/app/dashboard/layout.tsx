@@ -14,22 +14,37 @@ export default function Layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-    const {data:session}=useSession();
+    const {data:session,status}=useSession();
     const [verified, setVerified] = useState(false);
+    const [loading, setLoading] = useState(true);
+
     const checkBloodBank=async()=>{
         if(session?.user?.role==="blood_bank"){
           const checkVerification=await checkBloodBankVerification(session?.user?.id);  
           if(checkVerification)setVerified(true);
-        }else{
-            setVerified(false);
-        }
     }
+    setLoading(false);
+  }
 useEffect(() => {
-  checkBloodBank();
-}, [session]);
+if(session?.user?.role==="blood_bank"){
+  if (status === "authenticated") {
+    checkBloodBank();
+  } else if (status !== "loading") {
+    setLoading(false);
+  }
+}
+}, [session, status]);
+if (session?.user?.role==="blood_bank"&&loading) {
+  return (
+    <div className="flex items-center justify-center h-screen w-full">
+      <div className="text-gray-500 text-sm">Checking verification...</div>
+    </div>
+  );
+}
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {verified ? (
+      
+      {session?.user?.role==="blood_bank"?verified ? (
         <>
         <Sidebar />
       <div className="flex-1 md:ml-64">
@@ -47,7 +62,15 @@ useEffect(() => {
               <Link href={"/profile"} className="text-blue-500">Check your profile</Link>
             </div>
           </div>
-        )}
+        ):(        
+        <>
+        <Sidebar />
+      <div className="flex-1 md:ml-64">
+        <Navbar />
+        <main className="p-6 pt-24">{children}</main>
+      </div>
+        </>
+      )}
     </div>
   );
 }

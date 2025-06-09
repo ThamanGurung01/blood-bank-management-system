@@ -143,7 +143,7 @@ const page = () => {
     fetchRequests();
   }, []);
   return (
-    <div className="flex flex-col min-h-screen bg-white initialPage">
+    <div className="flex flex-col bg-white initialPage">
       <div className="pt-6 pb-4 px-4">
         <div className="container mx-auto">
           <h1 className="text-2xl font-bold text-gray-900">Blood Bank Request Management</h1>

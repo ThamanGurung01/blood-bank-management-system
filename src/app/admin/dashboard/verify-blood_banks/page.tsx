@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { FileText, Eye, CheckCircle, XCircle, Building2, MapPin, Phone, Mail, User, Shield, Download } from 'lucide-react';
 import { IBlood_Bank } from '@/models/blood_bank.models';
-import { getAllBloodBanks } from '@/actions/bloodBankActions';
+import { changeBloodBankVerification, getAllBloodBanks } from '@/actions/bloodBankActions';
 
 interface BloodBank extends Omit<IBlood_Bank, 'user'> {
   user: {
@@ -25,7 +25,7 @@ const page = () => {
     return true;
   });
 
-  const handleVerifyBank = () => {
+  const handleVerifyBank = async() => {
     if (selectedBank) {
       setBloodBanks(banks => banks.map(bank => 
         bank._id === selectedBank._id 
@@ -33,10 +33,13 @@ const page = () => {
           : bank
       ));
       setSelectedBank({ ...selectedBank, verified: true });
+      if(!selectedBank.verified){
+      await changeBloodBankVerification(String(selectedBank._id), true);
+      }
     }
   };
 
-  const handleUnverifyBank = () => {
+  const handleUnverifyBank = async() => {
     if (selectedBank) {
       setBloodBanks(banks => banks.map(bank => 
         bank._id === selectedBank._id 
@@ -44,6 +47,9 @@ const page = () => {
           : bank
       ));
       setSelectedBank({ ...selectedBank, verified: false });
+      if(selectedBank.verified){
+      await changeBloodBankVerification(String(selectedBank._id), false);
+      }
     }
   };
 

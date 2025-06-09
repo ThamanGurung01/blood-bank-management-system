@@ -26,28 +26,53 @@ try {
 }
 }
 
-export const getDonor=async(id:string)=>{
-try {
+export const getDonor = async (id: string) => {
+  try {
     await connectToDb();
-if(!id) return {success:false,message:"Donor ID is required"};
-const donor=await Donor.findOne({
-      _id:id
-    }).populate({path:"user",
-    select:"name email role"
-    });
-    const donorData=donor.toObject();
-    if(!donor) return {success:false,message:"Donor not found"};
-    const donations = await BloodDonation.find({ donorId: donor.donorId }).populate('blood_bank', 'blood_bank').sort({ collected_date: -1 }).lean();
-    if(!donations || donations.length === 0) return {success:true,data:{...donorData, donations: []}};
-    const formattedDonations = donations.map((donation, index) => ({id: index + 1,date: donation.collected_date? donation.collected_date.toISOString().split('T')[0]: 'Unknown Date',
-  location: donation.blood_bank?.blood_bank || 'Unknown Location',units: donation.blood_units,status: 'completed',}));
-  console.log(donations);
-    return {success:true,data:JSON.parse(JSON.stringify({...donorData, donations: formattedDonations}))};
-} catch (error:any) {
+    if (!id) return { success: false, message: "Donor ID is required" };
+
+    const donor = await Donor.findOne({ _id: id })
+      .populate({ path: "user", select: "name email role" })
+      .lean<IDonor>();
+
+    if (!donor) return { success: false, message: "Donor not found" };
+
+    const donations = await BloodDonation.find({ donorId: donor.donorId })
+      .populate("blood_bank", "blood_bank")
+      .sort({ collected_date: -1 })
+      .lean();
+
+    const formattedDonations = donations.map((donation, index) => ({
+      id: index + 1,
+      date: donation.collected_date
+        ? donation.collected_date.toISOString().split("T")[0]
+        : "Unknown Date",
+      location: donation.blood_bank?.blood_bank || "Unknown Location",
+      units: donation.blood_units,
+      status: "completed",
+    }));
+
+    const cleanedDonor = {
+      ...donor,
+      _id: String(donor._id),
+      user: {
+        ...donor.user,
+        _id: String((donor.user as any)?._id || ""),
+      },
+    };
+
+    return {
+      success: true,
+      data: {
+        ...cleanedDonor,
+        donations: formattedDonations,
+      },
+    };
+  } catch (error: any) {
     console.log(error?.message);
-    return {success:false,message:"Something went wrong"}
-}
-}
+    return { success: false, message: "Something went wrong" };
+  }
+};
 
 export const getDonorRank=async()=>{
 try {

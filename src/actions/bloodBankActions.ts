@@ -1,9 +1,9 @@
 "use server";
 import { connectToDb } from "@/utils/database";
-import Donor, { IDonor } from "@/models/donor.models"
 import BloodBank from "@/models/blood_bank.models";
 import Blood from "@/models/blood.models";
 import BloodDonation from "@/models/blood_donation.models";
+import mongoose from "mongoose";
 export const getBloodBank=async(bloodBankId:string)=>{
 try {
     await connectToDb();
@@ -16,7 +16,8 @@ try {
     const inventory = await Blood.aggregate([
   {
     $match: {
-      status: "available"
+      status: "available",
+      blood_bank:new mongoose.Types.ObjectId(bloodBankId)
     }
     },
    {$group: {
@@ -85,3 +86,27 @@ try {
     return false;
 }
 }
+
+export const changeBloodBankVerification = async (bloodBankId: string, verified: boolean) => {
+  try {
+    await connectToDb();
+
+    const updatedBloodBank = await BloodBank.findByIdAndUpdate(
+      { _id: bloodBankId },
+      { $set: { verified: verified } },
+      { new: true }
+    );
+
+    if (!updatedBloodBank) {
+      return { success: false, message: "Blood bank not found." };
+    }
+
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify(updatedBloodBank)),
+    };
+  } catch (error: any) {
+    console.error("Verification update failed:", error?.message);
+    return { success: false, message: "An error occurred." };
+  }
+};
