@@ -72,3 +72,16 @@ try {
     return {success:false,message:"Something went wrong"}
 }
 }
+
+export const checkBloodBankVerification = async (bloodBankId: string): Promise<boolean> => {
+try {
+    await connectToDb();
+  const bloodBanks=await BloodBank.find({_id:bloodBankId,verified:true});
+    if(!bloodBanks || bloodBanks.length===0) return false;
+    return true;
+    
+} catch (error:any) {
+    console.log(error?.message);
+    return false;
+}
+}

@@ -16,6 +16,8 @@ import {
   AlertCircle,
   ChevronRight,
   Building,
+  CheckCircle,
+  XCircle,
 } from "lucide-react";
 import { redirect } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -181,8 +183,8 @@ export default function ProfilePage() {
             <button
               onClick={() => setViewMode("donor")}
               className={`mr-2 inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${viewMode === "donor"
-                  ? "bg-red-600 text-white hover:bg-red-700"
-                  : "bg-white text-gray-700 hover:bg-gray-50"
+                ? "bg-red-600 text-white hover:bg-red-700"
+                : "bg-white text-gray-700 hover:bg-gray-50"
                 } focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2`}
             >
               Donor View
@@ -190,8 +192,8 @@ export default function ProfilePage() {
             <button
               onClick={() => setViewMode("blood_bank")}
               className={`inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${viewMode === "blood_bank"
-                  ? "bg-red-600 text-white hover:bg-red-700"
-                  : "bg-white text-gray-700 hover:bg-gray-50"
+                ? "bg-red-600 text-white hover:bg-red-700"
+                : "bg-white text-gray-700 hover:bg-gray-50"
                 } focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2`}
             >
               Blood Bank View
@@ -224,9 +226,23 @@ export default function ProfilePage() {
                       {donorData.blood_group}
                     </span>
                   ) : (
-                    <span className="inline-flex items-center rounded-full bg-blue-600 px-2.5 py-0.5 text-xs font-medium text-white">
-                      <Building className="mr-1 h-3 w-3" /> Blood Bank
-                    </span>
+                    <div className="flex flex-col gap-2">
+                      <span className="inline-flex items-center rounded-full bg-blue-600 px-2.5 py-0.5 text-xs font-medium text-white">
+                        <Building className="mr-1 h-3 w-3" />
+                        Blood Bank
+                      </span>
+{bloodBankData.verified ? (
+  <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+    <CheckCircle className="mr-1 h-4 w-4 text-green-500" />
+    Verified
+  </span>
+) : (
+  <span className="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
+    <XCircle className="mr-1 h-4 w-4 text-yellow-500" />
+    Unverified
+  </span>
+)}
+                    </div>
                   )}
                 </div>
               </div>
@@ -300,10 +316,14 @@ export default function ProfilePage() {
               ) : (
                 <div>Loading donor data...</div>
               )
-            ) : bloodBankData.blood_bank ? (
+            ) : bloodBankData.blood_bank && bloodBankData.verified ? (
               <BloodBankContent data={bloodBankData} />
             ) : (
-              <div>Loading blood bank data...</div>
+              <div className="flex items-center justify-center w-full">
+                <div className="p-6 rounded-lg shadow-md text-center">
+                  <h1 className="text-2xl font-bold mb-4">Loading blood bank data...</h1>
+                </div>
+              </div>
             )}
           </div>
         </div>
@@ -320,8 +340,8 @@ function DonorContent({ data }: { data: Donor }) {
         <button
           onClick={() => setActiveTab("overview")}
           className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${activeTab === "overview"
-              ? "bg-white shadow text-gray-900"
-              : "text-gray-500 hover:text-gray-900"
+            ? "bg-white shadow text-gray-900"
+            : "text-gray-500 hover:text-gray-900"
             }`}
         >
           Overview
@@ -329,8 +349,8 @@ function DonorContent({ data }: { data: Donor }) {
         <button
           onClick={() => setActiveTab("donations")}
           className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${activeTab === "donations"
-              ? "bg-white shadow text-gray-900"
-              : "text-gray-500 hover:text-gray-900"
+            ? "bg-white shadow text-gray-900"
+            : "text-gray-500 hover:text-gray-900"
             }`}
         >
           Donation History
@@ -338,8 +358,8 @@ function DonorContent({ data }: { data: Donor }) {
         <button
           onClick={() => setActiveTab("appointments")}
           className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${activeTab === "appointments"
-              ? "bg-white shadow text-gray-900"
-              : "text-gray-500 hover:text-gray-900"
+            ? "bg-white shadow text-gray-900"
+            : "text-gray-500 hover:text-gray-900"
             }`}
         >
           Appointments
@@ -595,8 +615,8 @@ function BloodBankContent({ data }: { data: BloodBank }) {
         <button
           onClick={() => setActiveTab("inventory")}
           className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${activeTab === "inventory"
-              ? "bg-white shadow text-gray-900"
-              : "text-gray-500 hover:text-gray-900"
+            ? "bg-white shadow text-gray-900"
+            : "text-gray-500 hover:text-gray-900"
             }`}
         >
           Blood Inventory
@@ -604,8 +624,8 @@ function BloodBankContent({ data }: { data: BloodBank }) {
         <button
           onClick={() => setActiveTab("donations")}
           className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${activeTab === "donations"
-              ? "bg-white shadow text-gray-900"
-              : "text-gray-500 hover:text-gray-900"
+            ? "bg-white shadow text-gray-900"
+            : "text-gray-500 hover:text-gray-900"
             }`}
         >
           Recent Donations
@@ -613,8 +633,8 @@ function BloodBankContent({ data }: { data: BloodBank }) {
         <button
           onClick={() => setActiveTab("drives")}
           className={`flex flex-1 items-center justify-center rounded-md px-3 py-2 text-sm font-medium ${activeTab === "drives"
-              ? "bg-white shadow text-gray-900"
-              : "text-gray-500 hover:text-gray-900"
+            ? "bg-white shadow text-gray-900"
+            : "text-gray-500 hover:text-gray-900"
             }`}
         >
           Blood Drives
@@ -633,54 +653,54 @@ function BloodBankContent({ data }: { data: BloodBank }) {
               </p>
             </div>
             <div className="px-6 py-4">
-                {data?.inventory?.length?
+              {data?.inventory?.length ?
                 (
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                {data.inventory.map((item) => (
-                  <div
-                    key={item.blood_group}
-                    className={`rounded-lg p-4 text-center ${item.status === "critical"
-                        ? "bg-red-100"
-                        : item.status === "low"
-                          ? "bg-yellow-50"
-                          : "bg-green-50"
-                      }`}
-                  >
-                    <Droplet
-                      className={`mx-auto h-8 w-8 ${item.status === "critical"
-                          ? "text-red-600"
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                    {data.inventory.map((item) => (
+                      <div
+                        key={item.blood_group}
+                        className={`rounded-lg p-4 text-center ${item.status === "critical"
+                          ? "bg-red-100"
                           : item.status === "low"
-                            ? "text-yellow-600"
-                            : "text-green-600"
-                        }`}
-                    />
-                    <p className="mt-2 text-2xl font-bold">
-                      {item.blood_group}
-                    </p>
-                    <p className="text-lg font-medium">{item.units} units</p>
-                    <span
-                      className={`mt-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium text-white ${item.status === "critical"
-                          ? "bg-red-600"
-                          : item.status === "low"
-                            ? "bg-yellow-600"
-                            : "bg-green-600"
-                        }`}
-                    >
-                      {item.status}
-                    </span>
+                            ? "bg-yellow-50"
+                            : "bg-green-50"
+                          }`}
+                      >
+                        <Droplet
+                          className={`mx-auto h-8 w-8 ${item.status === "critical"
+                            ? "text-red-600"
+                            : item.status === "low"
+                              ? "text-yellow-600"
+                              : "text-green-600"
+                            }`}
+                        />
+                        <p className="mt-2 text-2xl font-bold">
+                          {item.blood_group}
+                        </p>
+                        <p className="text-lg font-medium">{item.units} units</p>
+                        <span
+                          className={`mt-1 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium text-white ${item.status === "critical"
+                            ? "bg-red-600"
+                            : item.status === "low"
+                              ? "bg-yellow-600"
+                              : "bg-green-600"
+                            }`}
+                        >
+                          {item.status}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                ) : (
+                  <div className="flex items-center justify-center h-[300px] w-full">
+                    <div className="text-center text-gray-500">
+                      <Droplet className="mx-auto mb-2 h-10 w-10 text-gray-400" />
+                      <p className="text-lg font-semibold">No inventory data available</p>
+                      <p className="text-sm">Check back later or add new blood stock.</p>
+                    </div>
                   </div>
-                ):(
-              <div className="flex items-center justify-center h-[300px] w-full">
-                  <div className="text-center text-gray-500">
-                    <Droplet className="mx-auto mb-2 h-10 w-10 text-gray-400" />
-                    <p className="text-lg font-semibold">No inventory data available</p>
-                    <p className="text-sm">Check back later or add new blood stock.</p>
-                  </div>
-                </div>
-              )}
-              </div>
+                )}
+            </div>
             <div className="flex items-center px-6 py-4 border-t border-gray-200">
               <button className="inline-flex w-full items-center justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
                 Update Inventory
