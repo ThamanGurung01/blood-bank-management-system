@@ -1,35 +1,28 @@
-import React from 'react'
-
+"use client"
+import React, { useEffect, useState } from 'react'
+import { getAdminMetrics } from '@/actions/getAdminMetrics';
+import { useRouter } from 'next/navigation';
+import { Building } from 'lucide-react';
 const page = () => {
-   const metrics = [
-    {
-      title: "Total Blood Banks",
-      value: "24",
-      description: "Registered blood banks",
-      icon: "🏥",
-      bgColor: "bg-blue-50",
-      textColor: "text-blue-600",
-      borderColor: "border-blue-200"
-    },
-    {
-      title: "Total Donors",
-      value: "120",
-      description: "Active blood donors",
-      icon: "🩸",
-      bgColor: "bg-red-50",
-      textColor: "text-red-600",
-      borderColor: "border-red-200"
-    },
-    {
-      title: "Pending Verifications",
-      value: "3",
-      description: "Blood banks awaiting approval",
-      icon: "⏳",
-      bgColor: "bg-yellow-50",
-      textColor: "text-yellow-600",
-      borderColor: "border-yellow-200"
-    }
-  ];
+  interface MetricsType{
+    title:string;
+    value:string;
+    description:string;
+    icon:string;
+    bgColor:string;
+    textColor:string;
+    borderColor:string;
+  }
+  const [metrics, setMetrics] = useState<MetricsType[]>([]);
+  const router=useRouter();
+  const fetchMetrics=async()=>{
+    const metricsData=await getAdminMetrics();
+    console.log(metricsData.data);
+    if(metricsData.success) setMetrics(metricsData.data ?? []);
+  }
+  useEffect(()=>{
+    fetchMetrics();
+  },[])
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
@@ -77,8 +70,10 @@ const page = () => {
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Quick Actions
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <button className="flex items-center p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors duration-200 text-left">
+          <div className="flex gap-4 w-full">
+            <button
+            onClick={()=>router.push("dashboard/list-donors")}
+             className="flex-1 flex items-center p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors duration-200 text-left">
               <div className="text-2xl mr-3">👥</div>
               <div>
                 <div className="font-medium text-gray-900">Manage Donors</div>
@@ -86,19 +81,23 @@ const page = () => {
               </div>
             </button>
             
-            <button className="flex items-center p-4 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-colors duration-200 text-left">
+            <button
+            onClick={()=>router.push("dashboard/list-blood_banks")}
+            className="flex-1 flex items-center p-4 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-colors duration-200 text-left">
+              <div className="text-2xl mr-3"><Building/></div>
+              <div>
+                <div className="font-medium text-gray-900">Manage Blood Banks</div>
+                <div className="text-sm text-gray-600">View and edit donor profiles</div>
+              </div>
+            </button>
+
+            <button
+            onClick={()=>router.push("dashboard/verify-blood_banks")}
+            className="flex-1 flex items-center p-4 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-colors duration-200 text-left">
               <div className="text-2xl mr-3">✅</div>
               <div>
                 <div className="font-medium text-gray-900">Verify Blood Banks</div>
                 <div className="text-sm text-gray-600">Review pending applications</div>
-              </div>
-            </button>
-            
-            <button className="flex items-center p-4 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-colors duration-200 text-left">
-              <div className="text-2xl mr-3">📊</div>
-              <div>
-                <div className="font-medium text-gray-900">View Reports</div>
-                <div className="text-sm text-gray-600">Generate system reports</div>
               </div>
             </button>
           </div>

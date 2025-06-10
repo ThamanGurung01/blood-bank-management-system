@@ -2,37 +2,62 @@
 import React, { useEffect, useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { Heart, Home, Droplet, Syringe, Package, Calendar, LogOut, History, Users, BarChart2, Building , ShieldCheck} from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 const Sidebar = () => {
-  const [selectedSidebarOption, setSelectedSidebarOption] = useState<string>();
+  // const [selectedSidebarOption, setSelectedSidebarOption] = useState<string>();
   const { data: session } = useSession();
   const router = useRouter();
 
+const pathname = usePathname();
+
+const getSidebarOptionFromPath = (path: string): string | undefined => {
+  if (path.startsWith('/dashboard/find-donors')) return 'find-donors';
+  if (path.startsWith('/dashboard/blood-request')) return 'blood-request';
+  if (path.startsWith('/dashboard/donation-schedule')) return 'donation-schedule';
+  if (path.startsWith('/dashboard/donation-history')) return 'donation-history';
+  if (path.startsWith('/dashboard/leaderboard')) return 'leaderboard';
+  if (path === '/dashboard') return 'overview';
+
+  if (path.startsWith('/admin/dashboard/list-blood_banks')) return 'list-blood_banks';
+  if (path.startsWith('/admin/dashboard/list-donors')) return 'list-donors';
+  if (path.startsWith('/admin/dashboard/verify-blood_banks')) return 'verify-blood_banks';
+  if (path === '/admin/dashboard') return 'admin-overview';
+
+  if (path.startsWith('/dashboard/blood-stock')) return 'blood-stock';
+  if (path.startsWith('/dashboard/blood-donation')) return 'blood-donation';
+  if (path.startsWith('/dashboard/blood_bank-request')) return 'blood_bank-request';
+  if (path.startsWith('/dashboard/blood_bank-donation_schedule')) return 'blood_bank-donation_schedule';
+  if (path.startsWith('/dashboard/event')) return 'event';
+
+  return undefined;
+};
+
+const selectedSidebarOption = getSidebarOptionFromPath(pathname);
   const handleSidebarSelect = (option: string, role: string) => {
     if (!option && !role) return console.log("error no option and role passed for handle side bar")
     if (role === "blood_bank") {
       if (option === "overview") {
-        setSelectedSidebarOption(option)
+        // setSelectedSidebarOption(option)
         router.push(`/dashboard`)
       } else {
-        setSelectedSidebarOption(option)
+        // setSelectedSidebarOption(option)
         router.push(`/dashboard/${option}`)
       }
     } else if (role === "donor") {
       if (option === "overview") {
-        setSelectedSidebarOption(option)
+        // setSelectedSidebarOption(option)
         router.push(`/dashboard`)
       } else {
-        setSelectedSidebarOption(option)
+        // setSelectedSidebarOption(option)
         router.push(`/dashboard/${option}`)
       }
     } else if (role === "admin") {
       if (option === "admin-overview") {
-        setSelectedSidebarOption(option)
+        // setSelectedSidebarOption(option)
         router.push(`/admin/dashboard`)
       } else {
-        setSelectedSidebarOption(option)
+        // setSelectedSidebarOption(option)
         router.push(`/admin/dashboard/${option}`)
       }
     }
@@ -42,20 +67,20 @@ const Sidebar = () => {
     signOut({ callbackUrl: "/" })
   }
 
-  useEffect(() => {
-    if (!session?.user?.role) return
-    if (session?.user.role === "blood_bank" && !selectedSidebarOption) {
-      setSelectedSidebarOption("overview")
-      router.push("/dashboard")
-    } else if (session?.user.role === "donor" && !selectedSidebarOption) {
-      setSelectedSidebarOption("find-donors")
-      router.push("/dashboard/find-donors")
-    } else if (session?.user.role === "admin" && !selectedSidebarOption) {
-      setSelectedSidebarOption("admin-overview")
-      router.push("/admin/dashboard")
-    }
+  // useEffect(() => {
+  //   if (!session?.user?.role) return
+  //   if (session?.user.role === "blood_bank" && !selectedSidebarOption) {
+  //     setSelectedSidebarOption("overview")
+  //     router.push("/dashboard")
+  //   } else if (session?.user.role === "donor" && !selectedSidebarOption) {
+  //     setSelectedSidebarOption("find-donors")
+  //     router.push("/dashboard/find-donors")
+  //   } else if (session?.user.role === "admin" && !selectedSidebarOption) {
+  //     setSelectedSidebarOption("admin-overview")
+  //     router.push("/admin/dashboard")
+  //   }
 
-  }, [session, selectedSidebarOption, router])
+  // }, [session, selectedSidebarOption, router])
 
   return (
     <div className="fixed z-10 flex h-screen w-64 flex-col border-r border-gray-200 bg-white pt-20 shadow-sm transition-all">
