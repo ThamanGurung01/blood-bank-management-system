@@ -7,6 +7,8 @@ import { cosineSimilarity } from "@/utils/cosineSimilarity";
 import { calculateDistance } from "@/utils/calculateDistance";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { startOfDay } from 'date-fns';
+
 export const getAllDonor=async()=>{
 try {
     await connectToDb();
@@ -195,3 +197,24 @@ return {
     };
   }
 };
+
+
+export const getTodayNewDonors = async () => {
+  const today = startOfDay(new Date());
+  const donors = await Donor.find({
+    createdAt: { $gte: today }
+  });
+  if (!donors.length) {
+    return { success: false, message:"no new Donors" };
+  }
+
+  const sorted = donors.sort((a, b) => b.createdAt - a.createdAt);
+
+  return {
+    success: true,
+    data:{
+    count: donors.length,
+    createdAt: sorted[0].createdAt
+    }
+  };
+}
