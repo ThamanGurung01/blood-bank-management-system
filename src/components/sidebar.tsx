@@ -17,6 +17,7 @@ const getSidebarOptionFromPath = (path: string): string | undefined => {
   if (path.startsWith('/dashboard/donation-schedule')) return 'donation-schedule';
   if (path.startsWith('/dashboard/donation-history')) return 'donation-history';
   if (path.startsWith('/dashboard/leaderboard')) return 'leaderboard';
+  if (path.startsWith('/dashboard/event')) return 'event';
   if (path === '/dashboard') return 'overview';
 
   if (path.startsWith('/admin/dashboard/list-blood_banks')) return 'list-blood_banks';
@@ -28,7 +29,7 @@ const getSidebarOptionFromPath = (path: string): string | undefined => {
   if (path.startsWith('/dashboard/blood-donation')) return 'blood-donation';
   if (path.startsWith('/dashboard/blood_bank-request')) return 'blood_bank-request';
   if (path.startsWith('/dashboard/blood_bank-donation_schedule')) return 'blood_bank-donation_schedule';
-  if (path.startsWith('/dashboard/event')) return 'event';
+  if (path.startsWith('/dashboard/blood_bank-event')) return 'blood_bank-event';
 
   return undefined;
 };
