@@ -132,11 +132,11 @@ const selectedSidebarOption = getSidebarOptionFromPath(pathname);
               isSelected={selectedSidebarOption === "blood_bank-donation_schedule"}
               onClick={() => handleSidebarSelect("blood_bank-donation_schedule", "blood_bank")}
             />
-            <SidebarItem
+             <SidebarItem
               icon={<Calendar size={20} />}
               label="Event"
-              isSelected={selectedSidebarOption === "event"}
-              onClick={() => handleSidebarSelect("event", "blood_bank")}
+              isSelected={selectedSidebarOption === "blood_bank-event"}
+              onClick={() => handleSidebarSelect("blood_bank-event", "blood_bank")}
             />
           </>
         )}
@@ -167,6 +167,12 @@ const selectedSidebarOption = getSidebarOptionFromPath(pathname);
               label="Donation History"
               isSelected={selectedSidebarOption === "donation-history"}
               onClick={() => handleSidebarSelect("donation-history", "donor")}
+            />
+            <SidebarItem
+              icon={<Calendar size={20} />}
+              label="Event"
+              isSelected={selectedSidebarOption === "event"}
+              onClick={() => handleSidebarSelect("event", "donor")}
             />
             <SidebarItem
               icon={<BarChart2 size={20} />}
