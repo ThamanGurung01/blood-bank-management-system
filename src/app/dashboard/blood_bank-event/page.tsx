@@ -1,7 +1,7 @@
 "use client"
 import React, { useState } from 'react';
 import { Calendar, MapPin, Clock, User, Edit, Trash2, Plus, AlertCircle, CheckCircle, PlayCircle } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { createEvent, updateEvent } from '@/actions/eventActions';
 
 interface User {
   _id: string;
@@ -20,7 +20,6 @@ interface Event {
   status: 'upcoming' | 'ongoing' | 'completed';
   createdBy: User;
   createdAt: Date;
-  updatedAt: Date;
 }
 
 interface EventFormData {
@@ -45,7 +44,6 @@ const mockEvents: Event[] = [
     status: 'upcoming',
     createdBy: { _id: '1', name: 'Dr. Sarah Johnson', email: 'sarah@hospital.com' },
     createdAt: new Date('2024-06-10T10:00:00'),
-    updatedAt: new Date('2024-06-10T10:00:00')
   },
   {
     _id: '2',
@@ -57,8 +55,7 @@ const mockEvents: Event[] = [
     description: 'Regular monthly blood collection drive for community donors',
     status: 'ongoing',
     createdBy: { _id: '2', name: 'Mike Wilson', email: 'mike@bloodbank.org' },
-    createdAt: new Date('2024-06-01T10:00:00'),
-    updatedAt: new Date('2024-06-12T14:30:00')
+    createdAt: new Date('2024-06-01T10:00:00')
   },
   {
     _id: '3',
@@ -71,7 +68,6 @@ const mockEvents: Event[] = [
     status: 'completed',
     createdBy: { _id: '3', name: 'Lisa Chen', email: 'lisa@university.edu' },
     createdAt: new Date('2024-05-20T10:00:00'),
-    updatedAt: new Date('2024-06-05T16:00:00')
   }
 ];
 
@@ -81,7 +77,6 @@ const page = () => {
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterType, setFilterType] = useState<string>('all');
-    const router=useRouter();
   const [formData, setFormData] = useState<EventFormData>({
     name: '',
     startDateTime: '',
@@ -153,34 +148,48 @@ const page = () => {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = () => {
-    
-    if (editingEvent) {
-      setEvents(events.map(event => 
-        event._id === editingEvent._id 
-          ? {
-              ...event,
-              ...formData,
-              startDateTime: new Date(formData.startDateTime),
-              endDateTime: new Date(formData.endDateTime),
-              updatedAt: new Date()
-            }
-          : event
-      ));
+  const handleSubmit = async() => {
+      const payload = {
+    ...formData,
+    startDateTime: new Date(formData.startDateTime),
+    endDateTime: new Date(formData.endDateTime),
+  };
+   try{
+if (editingEvent) {
+  const formDataObj = new FormData();
+      formDataObj.append('name', formData.name);
+      formDataObj.append('startDateTime', new Date(formData.startDateTime).toISOString());
+      formDataObj.append('endDateTime', new Date(formData.endDateTime).toISOString());
+      formDataObj.append('location', formData.location);
+      formDataObj.append('type', formData.type);
+      formDataObj.append('description', formData.description);
+      formDataObj.append('status', formData.status);
+
+      const updated = await updateEvent(editingEvent._id, formDataObj);
+      if (updated?.success) {
+        setEvents(events.map(event =>
+          event._id === editingEvent._id ? { ...event, ...formDataObj } : event
+        ));
+      }
     } else {
-      const newEvent: Event = {
-        _id: Date.now().toString(),
-        ...formData,
-        startDateTime: new Date(formData.startDateTime),
-        endDateTime: new Date(formData.endDateTime),
-        createdBy: { _id: 'current-user', name: 'Current User', email: 'user@bloodbank.org' },
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      setEvents([newEvent, ...events]);
+      const formDataObj = new FormData();
+      formDataObj.append('name', formData.name);
+      formDataObj.append('startDateTime', new Date(formData.startDateTime).toISOString());
+      formDataObj.append('endDateTime', new Date(formData.endDateTime).toISOString());
+      formDataObj.append('location', formData.location);
+      formDataObj.append('type', formData.type);
+      formDataObj.append('description', formData.description);
+      formDataObj.append('status', formData.status);
+
+      const result = await createEvent(formDataObj);
+      if (result?.success && result?.data) {
+        setEvents([result.data, ...events]);
+      }
     }
-    
     setIsModalOpen(false);
+   }catch(error){
+     console.error("Error submitting event:", error);
+   }
   };
 
   const handleDelete = (eventId: string) => {

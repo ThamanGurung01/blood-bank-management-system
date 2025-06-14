@@ -59,6 +59,25 @@ if(type==="user"){
         notes: formData.get("notes"),
     }
 
+}else if(type==="event"){
+    const name = formData.get("name") as string;
+    const startDateTime = new Date(formData.get("startDateTime") as string);
+    const endDateTime = new Date(formData.get("endDateTime") as string);
+    const location = formData.get("location") as string;
+    const type = formData.get("type") as "emergency" | "normal";
+    const description = formData.get("description") as string;
+    const createdBy = formData.get("createdBy") as string;
+
+    return{
+        name,
+        startDateTime,
+        endDateTime,
+        location,
+        type,
+        description,
+        createdBy,
+    }
+
 }else{
     return undefined;
 }
