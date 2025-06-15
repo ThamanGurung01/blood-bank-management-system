@@ -1,8 +1,8 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Calendar, MapPin, Clock, User, Edit, Trash2, Plus, AlertCircle, CheckCircle, PlayCircle } from 'lucide-react';
-import { createEvent, updateEvent } from '@/actions/eventActions';
-
+import { createEvent, getAllEvents, updateEvent } from '@/actions/eventActions';
+import { useSession } from 'next-auth/react';
 interface User {
   _id: string;
   name: string;
@@ -18,7 +18,6 @@ interface Event {
   type: 'emergency' | 'normal';
   description: string;
   status: 'upcoming' | 'ongoing' | 'completed';
-  createdBy: User;
   createdAt: Date;
 }
 
@@ -32,47 +31,44 @@ interface EventFormData {
   status: 'upcoming' | 'ongoing' | 'completed';
 }
 
-const mockEvents: Event[] = [
-  {
-    _id: '1',
-    name: 'Emergency Blood Drive - Hospital Central',
-    startDateTime: new Date('2024-06-15T09:00:00'),
-    endDateTime: new Date('2024-06-15T17:00:00'),
-    location: 'Hospital Central, Main Hall',
-    type: 'emergency',
-    description: 'Urgent need for O- and AB+ blood types due to recent accidents',
-    status: 'upcoming',
-    createdBy: { _id: '1', name: 'Dr. Sarah Johnson', email: 'sarah@hospital.com' },
-    createdAt: new Date('2024-06-10T10:00:00'),
-  },
-  {
-    _id: '2',
-    name: 'Monthly Community Blood Drive',
-    startDateTime: new Date('2024-06-20T08:00:00'),
-    endDateTime: new Date('2024-06-20T16:00:00'),
-    location: 'Community Center, Downtown',
-    type: 'normal',
-    description: 'Regular monthly blood collection drive for community donors',
-    status: 'ongoing',
-    createdBy: { _id: '2', name: 'Mike Wilson', email: 'mike@bloodbank.org' },
-    createdAt: new Date('2024-06-01T10:00:00')
-  },
-  {
-    _id: '3',
-    name: 'University Blood Donation Campaign',
-    startDateTime: new Date('2024-06-05T10:00:00'),
-    endDateTime: new Date('2024-06-05T15:00:00'),
-    location: 'State University, Student Union',
-    type: 'normal',
-    description: 'Annual blood donation event for university students and staff',
-    status: 'completed',
-    createdBy: { _id: '3', name: 'Lisa Chen', email: 'lisa@university.edu' },
-    createdAt: new Date('2024-05-20T10:00:00'),
-  }
-];
+// const mockEvents: Event[] = [
+//   {
+//     _id: '1',
+//     name: 'Emergency Blood Drive - Hospital Central',
+//     startDateTime: new Date('2024-06-15T09:00:00'),
+//     endDateTime: new Date('2024-06-15T17:00:00'),
+//     location: 'Hospital Central, Main Hall',
+//     type: 'emergency',
+//     description: 'Urgent need for O- and AB+ blood types due to recent accidents',
+//     status: 'upcoming',
+//     createdAt: new Date('2024-06-10T10:00:00'),
+//   },
+//   {
+//     _id: '2',
+//     name: 'Monthly Community Blood Drive',
+//     startDateTime: new Date('2024-06-20T08:00:00'),
+//     endDateTime: new Date('2024-06-20T16:00:00'),
+//     location: 'Community Center, Downtown',
+//     type: 'normal',
+//     description: 'Regular monthly blood collection drive for community donors',
+//     status: 'ongoing',
+//     createdAt: new Date('2024-06-01T10:00:00')
+//   },
+//   {
+//     _id: '3',
+//     name: 'University Blood Donation Campaign',
+//     startDateTime: new Date('2024-06-05T10:00:00'),
+//     endDateTime: new Date('2024-06-05T15:00:00'),
+//     location: 'State University, Student Union',
+//     type: 'normal',
+//     description: 'Annual blood donation event for university students and staff',
+//     status: 'completed',
+//     createdAt: new Date('2024-05-20T10:00:00'),
+//   }
+// ];
 
 const page = () => {
-  const [events, setEvents] = useState<Event[]>(mockEvents);
+  const [events, setEvents] = useState<Event[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -86,7 +82,8 @@ const page = () => {
     description: '',
     status: 'upcoming'
   });
-
+  const {data:session}=useSession();
+const [creator,setCreator]=useState<string>();
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'upcoming': return <Clock className="w-4 h-4 text-blue-500" />;
@@ -149,29 +146,7 @@ const page = () => {
   };
 
   const handleSubmit = async() => {
-      const payload = {
-    ...formData,
-    startDateTime: new Date(formData.startDateTime),
-    endDateTime: new Date(formData.endDateTime),
-  };
    try{
-if (editingEvent) {
-  const formDataObj = new FormData();
-      formDataObj.append('name', formData.name);
-      formDataObj.append('startDateTime', new Date(formData.startDateTime).toISOString());
-      formDataObj.append('endDateTime', new Date(formData.endDateTime).toISOString());
-      formDataObj.append('location', formData.location);
-      formDataObj.append('type', formData.type);
-      formDataObj.append('description', formData.description);
-      formDataObj.append('status', formData.status);
-
-      const updated = await updateEvent(editingEvent._id, formDataObj);
-      if (updated?.success) {
-        setEvents(events.map(event =>
-          event._id === editingEvent._id ? { ...event, ...formDataObj } : event
-        ));
-      }
-    } else {
       const formDataObj = new FormData();
       formDataObj.append('name', formData.name);
       formDataObj.append('startDateTime', new Date(formData.startDateTime).toISOString());
@@ -180,7 +155,20 @@ if (editingEvent) {
       formDataObj.append('type', formData.type);
       formDataObj.append('description', formData.description);
       formDataObj.append('status', formData.status);
-
+if (editingEvent) {
+      const updated = await updateEvent(editingEvent._id, formDataObj);
+      if (updated?.success) {
+        setEvents(events.map(event =>
+          event._id === editingEvent._id ? { ...event, ...updated?.data } : event
+        ));
+      }
+    } else {
+      // const creator= session?.user.id;
+      if(!creator){ 
+        console.log("no creator");
+        return;
+      }
+      formDataObj.append('createdBy',creator);
       const result = await createEvent(formDataObj);
       if (result?.success && result?.data) {
         setEvents([result.data, ...events]);
@@ -204,6 +192,21 @@ if (editingEvent) {
     return statusMatch && typeMatch;
   });
 
+  const fetchEvents=async()=>{
+    const eventData=await getAllEvents();
+    console.log(eventData);
+    if(!eventData?.success){ console.log("Error")
+      return;
+    }
+    setEvents(eventData.data);
+  }
+
+  useEffect(()=>{
+if(session){
+  setCreator(session.user.id);
+}
+  fetchEvents();
+  },[session])
   return (
     <div className="max-w-6xl mx-auto p-6 bg-white">
       <div className="flex justify-between items-center mb-6">
@@ -294,10 +297,10 @@ if (editingEvent) {
                   <MapPin className="w-4 h-4" />
                   <span>{event.location}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                {/* <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
                   <span>Created by {event.createdBy.name}</span>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

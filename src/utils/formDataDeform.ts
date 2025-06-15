@@ -1,5 +1,3 @@
-import { parse } from "path"
-
 export const formDataDeform=(formData:FormData,type:string)=>{
     try{
 if(type==="user"){
