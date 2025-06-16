@@ -84,6 +84,25 @@ const page = () => {
   });
   const {data:session}=useSession();
 const [creator,setCreator]=useState<string>();
+const [errors, setErrors] = useState<Partial<Record<keyof typeof formData, string>>>({});
+
+const validateForm = () => {
+  const newErrors: typeof errors = {};
+
+  if (!formData.name.trim()) newErrors.name = "Event name is required.";
+  if (!formData.startDateTime) newErrors.startDateTime = "Start date & time is required.";
+  if (!formData.endDateTime) newErrors.endDateTime = "End date & time is required.";
+  else if (new Date(formData.endDateTime) <= new Date(formData.startDateTime)) newErrors.endDateTime = "End time must be after start time.";
+
+  if (!formData.location.trim()) newErrors.location = "Location is required.";
+  if (!formData.type) newErrors.type = "Type is required.";
+  if (!formData.status) newErrors.status = "Status is required.";
+  if (!formData.description.trim()) newErrors.description = "Description is required.";
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'upcoming': return <Clock className="w-4 h-4 text-blue-500" />;
@@ -146,6 +165,7 @@ const [creator,setCreator]=useState<string>();
   };
 
   const handleSubmit = async() => {
+    if (!validateForm()) return;
    try{
       const formDataObj = new FormData();
       formDataObj.append('name', formData.name);
@@ -194,7 +214,6 @@ if (editingEvent) {
 
   const fetchEvents=async()=>{
     const eventData=await getAllEvents();
-    console.log(eventData);
     if(!eventData?.success){ console.log("Error")
       return;
     }
@@ -206,7 +225,7 @@ if(session){
   setCreator(session.user.id);
 }
   fetchEvents();
-  },[session])
+  },[session,errors])
   return (
     <div className="max-w-6xl mx-auto p-6 bg-white">
       <div className="flex justify-between items-center mb-6">
@@ -332,6 +351,7 @@ if(session){
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   />
+                  {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -344,6 +364,8 @@ if(session){
                       onChange={(e) => setFormData({...formData, startDateTime: e.target.value})}
                       className="w-full border border-gray-300 rounded-md px-3 py-2"
                     />
+                  {errors.startDateTime && <p className="text-red-500 text-sm mt-1">{errors.startDateTime}</p>}
+
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">End Date & Time</label>
@@ -354,6 +376,7 @@ if(session){
                       onChange={(e) => setFormData({...formData, endDateTime: e.target.value})}
                       className="w-full border border-gray-300 rounded-md px-3 py-2"
                     />
+                  {errors.endDateTime && <p className="text-red-500 text-sm mt-1">{errors.endDateTime}</p>}
                   </div>
                 </div>
 
@@ -366,6 +389,7 @@ if(session){
                     onChange={(e) => setFormData({...formData, location: e.target.value})}
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   />
+                  {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -379,6 +403,7 @@ if(session){
                       <option value="normal">Normal</option>
                       <option value="emergency">Emergency</option>
                     </select>
+                  {errors.type && <p className="text-red-500 text-sm mt-1">{errors.type}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
@@ -391,6 +416,7 @@ if(session){
                       <option value="ongoing">Ongoing</option>
                       <option value="completed">Completed</option>
                     </select>
+                  {errors.status && <p className="text-red-500 text-sm mt-1">{errors.status}</p>}
                   </div>
                 </div>
 
@@ -402,6 +428,7 @@ if(session){
                     rows={3}
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   />
+                  {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
                 </div>
 
                 <div className="flex gap-3 pt-4">
@@ -413,7 +440,10 @@ if(session){
                   </button>
                   <button
                     type="button"
-                    onClick={() => setIsModalOpen(false)}
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setErrors({});
+                    }}
                     className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded-md font-medium transition-colors"
                   >
                     Cancel
