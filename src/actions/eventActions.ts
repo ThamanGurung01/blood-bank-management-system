@@ -85,8 +85,15 @@ export const updateEvent = async (eventId: string, formData: FormData) => {
 
 export const getAllEvents=async()=>{
   try{
-          await connectToDb();
-    const eventData=await Event.find({}).populate('createdBy');
+   await connectToDb();
+   const eventData = await Event.find({})
+      .populate({
+        path: "createdBy",
+        populate: {
+          path: "user",
+          select: "name",
+        },
+      });
     if(!eventData) return { success: false,message: "Event not found.",}
     return{
       success:true,
