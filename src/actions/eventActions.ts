@@ -3,15 +3,16 @@
 import { connectToDb } from "@/utils/database";
 import Event from "@/models/event.models";
 import { formDataDeform } from "@/utils/formDataDeform";
+import { Types } from "mongoose";
 
 export const createEvent = async (formData: FormData) => {
   try {
     await connectToDb();
-    const eventData=formDataDeform(formData,"event");
-    if(!eventData) return {
-        success: false,
-        message: "no from data",
-      };
+    const eventData = formDataDeform(formData, "event");
+    if (!eventData) return {
+      success: false,
+      message: "no from data",
+    };
     if (!eventData.name || !eventData.startDateTime || !eventData.endDateTime || !eventData.location || !eventData.type || !eventData.createdBy) {
       return {
         success: false,
@@ -56,24 +57,25 @@ export const updateEvent = async (eventId: string, formData: FormData) => {
       };
     }
 
-    if (!eventData.name ||!eventData.startDateTime ||!eventData.endDateTime ||!eventData.location ||!eventData.type) {
-      return {success: false,message: "All required fields must be provided."};
+    if (!eventData.name || !eventData.startDateTime || !eventData.endDateTime || !eventData.location || !eventData.type) {
+      return { success: false, message: "All required fields must be provided." };
     }
 
-    const updatedEvent = await Event.findByIdAndUpdate(eventId,{
-        name: eventData.name,
-        startDateTime: eventData.startDateTime,
-        endDateTime: eventData.endDateTime,
-        location: eventData.location,
-        type: eventData.type,
-        description: eventData.description,
-      },{ new: true });
+    const updatedEvent = await Event.findByIdAndUpdate(eventId, {
+      name: eventData.name,
+      startDateTime: eventData.startDateTime,
+      endDateTime: eventData.endDateTime,
+      location: eventData.location,
+      type: eventData.type,
+      description: eventData.description,
+    }, { new: true });
 
     if (!updatedEvent) {
-      return { success: false,message: "Event not found.",};}
+      return { success: false, message: "Event not found.", };
+    }
 
-    return {success: true,message: "Event updated successfully.", data: JSON.parse(JSON.stringify(updatedEvent)),};
-    
+    return { success: true, message: "Event updated successfully.", data: JSON.parse(JSON.stringify(updatedEvent)), };
+
   } catch (error: any) {
     console.error("Error updating event:", error.message);
     return {
@@ -83,10 +85,10 @@ export const updateEvent = async (eventId: string, formData: FormData) => {
   }
 };
 
-export const getAllEvents=async()=>{
-  try{
-   await connectToDb();
-   const eventData = await Event.find({})
+export const getAllEvents = async () => {
+  try {
+    await connectToDb();
+    const eventData = await Event.find({})
       .populate({
         path: "createdBy",
         populate: {
@@ -94,12 +96,12 @@ export const getAllEvents=async()=>{
           select: "name",
         },
       });
-    if(!eventData) return { success: false,message: "Event not found.",}
-    return{
-      success:true,
-      data:JSON.parse(JSON.stringify(eventData))
+    if (!eventData) return { success: false, message: "Event not found.", }
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify(eventData))
     }
-  }catch(error:any){
+  } catch (error: any) {
     console.error("Error creating event:", error.message);
     return {
       success: false,
@@ -107,3 +109,22 @@ export const getAllEvents=async()=>{
     };
   }
 }
+
+export const deleteEvent = async (eventId: string) => {
+  try {
+    if (!Types.ObjectId.isValid(eventId)) {
+      return { success: false, message: "Invalid event ID." };
+    }
+
+    await connectToDb();
+
+    const deleted = await Event.findByIdAndDelete(eventId);
+    if (!deleted) {
+      return { success: false, message: "Event not found or already deleted." };
+    }
+    return { success: true, message: "Event deleted successfully." };
+  } catch (error: any) {
+    console.error("Error deleting event:", error.message);
+    return { success: false, message: "An error occurred while deleting the event." };
+  }
+};

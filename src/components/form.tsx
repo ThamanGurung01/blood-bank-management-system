@@ -104,7 +104,7 @@ const res = await signIn("credentials", {
   });
 
   if (!res || !res.ok) {
-    console.error("Login failed:", res?.error);
+    console.log("Login failed:", res?.error);
     return;
   }
 

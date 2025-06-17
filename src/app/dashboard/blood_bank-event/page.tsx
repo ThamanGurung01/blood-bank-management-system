@@ -1,8 +1,9 @@
 "use client"
 import React, { useEffect, useState } from 'react';
 import { Calendar, MapPin, Clock, User, Edit, Trash2, Plus, AlertCircle, CheckCircle, PlayCircle } from 'lucide-react';
-import { createEvent, getAllEvents, updateEvent } from '@/actions/eventActions';
+import { createEvent, deleteEvent, getAllEvents, updateEvent } from '@/actions/eventActions';
 import { useSession } from 'next-auth/react';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
 interface User {
   _id: string;
   name: string;
@@ -82,26 +83,28 @@ const page = () => {
     description: '',
     status: 'upcoming'
   });
-  const {data:session}=useSession();
-const [creator,setCreator]=useState<string>();
-const [errors, setErrors] = useState<Partial<Record<keyof typeof formData, string>>>({});
+  const { data: session } = useSession();
+  const [creator, setCreator] = useState<string>();
+  const [errors, setErrors] = useState<Partial<Record<keyof typeof formData, string>>>({});
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState('');
 
-const validateForm = () => {
-  const newErrors: typeof errors = {};
+  const validateForm = () => {
+    const newErrors: typeof errors = {};
 
-  if (!formData.name.trim()) newErrors.name = "Event name is required.";
-  if (!formData.startDateTime) newErrors.startDateTime = "Start date & time is required.";
-  if (!formData.endDateTime) newErrors.endDateTime = "End date & time is required.";
-  else if (new Date(formData.endDateTime) <= new Date(formData.startDateTime)) newErrors.endDateTime = "End time must be after start time.";
+    if (!formData.name.trim()) newErrors.name = "Event name is required.";
+    if (!formData.startDateTime) newErrors.startDateTime = "Start date & time is required.";
+    if (!formData.endDateTime) newErrors.endDateTime = "End date & time is required.";
+    else if (new Date(formData.endDateTime) <= new Date(formData.startDateTime)) newErrors.endDateTime = "End time must be after start time.";
 
-  if (!formData.location.trim()) newErrors.location = "Location is required.";
-  if (!formData.type) newErrors.type = "Type is required.";
-  if (!formData.status) newErrors.status = "Status is required.";
-  if (!formData.description.trim()) newErrors.description = "Description is required.";
+    if (!formData.location.trim()) newErrors.location = "Location is required.";
+    if (!formData.type) newErrors.type = "Type is required.";
+    if (!formData.status) newErrors.status = "Status is required.";
+    if (!formData.description.trim()) newErrors.description = "Description is required.";
 
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -124,7 +127,7 @@ const validateForm = () => {
 
   const getTypeBadge = (type: string) => {
     const baseClasses = "px-2 py-1 rounded-full text-xs font-medium";
-    return type === 'emergency' 
+    return type === 'emergency'
       ? `${baseClasses} bg-red-100 text-red-800 flex items-center gap-1`
       : `${baseClasses} bg-blue-100 text-blue-800`;
   };
@@ -164,9 +167,9 @@ const validateForm = () => {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = async() => {
+  const handleSubmit = async () => {
     if (!validateForm()) return;
-   try{
+    try {
       const formDataObj = new FormData();
       formDataObj.append('name', formData.name);
       formDataObj.append('startDateTime', new Date(formData.startDateTime).toISOString());
@@ -175,35 +178,43 @@ const validateForm = () => {
       formDataObj.append('type', formData.type);
       formDataObj.append('description', formData.description);
       formDataObj.append('status', formData.status);
-if (editingEvent) {
-      const updated = await updateEvent(editingEvent._id, formDataObj);
-      if (updated?.success) {
-        setEvents(events.map(event =>
-          event._id === editingEvent._id ? { ...event, ...updated?.data } : event
-        ));
+      if (editingEvent) {
+        const updated = await updateEvent(editingEvent._id, formDataObj);
+        if (updated?.success) {
+          setEvents(events.map(event =>
+            event._id === editingEvent._id ? { ...event, ...updated?.data } : event
+          ));
+        }
+      } else {
+        // const creator= session?.user.id;
+        if (!creator) {
+          console.log("no creator");
+          return;
+        }
+        formDataObj.append('createdBy', creator);
+        const result = await createEvent(formDataObj);
+        if (result?.success && result?.data) {
+          setEvents([result.data, ...events]);
+        }
       }
-    } else {
-      // const creator= session?.user.id;
-      if(!creator){ 
-        console.log("no creator");
-        return;
-      }
-      formDataObj.append('createdBy',creator);
-      const result = await createEvent(formDataObj);
-      if (result?.success && result?.data) {
-        setEvents([result.data, ...events]);
-      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error submitting event:", error);
     }
-    setIsModalOpen(false);
-   }catch(error){
-     console.error("Error submitting event:", error);
-   }
   };
 
-  const handleDelete = (eventId: string) => {
-    if (window.confirm('Are you sure you want to delete this event?')) {
-      setEvents(events.filter(event => event._id !== eventId));
+  const handleDelete = async (eventId: string) => {
+    setIsDeleteModalOpen(false);
+    if (!eventId) return;
+    const response = await deleteEvent(eventId);
+    if (response?.success) {
+      setEvents((prevEvents) =>
+        prevEvents.filter((event) => event._id !== eventId)
+      );
+    } else {
+      console.error(response.message);
     }
+    setSelectedEventId('');
   };
 
   const filteredEvents = events.filter(event => {
@@ -212,20 +223,21 @@ if (editingEvent) {
     return statusMatch && typeMatch;
   });
 
-  const fetchEvents=async()=>{
-    const eventData=await getAllEvents();
-    if(!eventData?.success){ console.log("Error")
+  const fetchEvents = async () => {
+    const eventData = await getAllEvents();
+    if (!eventData?.success) {
+      console.log("Error")
       return;
     }
     setEvents(eventData.data);
   }
 
-  useEffect(()=>{
-if(session){
-  setCreator(session.user.id);
-}
-  fetchEvents();
-  },[session,errors])
+  useEffect(() => {
+    if (session) {
+      setCreator(session.user.id);
+    }
+    fetchEvents();
+  }, [session, errors])
   return (
     <div className="max-w-6xl mx-auto p-6 bg-white">
       <div className="flex justify-between items-center mb-6">
@@ -281,7 +293,7 @@ if(session){
                       {event.type === 'emergency' && <AlertCircle className="w-3 h-3" />}
                       {event.type.toUpperCase()}
                     </div>
-                    <div className={`${getStatusBadge(event.status)} flex gap-1` }>
+                    <div className={`${getStatusBadge(event.status)} flex gap-1`}>
                       {getStatusIcon(event.status)}
                       {event.status.toUpperCase()}
                     </div>
@@ -296,14 +308,16 @@ if(session){
                     <Edit className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDelete(event._id)}
+                    onClick={() => {
+                      setIsDeleteModalOpen(true)
+                      setSelectedEventId(event._id);
+                    }}
                     className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
@@ -340,7 +354,7 @@ if(session){
               <h2 className="text-xl font-semibold mb-4">
                 {editingEvent ? 'Edit Event' : 'Add New Event'}
               </h2>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Event Name</label>
@@ -348,7 +362,7 @@ if(session){
                     type="text"
                     required
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   />
                   {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
@@ -361,10 +375,10 @@ if(session){
                       type="datetime-local"
                       required
                       value={formData.startDateTime}
-                      onChange={(e) => setFormData({...formData, startDateTime: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, startDateTime: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2"
                     />
-                  {errors.startDateTime && <p className="text-red-500 text-sm mt-1">{errors.startDateTime}</p>}
+                    {errors.startDateTime && <p className="text-red-500 text-sm mt-1">{errors.startDateTime}</p>}
 
                   </div>
                   <div>
@@ -373,10 +387,10 @@ if(session){
                       type="datetime-local"
                       required
                       value={formData.endDateTime}
-                      onChange={(e) => setFormData({...formData, endDateTime: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, endDateTime: e.target.value })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2"
                     />
-                  {errors.endDateTime && <p className="text-red-500 text-sm mt-1">{errors.endDateTime}</p>}
+                    {errors.endDateTime && <p className="text-red-500 text-sm mt-1">{errors.endDateTime}</p>}
                   </div>
                 </div>
 
@@ -386,7 +400,7 @@ if(session){
                     type="text"
                     required
                     value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   />
                   {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
@@ -397,26 +411,26 @@ if(session){
                     <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
                     <select
                       value={formData.type}
-                      onChange={(e) => setFormData({...formData, type: e.target.value as 'emergency' | 'normal'})}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value as 'emergency' | 'normal' })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2"
                     >
                       <option value="normal">Normal</option>
                       <option value="emergency">Emergency</option>
                     </select>
-                  {errors.type && <p className="text-red-500 text-sm mt-1">{errors.type}</p>}
+                    {errors.type && <p className="text-red-500 text-sm mt-1">{errors.type}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                     <select
                       value={formData.status}
-                      onChange={(e) => setFormData({...formData, status: e.target.value as 'upcoming' | 'ongoing' | 'completed'})}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as 'upcoming' | 'ongoing' | 'completed' })}
                       className="w-full border border-gray-300 rounded-md px-3 py-2"
                     >
                       <option value="upcoming">Upcoming</option>
                       <option value="ongoing">Ongoing</option>
                       <option value="completed">Completed</option>
                     </select>
-                  {errors.status && <p className="text-red-500 text-sm mt-1">{errors.status}</p>}
+                    {errors.status && <p className="text-red-500 text-sm mt-1">{errors.status}</p>}
                   </div>
                 </div>
 
@@ -424,7 +438,7 @@ if(session){
                   <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                   <textarea
                     value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={3}
                     className="w-full border border-gray-300 rounded-md px-3 py-2"
                   />
@@ -454,6 +468,12 @@ if(session){
           </div>
         </div>
       )}
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => { setIsDeleteModalOpen(false); setSelectedEventId(''); }}
+        onConfirm={() => handleDelete(selectedEventId)}
+        itemName="Event"
+      />
     </div>
   );
 };
