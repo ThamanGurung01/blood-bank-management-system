@@ -1,13 +1,15 @@
 "use client"
 import { useEffect, useState } from "react";
 import { Search, Filter, User, Droplet, SquarePen } from "lucide-react";
-import { getAllDonor } from "@/actions/donorActions";
+import { getAllDonor, updateDonor } from "@/actions/donorActions";
 import { IDonor } from "@/models/donor.models";
-interface Donor extends Omit<IDonor, 'user'> {
+import DonorUpdateModal from "@/components/DonorDetailsModal";
+export interface Donor extends Omit<IDonor, 'user' | '_id'> {
+  _id: string;
   user: {
     name: string;
     email: string;
-    role: string;
+    role: "donor" | "blood_bank";
   };
 }
 const page = () => {
@@ -16,7 +18,7 @@ const page = () => {
   const [availability, setAvailability] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [donors, setDonors] = useState<Donor[]>([]);
-
+  const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
   const filteredDonors = donors.filter(donor => {
     const matchesSearch = donor.user.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesBloodType = bloodType === "" || donor.blood_group === bloodType;
@@ -29,11 +31,24 @@ const page = () => {
   });
 
   const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+  const handleUpdate = async (donorId: string, updatedData: Partial<Donor>) => {
+    const res = await updateDonor(donorId, updatedData);
+    console.log(res);
+    if (res.success) {
+      setDonors((prev) =>
+        prev.map((donor) =>
+          donor._id === donorId ? { ...donor, ...res.data } : donor
+        )
+      );
+    } else {
+      console.error(res.message);
+    }
+  };
   const fetchRequests = async () => {
     try {
-        const donorData = await getAllDonor();
-        const data = donorData?.data;
-        setDonors(data || []);
+      const donorData = await getAllDonor();
+      const data = donorData?.data;
+      setDonors(data || []);
     } catch (err) {
       console.error("Error fetching blood requests:", err);
     }
@@ -41,7 +56,7 @@ const page = () => {
 
 
   useEffect(() => {
-      fetchRequests();
+    fetchRequests();
   }, []);
   return (
     <div className="bg-gray-50 p-10 min-h-screen initialPage">
@@ -101,7 +116,6 @@ const page = () => {
           )}
         </div>
 
-        {/* Donors List */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -147,10 +161,11 @@ const page = () => {
                       {donor.contact}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <SquarePen size={18} className="mr-2 hover:text-black cursor-pointer"/> 
+                      <SquarePen onClick={() => setSelectedDonor(donor)} size={18} className="mr-2 hover:text-black cursor-pointer" />
                     </td>
                   </tr>
                 ))
+
               ) : (
                 <tr>
                   <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
@@ -160,6 +175,15 @@ const page = () => {
               )}
             </tbody>
           </table>
+          {selectedDonor &&
+            <DonorUpdateModal
+              donor={selectedDonor ? selectedDonor : {} as Donor}
+              isOpen={Boolean(selectedDonor)}
+              onClose={() => setSelectedDonor(null)}
+              onUpdate={handleUpdate}
+            />
+
+          }
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use server";
 import { connectToDb } from "@/utils/database";
 import Donor, { IDonor } from "@/models/donor.models"
+import User from "@/models/user.models"
 import BloodDonation from "@/models/blood_donation.models";
 import { bloodCompatibility, extractFeaturesFromDonor } from "@/utils/extractFeaturesFromDonor";
 import { cosineSimilarity } from "@/utils/cosineSimilarity";
@@ -13,7 +14,6 @@ export const getAllDonor=async()=>{
 try {
     await connectToDb();
   const donors=await Donor.find({
-      status:true,
       next_eligible_donation_date: { $lte: new Date() },
     }).populate({path:"user",
     select:"name email role"
@@ -218,3 +218,31 @@ export const getTodayNewDonors = async () => {
     }
   };
 }
+
+export const updateDonor = async (donorId: string, updatedData: Partial<any>) => {
+  try {
+    await connectToDb();
+    const donor = await Donor.findByIdAndUpdate(
+      donorId,
+      {
+        blood_group: updatedData.blood_group,
+        age: updatedData.age,
+        contact: updatedData.contact,
+        status: updatedData.status,
+      },
+      { new: true }
+    ).populate("user");
+    if (updatedData.name || updatedData.password) {
+      await User.findByIdAndUpdate(donor.user._id, {
+        ...(updatedData.name && { name: updatedData.name }),
+        // ...(updatedData.password && { password: updatedData.password }),
+      });
+    }
+    const updatedDonor = await Donor.findById(donorId).populate("user");
+
+    return { success: true, data: JSON.parse(JSON.stringify(updatedDonor)) };
+  } catch (error) {
+    console.error("Update failed:", error);
+    return { success: false, message: "Failed to update donor." };
+  }
+};

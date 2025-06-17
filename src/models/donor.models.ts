@@ -1,7 +1,8 @@
 import { Schema,Document,model,models } from "mongoose";
+import { IUser } from "./user.models";
 export type Role= 'donor' | 'blood_bank' | 'admin';
 export interface IDonor extends Document{
-    user:Schema.Types.ObjectId;
+    user:Schema.Types.ObjectId | IUser;
     donorId:string;
     blood_group:string;
     age:number;
