@@ -61,7 +61,6 @@ const page = () => {
       setIsDeleteModalOpen(false);
         if (!donorId) return;
         const response = await deleteDonor(donorId);
-        console.log(response);
         if (response?.success) {
           setDonors((prevDonors) =>
             prevDonors.filter((donor) => donor._id !== donorId)

@@ -1,8 +1,9 @@
 "use client"
 import { useEffect, useState } from "react";
-import { Search, Filter, User, Droplet, SquarePen } from "lucide-react";
+import { Search, Filter, User, Droplet, SquarePen, Edit, Trash2 } from "lucide-react";
 import { IBlood_Bank } from "@/models/blood_bank.models";
-import { getAllBloodBanks } from "@/actions/bloodBankActions";
+import { deleteBloodBank, getAllBloodBanks } from "@/actions/bloodBankActions";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 interface BloodBank extends Omit<IBlood_Bank, 'user'> {
   user: {
     name: string;
@@ -16,7 +17,9 @@ const page = () => {
   const [verification, setVerification] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [bloodBanks, setBloodBank] = useState<BloodBank[]>([]);
-
+  const [selectedBloodBank, setSelectedBloodBank] = useState<BloodBank>({} as BloodBank);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedBloodBankId, setSelectedBloodBankId] = useState<string>('');
   const filteredBloodBanks = bloodBanks.filter(bloodBank => {
     const matchesSearch = bloodBank.user.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesVerification =
@@ -36,7 +39,19 @@ const page = () => {
       console.error("Error fetching blood requests:", err);
     }
   };
-
+  const handleDelete = async (bloodBankId: string) => {
+    setIsDeleteModalOpen(false);
+    if (!bloodBankId) return;
+    const response = await deleteBloodBank(bloodBankId);
+    if (response?.success) {
+      setBloodBank((prevBloodBank) =>
+        prevBloodBank.filter((bloodBank) => bloodBank._id !== bloodBankId)
+      );
+    } else {
+      console.error(response.message);
+    }
+    setSelectedBloodBankId('');
+  }
 
   useEffect(() => {
     fetchRequests();
@@ -140,7 +155,20 @@ const page = () => {
                       {bloodBank?.createdAt ? new Date(bloodBank.createdAt).toISOString().split("T")[0] : "N/A"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <SquarePen size={18} className="mr-2 hover:text-black cursor-pointer" />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setSelectedBloodBank(bloodBank)}
+                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => {
+                          setIsDeleteModalOpen(true)
+                          setSelectedBloodBankId(bloodBank._id?.toString?.() ?? '');
+                        }}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -153,7 +181,22 @@ const page = () => {
               )}
             </tbody>
           </table>
+          {/* {selectedBloodBank &&
+            <DonorUpdateModal
+              donor={selectedDonor ? selectedDonor : {} as Donor}
+              isOpen={Boolean(selectedDonor)}
+              onClose={() => setSelectedDonor(null)}
+              onUpdate={handleUpdate}
+            />
+
+          } */}
         </div>
+        <DeleteConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => { setIsDeleteModalOpen(false); setSelectedBloodBankId(''); }}
+          onConfirm={() => handleDelete(selectedBloodBankId)}
+          itemName="Event"
+        />
       </div>
     </div>
   );

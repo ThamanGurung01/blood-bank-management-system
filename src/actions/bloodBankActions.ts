@@ -3,7 +3,7 @@ import { connectToDb } from "@/utils/database";
 import BloodBank from "@/models/blood_bank.models";
 import Blood from "@/models/blood.models";
 import BloodDonation from "@/models/blood_donation.models";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 export const getBloodBank = async (bloodBankId: string) => {
   try {
     await connectToDb();
@@ -121,3 +121,22 @@ export const getLatestBloodBank = async (type: string) => {
   }
   return { success: true, data: JSON.parse(JSON.stringify(latestBank)) };
 }
+
+export const deleteBloodBank = async (bloodBankId: string) => {
+  try {
+    if (!Types.ObjectId.isValid(bloodBankId)) {
+      return { success: false, message: "Invalid Blood Bank ID." };
+    }
+
+    await connectToDb();
+
+    const deleted = await BloodBank.findByIdAndDelete(bloodBankId);
+    if (!deleted) {
+      return { success: false, message: "Blood Bank not found or already deleted." };
+    }
+    return { success: true, message: "Blood Bank deleted successfully." };
+  } catch (error: any) {
+    console.error("Error deleting Blood Bank:", error.message);
+    return { success: false, message: "An error occurred while deleting the Blood Bank." };
+  }
+};
