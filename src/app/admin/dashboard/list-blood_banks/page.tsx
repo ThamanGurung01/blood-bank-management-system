@@ -2,9 +2,10 @@
 import { useEffect, useState } from "react";
 import { Search, Filter, User, Droplet, SquarePen, Edit, Trash2 } from "lucide-react";
 import { IBlood_Bank } from "@/models/blood_bank.models";
-import { deleteBloodBank, getAllBloodBanks } from "@/actions/bloodBankActions";
+import { deleteBloodBank, getAllBloodBanks, updateBloodBank } from "@/actions/bloodBankActions";
 import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
-interface BloodBank extends Omit<IBlood_Bank, 'user'> {
+import BloodBankDetailModal from "@/components/BloodBankDetailsModal";
+export interface BloodBank extends Omit<IBlood_Bank, 'user'> {
   user: {
     name: string;
     email: string;
@@ -17,7 +18,7 @@ const page = () => {
   const [verification, setVerification] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [bloodBanks, setBloodBank] = useState<BloodBank[]>([]);
-  const [selectedBloodBank, setSelectedBloodBank] = useState<BloodBank>({} as BloodBank);
+  const [selectedBloodBank, setSelectedBloodBank] = useState<BloodBank|null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedBloodBankId, setSelectedBloodBankId] = useState<string>('');
   const filteredBloodBanks = bloodBanks.filter(bloodBank => {
@@ -51,6 +52,20 @@ const page = () => {
       console.error(response.message);
     }
     setSelectedBloodBankId('');
+  }
+  const handleUpdate=async(bloodBankId: string, updatedData: Partial<BloodBank>)=>{
+    const res = await updateBloodBank(bloodBankId, updatedData);
+        console.log(res);
+        if (res.success) {
+          setBloodBank((prev) =>
+            prev.map((bloodBank) =>
+              bloodBank._id === bloodBankId ? { ...bloodBank, ...res.data } : bloodBank
+            )
+          );
+        } else {
+          console.error(res.message);
+        }
+    setSelectedBloodBank(null);
   }
 
   useEffect(() => {
@@ -181,15 +196,15 @@ const page = () => {
               )}
             </tbody>
           </table>
-          {/* {selectedBloodBank &&
-            <DonorUpdateModal
-              donor={selectedDonor ? selectedDonor : {} as Donor}
-              isOpen={Boolean(selectedDonor)}
-              onClose={() => setSelectedDonor(null)}
+          {selectedBloodBank &&
+            <BloodBankDetailModal
+              bloodBank={selectedBloodBank ? selectedBloodBank : {} as BloodBank}
+              isOpen={Boolean(selectedBloodBank)}
+              onClose={() => setSelectedBloodBank(null)}
               onUpdate={handleUpdate}
             />
 
-          } */}
+          }
         </div>
         <DeleteConfirmationModal
           isOpen={isDeleteModalOpen}

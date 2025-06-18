@@ -2,6 +2,7 @@
 import { connectToDb } from "@/utils/database";
 import BloodBank from "@/models/blood_bank.models";
 import Blood from "@/models/blood.models";
+import User from "@/models/user.models";
 import BloodDonation from "@/models/blood_donation.models";
 import mongoose, { Types } from "mongoose";
 export const getBloodBank = async (bloodBankId: string) => {
@@ -121,6 +122,32 @@ export const getLatestBloodBank = async (type: string) => {
   }
   return { success: true, data: JSON.parse(JSON.stringify(latestBank)) };
 }
+
+export const updateBloodBank = async (bloodBankId: string, updatedData: Partial<any>) => {
+  try {
+    await connectToDb();
+    const bloodBank = await BloodBank.findByIdAndUpdate(
+      bloodBankId,
+      {
+        blood_bank:updatedData.blood_bank,
+        contact: updatedData.contact,
+      },
+      { new: true }
+    ).populate("user");
+    if (updatedData.name || updatedData.password) {
+      await User.findByIdAndUpdate(bloodBank.user._id, {
+        ...(updatedData.name && { name: updatedData.name }),
+        // ...(updatedData.password && { password: updatedData.password }),
+      });
+    }
+    const updatedBloodBank = await BloodBank.findById(bloodBankId).populate("user");
+
+    return { success: true, data: JSON.parse(JSON.stringify(updatedBloodBank)) };
+  } catch (error) {
+    console.error("Update failed:", error);
+    return { success: false, message: "Failed to update blood Bank." };
+  }
+};
 
 export const deleteBloodBank = async (bloodBankId: string) => {
   try {

@@ -55,6 +55,7 @@ const page = () => {
     } catch (err) {
       console.error("Error fetching blood requests:", err);
     }
+    setSelectedDonor(null);
   };
 
   const handleDelete = async (donorId: string) => {
