@@ -1,9 +1,10 @@
 "use client"
 import { useEffect, useState } from "react";
-import { Search, Filter, User, Droplet, SquarePen } from "lucide-react";
-import { getAllDonor, updateDonor } from "@/actions/donorActions";
+import { Search, Filter, User, Droplet, SquarePen, Trash2, Edit } from "lucide-react";
+import { deleteDonor, getAllDonor, updateDonor } from "@/actions/donorActions";
 import { IDonor } from "@/models/donor.models";
 import DonorUpdateModal from "@/components/DonorDetailsModal";
+import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
 export interface Donor extends Omit<IDonor, 'user' | '_id'> {
   _id: string;
   user: {
@@ -19,6 +20,8 @@ const page = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [donors, setDonors] = useState<Donor[]>([]);
   const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedDonorId, setSelectedDonorId] = useState<string>('');
   const filteredDonors = donors.filter(donor => {
     const matchesSearch = donor.user.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesBloodType = bloodType === "" || donor.blood_group === bloodType;
@@ -54,6 +57,20 @@ const page = () => {
     }
   };
 
+  const handleDelete = async (donorId: string) => {
+      setIsDeleteModalOpen(false);
+        if (!donorId) return;
+        const response = await deleteDonor(donorId);
+        console.log(response);
+        if (response?.success) {
+          setDonors((prevDonors) =>
+            prevDonors.filter((donor) => donor._id !== donorId)
+          );
+        } else {
+          console.error(response.message);
+        }
+    setSelectedDonorId('');
+  }
 
   useEffect(() => {
     fetchRequests();
@@ -161,7 +178,20 @@ const page = () => {
                       {donor.contact}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <SquarePen onClick={() => setSelectedDonor(donor)} size={18} className="mr-2 hover:text-black cursor-pointer" />
+                      <div className="flex gap-2">
+                      <button
+                        onClick={() => setSelectedDonor(donor)}
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => {
+                        setIsDeleteModalOpen(true)
+                        setSelectedDonorId(donor._id);
+                      }}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -185,6 +215,12 @@ const page = () => {
 
           }
         </div>
+        <DeleteConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => { setIsDeleteModalOpen(false); setSelectedDonorId(''); }}
+          onConfirm={() => handleDelete(selectedDonorId)}
+          itemName="Event"
+        />
       </div>
     </div>
   );

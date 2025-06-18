@@ -9,6 +9,7 @@ import { calculateDistance } from "@/utils/calculateDistance";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { startOfDay } from 'date-fns';
+import { Types } from "mongoose";
 
 export const getAllDonor=async()=>{
 try {
@@ -244,5 +245,24 @@ export const updateDonor = async (donorId: string, updatedData: Partial<any>) =>
   } catch (error) {
     console.error("Update failed:", error);
     return { success: false, message: "Failed to update donor." };
+  }
+};
+
+export const deleteDonor = async (donorId: string) => {
+  try {
+    if (!Types.ObjectId.isValid(donorId)) {
+      return { success: false, message: "Invalid donor ID." };
+    }
+
+    await connectToDb();
+
+    const deleted = await Donor.findByIdAndDelete(donorId);
+    if (!deleted) {
+      return { success: false, message: "Donor not found or already deleted." };
+    }
+    return { success: true, message: "Donor deleted successfully." };
+  } catch (error: any) {
+    console.error("Error deleting donor:", error.message);
+    return { success: false, message: "An error occurred while deleting the donor." };
   }
 };
