@@ -13,12 +13,14 @@ if(type==="user"){
         age:formData.get("age"),
         location:JSON.parse(formData.get("location")as string),
         contact:formData.get("contact"),
+        profilePicture:formData.get("profile_picture") as File,
     }
 }else if(type==="blood_bank"){
     return {
         blood_bank:formData.get("blood_bank"),
          location:JSON.parse(formData.get("location")as string),
          contact:formData.get("contact"),
+        profilePicture:formData.get("profile_picture") as File,
      }
 }else if(type=== "new_blood_donation"){
     return {

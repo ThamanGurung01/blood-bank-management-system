@@ -147,7 +147,7 @@ export default function ProfilePage() {
               <div className="flex flex-col items-center">
                 <div className="relative h-32 w-32">
                   <Image
-                    src={"/defaultProfile.png"}
+                    src={donorData?.profileImage?.url ?? bloodBankData?.profileImage?.url ??"/defaultProfile.png"}
                     alt="Profile"
                     fill
                     className="rounded-full border-4 border-white object-cover shadow-lg"
@@ -169,17 +169,17 @@ export default function ProfilePage() {
                         <Building className="mr-1 h-3 w-3" />
                         Blood Bank
                       </span>
-{bloodBankData.verified ? (
-  <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-    <CheckCircle className="mr-1 h-4 w-4 text-green-500" />
-    Verified
-  </span>
-) : (
-  <span className="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
-    <XCircle className="mr-1 h-4 w-4 text-yellow-500" />
-    Unverified
-  </span>
-)}
+                      {bloodBankData.verified ? (
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+                          <CheckCircle className="mr-1 h-4 w-4 text-green-500" />
+                          Verified
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
+                          <XCircle className="mr-1 h-4 w-4 text-yellow-500" />
+                          Unverified
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -659,41 +659,41 @@ function BloodBankContent({ data }: { data: BloodBank }) {
             <div className="px-6 py-4">
               <div className="space-y-4">
                 {data?.recentDonations?.length ?
-                (
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                    {data.recentDonations?.map((donation) => (
-                  <div
-                    key={donation.id}
-                    className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
-                  >
-                    <div className="flex items-center">
-                      <div className={`mr-4 rounded-full bg-red-100 p-2`}>
-                        <Droplet className="h-6 w-6 text-red-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{donation.donor}</p>
-                        <p className="text-sm text-gray-500">
-                          {new Date(donation.date).toLocaleDateString()} •{" "}
-                          {donation.blood_group} • {donation.units} unit
-                        </p>
+                  (
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                      {data.recentDonations?.map((donation) => (
+                        <div
+                          key={donation.id}
+                          className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+                        >
+                          <div className="flex items-center">
+                            <div className={`mr-4 rounded-full bg-red-100 p-2`}>
+                              <Droplet className="h-6 w-6 text-red-600" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{donation.donor}</p>
+                              <p className="text-sm text-gray-500">
+                                {new Date(donation.date).toLocaleDateString()} •{" "}
+                                {donation.blood_group} • {donation.units} unit
+                              </p>
+                            </div>
+                          </div>
+                          <button className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                            View Details
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-[300px] w-full">
+                      <div className="text-center text-gray-500">
+                        <Droplet className="mx-auto mb-2 h-10 w-10 text-gray-400" />
+                        <p className="text-lg font-semibold">No recent Donations</p>
+                        <p className="text-sm">Check back later</p>
                       </div>
                     </div>
-                    <button className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-                      View Details
-                    </button>
-                  </div>
-                ))}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center h-[300px] w-full">
-                    <div className="text-center text-gray-500">
-                      <Droplet className="mx-auto mb-2 h-10 w-10 text-gray-400" />
-                      <p className="text-lg font-semibold">No recent Donations</p>
-                      <p className="text-sm">Check back later</p>
-                    </div>
-                  </div>
-                )}
-                
+                  )}
+
               </div>
             </div>
             <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
@@ -720,41 +720,41 @@ function BloodBankContent({ data }: { data: BloodBank }) {
             <div className="px-6 py-4">
               <div className="space-y-4">
                 {data?.upcomingDrives?.length ?
-                (
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                   {data.upcomingDrives?.map((drive) => (
-                  <div
-                    key={drive.id}
-                    className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="mr-4 rounded-full bg-red-100 p-2">
-                          <Calendar className="h-6 w-6 text-red-600" />
+                  (
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                      {data.upcomingDrives?.map((drive) => (
+                        <div
+                          key={drive.id}
+                          className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <div className="mr-4 rounded-full bg-red-100 p-2">
+                                <Calendar className="h-6 w-6 text-red-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium">{drive.location}</p>
+                                <p className="text-sm text-gray-500">
+                                  {new Date(drive.date).toLocaleDateString()} •{" "}
+                                  {drive.time}
+                                </p>
+                              </div>
+                            </div>
+                            <ChevronRight className="h-5 w-5 text-gray-400" />
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium">{drive.location}</p>
-                          <p className="text-sm text-gray-500">
-                            {new Date(drive.date).toLocaleDateString()} •{" "}
-                            {drive.time}
-                          </p>
-                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-[200px] w-full">
+                      <div className="text-center text-gray-500">
+                        <Droplet className="mx-auto mb-2 h-10 w-10 text-gray-400" />
+                        <p className="text-lg font-semibold">No Blood Drive Events</p>
+                        <p className="text-sm">Check back later or Add new event</p>
                       </div>
-                      <ChevronRight className="h-5 w-5 text-gray-400" />
                     </div>
-                  </div>
-                ))}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center h-[200px] w-full">
-                    <div className="text-center text-gray-500">
-                      <Droplet className="mx-auto mb-2 h-10 w-10 text-gray-400" />
-                      <p className="text-lg font-semibold">No Blood Drive Events</p>
-                      <p className="text-sm">Check back later or Add new event</p>
-                    </div>
-                  </div>
-                )}
-                
+                  )}
+
               </div>
 
               <div className="mt-6 rounded-lg border border-gray-200 bg-white p-4">

@@ -38,12 +38,14 @@ export const authOptions: AuthOptions = {
         }
         if(user.role==="donor"){
           const donorData=await Donor.findOne({user:user._id});
+          console.log(donorData);
           if (!donorData) return null;
           return {
             id: donorData._id,
             name: user.name,
             email: user.email,
-            role: user.role
+            role: user.role,
+            image:donorData.profileImage.url??"/defaultProfile.png"
           };
         } else if(user.role==="blood_bank"){
           const bloodBankData=await BloodBank.findOne({user:user._id});
@@ -52,7 +54,8 @@ export const authOptions: AuthOptions = {
             id: bloodBankData._id,
             name: user.name,
             email: user.email,
-            role: user.role
+            role: user.role,
+            image:bloodBankData.profileImage.url??"/defaultProfile.png"
           };
         } else if(user.role==="admin"){
           return {

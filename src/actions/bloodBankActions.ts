@@ -137,7 +137,7 @@ export const updateBloodBank = async (bloodBankId: string, updatedData: Partial<
     if (updatedData.name || updatedData.password) {
       await User.findByIdAndUpdate(bloodBank.user._id, {
         ...(updatedData.name && { name: updatedData.name }),
-        // ...(updatedData.password && { password: updatedData.password }),
+        ...(updatedData.password && { password: updatedData.password }),
       });
     }
     const updatedBloodBank = await BloodBank.findById(bloodBankId).populate("user");

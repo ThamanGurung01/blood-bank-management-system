@@ -17,7 +17,10 @@ export interface IDonor extends Document{
     unsuccessful_donations:number;
     total_donations:number;
     score:number;
-    profileImage:string;
+    profileImage:{
+        url:string;
+        publicId:string;
+    };
     next_eligible_donation_date:Date;
 }
 const DonorSchema=new Schema<IDonor>({
@@ -67,10 +70,16 @@ const DonorSchema=new Schema<IDonor>({
         type:Number,
         default:0
     },
-    profileImage:{
-        type:String,
-        default:"/defaultProfile.png"
+    profileImage: {
+    url: {
+      type: String,
+      default: '/defaultProfile.png',
     },
+    publicId: {
+      type: String,
+      default: '',
+    }
+  },
     next_eligible_donation_date:{
         type:Date,
         default:Date.now

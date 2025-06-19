@@ -9,6 +9,10 @@ export interface IBlood_Bank extends Document{
 };
     contact:string;
     verified:boolean;
+    profileImage:{
+        url:string;
+        publicId:string;
+    };
 }
 const BloodBankSchema=new Schema<IBlood_Bank>({
     user:{
@@ -36,6 +40,16 @@ const BloodBankSchema=new Schema<IBlood_Bank>({
     verified:{
         type:Boolean,
         default:false
+    },
+    profileImage: {
+    url: {
+      type: String,
+      default: '/defaultProfile.png',
+    },
+    publicId: {
+      type: String,
+      default: '',
     }
+  },
 },{timestamps:true});
 export default models.Blood_bank || model<IBlood_Bank>("Blood_bank",BloodBankSchema);

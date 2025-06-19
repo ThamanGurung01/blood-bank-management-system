@@ -7,6 +7,15 @@ import Donor, { IDonor } from "@/models/donor.models"
 import BloodBank, { IBlood_Bank } from "@/models/blood_bank.models"
 import { formDataDeform } from "@/utils/formDataDeform";
 import { generateId } from "@/utils/generateId";
+import { uploadImage } from "./uploadFileActions";
+
+interface DonorWithProfileImage extends IDonor {
+    profilePicture: File;
+}
+interface BloodBankWithProfileImage extends IBlood_Bank {
+    profilePicture: File;
+}
+
 export const createUser=async(formData:FormData)=>{
 try {
     await connectToDb();
@@ -19,13 +28,13 @@ try {
         if(formData.get("role")==="donor"){
             const cUser:IUser=await User.create(formDataDeform(formData,"user"));
             const userId=cUser._id;
-            const donorData = formDataDeform(formData,"donor") as IDonor | undefined;
+            const donorData = formDataDeform(formData,"donor") as DonorWithProfileImage | undefined;
             if (!donorData) {
                 return { success: false, message: "Donor data is invalid" };
             }
-            console.log(donorData);
             const donorId=await generateId("donor");
             if(!donorId) return { success: false, message: "Donor Id is empty" };
+            const fileUpload = await uploadImage(donorData?.profilePicture, "donorProfile");
            const cDonor= await Donor.create({
             donorId:donorId,
             user:userId,
@@ -36,20 +45,23 @@ try {
                 longitude:donorData.location.longitude,
             },
             blood_group:donorData.blood_group,
+            profileImage: fileUpload.success && fileUpload.data ? {
+            url: fileUpload.data.secure_url,
+            publicId: fileUpload.data.public_id,
+            }: undefined,
            });
-           console.log(cDonor+"fsfad");
            const createdUser={...cUser,...cDonor};
-           console.log(createdUser+"cretaed");
+           console.log(createdUser);
            return {success:true,message:`User successfully created`}
         }else if(formData.get("role")==="blood_bank"){
             const cUser:IBlood_Bank=await User.create(formDataDeform(formData,"user"));
             const userId=cUser._id;
-            const bloodBank= formDataDeform(formData,"blood_bank")as IBlood_Bank | undefined;
+            const bloodBank= formDataDeform(formData,"blood_bank")as BloodBankWithProfileImage | undefined;
             if (!bloodBank) {
                 return { success: false, message: "Blood bank data is invalid" };
             }
 
-            console.log(bloodBank?.location+"blood bank");
+            const fileUpload = await uploadImage(bloodBank?.profilePicture, "donorProfile");
            const cBloodBank= await BloodBank.create({
             user:userId,
             blood_bank:bloodBank.blood_bank,
@@ -58,6 +70,10 @@ try {
                 longitude:bloodBank.location.longitude,
             },
             contact:bloodBank.contact,
+            profileImage: fileUpload.success && fileUpload.data ? {
+            url: fileUpload.data.secure_url,
+            publicId: fileUpload.data.public_id,
+            }: undefined,
            });
            const createdUser={...cUser,...cBloodBank};
            console.log(cBloodBank+"cblood")

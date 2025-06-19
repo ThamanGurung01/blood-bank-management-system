@@ -92,10 +92,11 @@ try {
   setValidationErrors(errors);
   if(!errors){
 if(type==="signup"){
-console.log(Object.fromEntries(formdata));
-const response= await createUser(formdata);
+  if (selectedFile) {
+    formdata.append("profile_picture", selectedFile);
+    const response = await createUser(formdata);
+  }
 router.push("/");
-console.log(response);
 }else if(type==="login"){
 const credentials=Object.fromEntries(formdata);
 const res = await signIn("credentials", {
