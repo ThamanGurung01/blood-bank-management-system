@@ -3,6 +3,15 @@ import React, { useEffect, useState } from 'react';
 import { User, Phone, Droplet, X, Save } from 'lucide-react';
 import { Donor } from '@/app/admin/dashboard/list-donors/page';
 
+interface DonorFormErrors {
+  name?: string;
+  password?: string;
+  blood_group?: string;
+  age?: string;
+  contact?: string;
+}
+
+
 interface DonorFormData {
   name: string;
   password: string;
@@ -28,10 +37,26 @@ const DonorUpdateModal: React.FC<DonorUpdateModalProps> = ({ donor, isOpen, onCl
     contact: '',
     status: false
   });
-
+  const [formErrors, setFormErrors] = useState<DonorFormErrors>({});
   const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
+  const validateForm = (): boolean => {
+    const errors: DonorFormErrors = {};
+
+    if (!formData.name.trim()) errors.name = 'Name is required.';
+    if (formData.password && formData.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters.';
+    }
+    if (!bloodGroups.includes(formData.blood_group)) errors.blood_group = 'Select a valid blood group.';
+    if (formData.age < 18 || formData.age > 65) errors.age = 'Age must be between 18 and 65.';
+    if (!formData.contact.match(/^\d{7,15}$/)) errors.contact = 'Enter a valid contact number.';
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSave = () => {
+    if (!validateForm()) return;
     onUpdate(donor._id, formData);
     onClose();
   };
@@ -46,6 +71,7 @@ const DonorUpdateModal: React.FC<DonorUpdateModalProps> = ({ donor, isOpen, onCl
       status: donor.status
     });
     onClose();
+    setFormErrors({});
   };
 
   useEffect(() => {
@@ -75,7 +101,7 @@ const DonorUpdateModal: React.FC<DonorUpdateModalProps> = ({ donor, isOpen, onCl
               <div>
                 <h2 className="text-xl font-semibold text-gray-900">Update Donor</h2>
                 <p className="text-sm text-gray-600">{donor.user.name} - {donor.donorId}</p>
-              <p className="text-sm text-gray-600">{donor.user.email}</p>
+                <p className="text-sm text-gray-600">{donor.user.email}</p>
               </div>
             </div>
             <button
@@ -96,6 +122,7 @@ const DonorUpdateModal: React.FC<DonorUpdateModalProps> = ({ donor, isOpen, onCl
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 placeholder="Enter Name"
               />
+              {formErrors.name && <p className="text-sm text-red-500 mt-1">{formErrors.name}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
@@ -106,6 +133,7 @@ const DonorUpdateModal: React.FC<DonorUpdateModalProps> = ({ donor, isOpen, onCl
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 placeholder="Enter password"
               />
+              {formErrors.password && <p className="text-sm text-red-500 mt-1">{formErrors.password}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Blood Group</label>
@@ -118,6 +146,7 @@ const DonorUpdateModal: React.FC<DonorUpdateModalProps> = ({ donor, isOpen, onCl
                   <option key={group} value={group}>{group}</option>
                 ))}
               </select>
+              {formErrors.blood_group && <p className="text-sm text-red-500 mt-1">{formErrors.blood_group}</p>}
             </div>
 
             <div>
@@ -131,6 +160,7 @@ const DonorUpdateModal: React.FC<DonorUpdateModalProps> = ({ donor, isOpen, onCl
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 placeholder="Enter age"
               />
+              {formErrors.age && <p className="text-sm text-red-500 mt-1">{formErrors.age}</p>}
             </div>
 
             <div>
@@ -142,6 +172,7 @@ const DonorUpdateModal: React.FC<DonorUpdateModalProps> = ({ donor, isOpen, onCl
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 placeholder="Enter contact number"
               />
+              {formErrors.contact && <p className="text-sm text-red-500 mt-1">{formErrors.contact}</p>}
             </div>
 
             <div>

@@ -236,7 +236,7 @@ export const updateDonor = async (donorId: string, updatedData: Partial<any>) =>
     if (updatedData.name || updatedData.password) {
       await User.findByIdAndUpdate(donor.user._id, {
         ...(updatedData.name && { name: updatedData.name }),
-        // ...(updatedData.password && { password: updatedData.password }),
+        ...(updatedData.password && { password: updatedData.password }),
       });
     }
     const updatedDonor = await Donor.findById(donorId).populate("user");
