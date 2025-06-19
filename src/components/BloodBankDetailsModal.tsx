@@ -2,6 +2,13 @@ import { BloodBank } from "@/app/admin/dashboard/list-blood_banks/page";
 import { Building2, Edit, Phone, Save, X } from "lucide-react";
 import { useState } from "react";
 
+interface BloodBankFormErrors {
+    name?: string;
+    password?: string;
+    blood_bank?: string;
+    contact?: string;
+}
+
 interface BloodBankFormData {
     name: string;
     password: string;
@@ -22,8 +29,24 @@ const BloodBankDetailModal: React.FC<BloodBankDetailModalProps> = ({ bloodBank, 
         blood_bank: bloodBank.blood_bank,
         contact: bloodBank.contact
     });
+    const [formErrors, setFormErrors] = useState<BloodBankFormErrors>({});
+
+    const validateForm = (): boolean => {
+        const errors: BloodBankFormErrors = {};
+
+        if (!formData.name.trim()) errors.name = "Name is required.";
+        if (formData.password && formData.password.length < 6) errors.password = "Password must be at least 6 characters.";
+        if (!formData.blood_bank.trim()) errors.blood_bank = "Blood bank name is required.";
+        if (!/^(97|98)\d{8}$/.test(formData.contact)) {
+            errors.contact = "Enter a valid 10-digit contact number starting with 97 or 98.";
+        }
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
 
     const handleSave = () => {
+        if (!validateForm()) return;
         onUpdate(bloodBank._id as string, formData);
         onClose();
     };
@@ -36,6 +59,7 @@ const BloodBankDetailModal: React.FC<BloodBankDetailModalProps> = ({ bloodBank, 
             contact: bloodBank.contact
         });
         onClose();
+        setFormErrors({});
     };
 
     if (!isOpen) return null;
@@ -75,6 +99,7 @@ const BloodBankDetailModal: React.FC<BloodBankDetailModalProps> = ({ bloodBank, 
                                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                                 placeholder="Enter Name"
                             />
+                            {formErrors.name && <p className="text-sm text-red-500 mt-1">{formErrors.name}</p>}
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
@@ -85,6 +110,7 @@ const BloodBankDetailModal: React.FC<BloodBankDetailModalProps> = ({ bloodBank, 
                                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                                 placeholder="Enter password"
                             />
+                            {formErrors.password && <p className="text-sm text-red-500 mt-1">{formErrors.password}</p>}
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Blood Bank Name</label>
@@ -95,6 +121,7 @@ const BloodBankDetailModal: React.FC<BloodBankDetailModalProps> = ({ bloodBank, 
                                 className="w-full border border-gray-300 rounded-md px-3 py-2"
                                 placeholder="Enter blood bank name"
                             />
+                            {formErrors.blood_bank && <p className="text-sm text-red-500 mt-1">{formErrors.blood_bank}</p>}
                         </div>
 
                         <div>
@@ -106,6 +133,7 @@ const BloodBankDetailModal: React.FC<BloodBankDetailModalProps> = ({ bloodBank, 
                                 className="w-full border border-gray-300 rounded-md px-3 py-2"
                                 placeholder="Enter contact number"
                             />
+                            {formErrors.contact && <p className="text-sm text-red-500 mt-1">{formErrors.contact}</p>}
                         </div>
                         <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200">
                             <button

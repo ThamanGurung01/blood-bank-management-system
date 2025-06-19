@@ -49,7 +49,9 @@ const DonorUpdateModal: React.FC<DonorUpdateModalProps> = ({ donor, isOpen, onCl
     }
     if (!bloodGroups.includes(formData.blood_group)) errors.blood_group = 'Select a valid blood group.';
     if (formData.age < 18 || formData.age > 65) errors.age = 'Age must be between 18 and 65.';
-    if (!formData.contact.match(/^\d{7,15}$/)) errors.contact = 'Enter a valid contact number.';
+    if (!/^(97|98)\d{8}$/.test(formData.contact)) {
+      errors.contact = "Enter a valid 10-digit contact number starting with 97 or 98.";
+    }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
