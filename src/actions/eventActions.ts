@@ -85,10 +85,13 @@ export const updateEvent = async (eventId: string, formData: FormData) => {
   }
 };
 
-export const getAllEvents = async () => {
+export const getAllEvents = async (creatorId:string) => {
   try {
     await connectToDb();
-    const eventData = await Event.find({})
+    if(!creatorId) return { success: false, message: "creatorId required not found.", }
+    const eventData = await Event.find({
+      createdBy:creatorId
+    })
       .populate({
         path: "createdBy",
         populate: {

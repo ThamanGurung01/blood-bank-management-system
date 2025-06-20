@@ -223,8 +223,8 @@ const page = () => {
     return statusMatch && typeMatch;
   });
 
-  const fetchEvents = async () => {
-    const eventData = await getAllEvents();
+  const fetchEvents = async (creatorId:string) => {
+    const eventData = await getAllEvents(creatorId);
     if (!eventData?.success) {
       console.log("Error")
       return;
@@ -234,9 +234,9 @@ const page = () => {
 
   useEffect(() => {
     if (session) {
+      fetchEvents(session.user.id);
       setCreator(session.user.id);
     }
-    fetchEvents();
   }, [session, errors])
   return (
     <div className="max-w-6xl mx-auto p-6 bg-white">
