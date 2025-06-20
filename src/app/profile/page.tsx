@@ -17,6 +17,7 @@ import {
   Building,
   CheckCircle,
   XCircle,
+  Fingerprint,
 } from "lucide-react";
 import { redirect } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -147,7 +148,7 @@ export default function ProfilePage() {
               <div className="flex flex-col items-center">
                 <div className="relative h-32 w-32">
                   <Image
-                    src={donorData?.profileImage?.url ?? bloodBankData?.profileImage?.url ??"/defaultProfile.png"}
+                    src={donorData?.profileImage?.url ?? bloodBankData?.profileImage?.url ?? "/defaultProfile.png"}
                     alt="Profile"
                     fill
                     className="rounded-full border-4 border-white object-cover shadow-lg"
@@ -187,6 +188,17 @@ export default function ProfilePage() {
             </div>
             <div className="px-6 py-4">
               <div className="space-y-4">
+                {viewMode === "donor" && (
+                  <div className="flex items-center">
+                    <Fingerprint className="mr-3 h-5 w-5 text-gray-500" />
+                    <div>
+                      <p className="text-sm text-gray-500">DonorId</p>
+                      <p className="font-medium">
+                        {donorData.donorId}
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-center">
                   <User className="mr-3 h-5 w-5 text-gray-500" />
                   <div>

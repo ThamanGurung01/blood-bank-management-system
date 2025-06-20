@@ -55,12 +55,13 @@ try {
             const cBlood=await Blood.create({...newBloodDonationData,blood_bank:bloodBankId,donor:existingDonor._id,expiry_date:bloodExpiryDate});
 
             const donations = await BloodDonation.find({ donorId: existingDonor.donorId },{ collected_date: 1, _id: 0 }).lean();
-            let donationCount = donations.length+1;
+            let donationCount = donations.length;
             let donorScore = existingDonor.score;
             const donationDates = donations.map(d => new Date(d.collected_date));
             donationDates.push(new Date(cBloodDonation.collected_date));
             const calculatedScore = calculateWeightedScore(existingDonor, donationDates);
             donorScore = Math.max(existingDonor.score, calculatedScore);
+            console.log(donorScore);
            const blood_collected_date = new Date(cBloodDonation.collected_date);
             const lastDonationDate = existingDonor.last_donation_date ? new Date(existingDonor.last_donation_date) : null;
             const latestDate = !lastDonationDate || blood_collected_date >= lastDonationDate? blood_collected_date: lastDonationDate;

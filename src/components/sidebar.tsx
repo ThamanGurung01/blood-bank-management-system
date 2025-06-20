@@ -68,20 +68,23 @@ const selectedSidebarOption = getSidebarOptionFromPath(pathname);
     signOut({ callbackUrl: "/" })
   }
 
-  // useEffect(() => {
-  //   if (!session?.user?.role) return
-  //   if (session?.user.role === "blood_bank" && !selectedSidebarOption) {
-  //     setSelectedSidebarOption("overview")
-  //     router.push("/dashboard")
-  //   } else if (session?.user.role === "donor" && !selectedSidebarOption) {
-  //     setSelectedSidebarOption("find-donors")
-  //     router.push("/dashboard/find-donors")
-  //   } else if (session?.user.role === "admin" && !selectedSidebarOption) {
-  //     setSelectedSidebarOption("admin-overview")
-  //     router.push("/admin/dashboard")
-  //   }
+  useEffect(() => {
+    if (!session?.user?.role) return
+    if (session?.user.role === "blood_bank") {
+      // if (session?.user.role === "blood_bank" && !selectedSidebarOption) {
+      // setSelectedSidebarOption("overview")
+      router.push("/dashboard")
+    } else if (session?.user.role === "donor") {
+      // setSelectedSidebarOption("find-donors")
+      router.push("/dashboard/find-donors")
+    } else if (session?.user.role === "admin") {
+      // setSelectedSidebarOption("admin-overview")
+      router.push("/admin/dashboard")
+    }
 
   // }, [session, selectedSidebarOption, router])
+  }, [session, router])
+
 
   return (
     <div className="fixed z-10 flex h-screen w-64 flex-col border-r border-gray-200 bg-white pt-20 shadow-sm transition-all">

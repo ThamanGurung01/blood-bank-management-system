@@ -97,7 +97,7 @@ const Page = () => {
                     <div className="relative">
                       <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
                         <img
-                          src={donor.profileImage ?? "/defaultProfile.png"}
+                          src={donor.profileImage.url ?? "/defaultProfile.png"}
                           alt={donor.user.name}
                           className="w-full h-full object-cover"
                         />
@@ -179,8 +179,7 @@ const Page = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {donors
-                  .filter((donor) => donor.score > 0)
+                {donors.filter((donor) => donor.score > 0)
                   .map((donor) => (
                     <tr key={donor.donorId} className={"hover:bg-gray-50"}>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -192,7 +191,7 @@ const Page = () => {
                         <div className="flex items-center">
                           <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
                             <img
-                              src={donor.profileImage ?? "/defaultProfile.png"}
+                              src={donor.profileImage.url ?? "/defaultProfile.png"}
                               alt={donor.user.name}
                               className="w-full h-full object-cover"
                             />

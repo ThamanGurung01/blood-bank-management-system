@@ -83,7 +83,7 @@ try {
     const donors=await Donor.find({}).populate({path:"user",
     select:"name email role"
     }).lean();
-    const sortedDonors = donors.sort((a, b) => b.score - a.score);
+    const sortedDonors = donors.sort((a, b) => (Number(b.score || 0)) - (Number(a.score || 0)));
     const rankedDonors = sortedDonors.map((donor, index) => ({
       ...donor,
       rank: index + 1,
