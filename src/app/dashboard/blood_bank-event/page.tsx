@@ -224,7 +224,7 @@ const page = () => {
   });
 
   const fetchEvents = async (creatorId:string) => {
-    const eventData = await getAllEvents(creatorId);
+    const eventData = await getAllEvents(creatorId,"individual");
     if (!eventData?.success) {
       console.log("Error")
       return;

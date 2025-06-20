@@ -19,14 +19,14 @@ type CloudinaryUploadResult = {
 
 
 export async function uploadImage(selectedFile:File,type:string) {
-let file: File | undefined = undefined;
 let folderName: string | undefined = undefined;
+const file = selectedFile as File | undefined;
 
 if (type === "donorProfile") {
-  file = selectedFile as File | undefined;
   folderName = 'blood_bank_management/donorProfile';
+}else if (type=== "bloodBankProfile"){
+  folderName = 'blood_bank_management/bloodBankProfile';
 }
-
 if (!file || !folderName) {
   return { success: false, error: 'No file provided or invalid type' };
 }

@@ -11,6 +11,16 @@ import { ACCEPTED_IMAGE_TYPES } from "@/utils/validation";
 import { createUser } from "@/actions/userActions";
 import { getSession, signIn ,useSession} from "next-auth/react";
 import { useSearchParams,useRouter } from "next/navigation";
+import { uploadImage } from "@/actions/uploadFileActions";
+
+interface UploadResult {
+  success: boolean;
+  data?: {
+    secure_url: string;
+    public_id: string;
+  };
+  error?: string;
+}
 
 const Map = dynamic(() => import("@/components/map"), { ssr: false });
 const Form = ({ type }: { type: string }) => {
@@ -92,10 +102,36 @@ try {
   setValidationErrors(errors);
   if(!errors){
 if(type==="signup"){
-  if (selectedFile) {
-    formdata.append("profile_picture", selectedFile);
-    const response = await createUser(formdata);
+  
+  if (!selectedFile) {
+    setValidationErrors((prev) => ({
+      ...prev,
+      profile_picture: ["Profile picture is required."]
+    }));
+    return;
   }
+   const role = formdata.get("role");
+  let folder: string | null = null;
+
+  switch (role) {
+    case "donor":
+      folder = "donorProfile";
+      break;
+    case "blood_bank":
+      folder = "bloodBankProfile";
+      break;
+    default:
+      console.error("Invalid role specified");
+      return;
+  }
+    const uploadFile: UploadResult = await uploadImage(selectedFile, folder);
+    if(uploadFile.success&&uploadFile.data){
+      formdata.append("profileImage", JSON.stringify({url:uploadFile.data.secure_url, publicId:uploadFile.data.public_id}));
+      const response = await createUser(formdata);
+    console.log(response);
+    }else {
+      console.error("Image upload failed:", uploadFile.error || "Unknown error");
+    }
 router.push("/");
 }else if(type==="login"){
 const credentials=Object.fromEntries(formdata);

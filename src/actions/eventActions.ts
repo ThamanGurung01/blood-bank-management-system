@@ -85,21 +85,35 @@ export const updateEvent = async (eventId: string, formData: FormData) => {
   }
 };
 
-export const getAllEvents = async (creatorId:string) => {
+export const getAllEvents = async (creatorId: string, type: string) => {
   try {
     await connectToDb();
-    if(!creatorId) return { success: false, message: "creatorId required not found.", }
-    const eventData = await Event.find({
-      createdBy:creatorId
-    })
-      .populate({
+    let eventData = [];
+    if (type === "all") {
+      eventData = await Event.find().populate(
+        {
+          path: "createdBy",
+          populate: {
+            path: "user",
+            select: "name",
+          },
+        });
+    } else if (type === "individual") {
+      if (!creatorId) return { success: false, message: "creatorId required not found.", }
+      eventData = await Event.find({
+        createdBy: creatorId
+      }).populate({
         path: "createdBy",
         populate: {
           path: "user",
           select: "name",
         },
       });
-    if (!eventData) return { success: false, message: "Event not found.", }
+    }
+
+     if (!eventData || eventData.length === 0) {
+      return { success: false, message: "No events found." };
+    }
     return {
       success: true,
       data: JSON.parse(JSON.stringify(eventData))
