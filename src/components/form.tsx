@@ -151,8 +151,10 @@ const res = await signIn("credentials", {
   let destination = "/dashboard";
   if (role === "admin") {
     destination = "/admin/dashboard";
-  } else if (role === "donor" || role === "blood_bank") {
-    destination = "/dashboard";
+  } else if (role === "blood_bank") {
+    destination = "/dashboard/";
+  } else if(role === "donor"){
+    destination = "/dashboard/find-donors";
   }
 
   router.push(destination);
