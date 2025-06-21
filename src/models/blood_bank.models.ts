@@ -9,6 +9,11 @@ export interface IBlood_Bank extends Document{
 };
     contact:string;
     verified:boolean;
+    document: {
+        public_id: string;
+        url:string;
+        fileType: string;
+    };
     profileImage:{
         url:string;
         publicId:string;
@@ -40,6 +45,11 @@ const BloodBankSchema=new Schema<IBlood_Bank>({
     verified:{
         type:Boolean,
         default:false
+    },
+    document: {
+        public_id: String,
+        url:String,
+        fileType: String,
     },
     profileImage: {
     url: {

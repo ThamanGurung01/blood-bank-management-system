@@ -18,7 +18,7 @@ type CloudinaryUploadResult = {
 };
 
 
-export async function uploadImage(selectedFile:File,type:string) {
+export async function uploadAllFile(selectedFile:File,type:string) {
 let folderName: string | undefined = undefined;
 const file = selectedFile as File | undefined;
 
@@ -26,7 +26,12 @@ if (type === "donorProfile") {
   folderName = 'blood_bank_management/donorProfile';
 }else if (type=== "bloodBankProfile"){
   folderName = 'blood_bank_management/bloodBankProfile';
+}else if(type==="bloodRequestFile"){
+  folderName = 'blood_bank_management/bloodRequestFile';
+}else if(type==="bloodBankVerification"){
+  folderName = 'blood_bank_management/bloodBankVerification';
 }
+
 if (!file || !folderName) {
   return { success: false, error: 'No file provided or invalid type' };
 }
@@ -38,7 +43,7 @@ if (!file || !folderName) {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: folderName,
-          resource_type: 'image',
+          resource_type: 'auto',
         },
         (error, result) => {
           if (error || !result) {

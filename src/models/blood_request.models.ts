@@ -8,15 +8,19 @@ export interface IBlood_Request extends Document {
         latitude: number;
         longitude: number;
     };
-    address:string;
+    address: string;
     blood_group: string;
     blood_component: DonationType;
     blood_quantity: number;
     contactNumber: string;
     priorityLevel: "Normal" | "Urgent";
     requestDate: Date;
-    status: 'Pending'|'Successful'|'Unsuccessful' | 'Approved' | 'Rejected';
-    document: string;
+    status: 'Pending' | 'Successful' | 'Unsuccessful' | 'Approved' | 'Rejected';
+    document: {
+        public_id: string;
+        url:string;
+        fileType: string;
+    };
     bloodBankNotes: string;
     notes: string;
     redirected: number;
@@ -41,34 +45,38 @@ const BloodRequestSchema: Schema = new Schema({
     },
     requestDate: { type: Date, required: true },
     blood_group: { type: String, required: true },
-    blood_component: { type: String, enum: ["whole_blood","rbc","platelets","plasma","cryoprecipitate"], required: true },
+    blood_component: { type: String, enum: ["whole_blood", "rbc", "platelets", "plasma", "cryoprecipitate"], required: true },
     blood_quantity: { type: Number, required: true },
     contactNumber: { type: String, required: true },
-    bloodBankNotes:{type: String, default: "" },
+    bloodBankNotes: { type: String, default: "" },
     priorityLevel: { type: String, enum: ['Normal', 'Urgent'], default: 'Normal' },
-    status: { type: String, enum: ['Pending','Successful','Unsuccessful', 'Approved', 'Rejected'], default: 'Pending' },
-    document: { type: String,default: "" },
+    status: { type: String, enum: ['Pending', 'Successful', 'Unsuccessful', 'Approved', 'Rejected'], default: 'Pending' },
+    document: {
+        publicId: String,
+        url:String,
+        fileType: String,
+    },
     notes: { type: String },
-    redirected:{type:Number,default:0},
+    redirected: { type: Number, default: 0 },
     requestor: {
         type: Schema.Types.ObjectId,
         ref: 'Donor',
         required: true,
     },
-    blood_bank:{
+    blood_bank: {
         type: Schema.Types.ObjectId,
         ref: 'Blood_bank',
         required: true,
     },
     nearby_blood_banks: [{
-            type: Schema.Types.ObjectId,
-            ref: 'Blood_bank',
-    }],
-    rejectedBy:[
-        {
         type: Schema.Types.ObjectId,
         ref: 'Blood_bank',
-    }
+    }],
+    rejectedBy: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Blood_bank',
+        }
     ]
 }, { timestamps: true });
 

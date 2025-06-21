@@ -17,14 +17,12 @@ import { generateId } from "@/utils/generateId";
 import { rejectBloodRequest } from "@/utils/rejectBloodRequest";
 export const insertBloodRequest=async(formData:FormData)=>{
     try {
+      console.log(formData);
         const session=await getServerSession(authOptions);
         if(!session) return {success:false,message:"User not authenticated"};
         if(session?.user.role!=="donor") return {success:false,message:"User not authorized"};
         if(!formData) return {success:false,message:"Form data is invalid"};
         await connectToDb();
-        const validation=fromValidation(formData,"blood_request");
-        const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
-        if(!errors){
             const user=session.user.id;
             const addressQuery=formData.get("hospitalAddress") as string;
             if(!addressQuery) return {success:false,message:"Hospital Address is required"};
@@ -87,10 +85,6 @@ export const insertBloodRequest=async(formData:FormData)=>{
               ...cBloodRequest.toObject(),
               bloodBankName: nearestBloodBank[0].blood_bank.blood_bank,
             }))};
-        }else{
-            console.log(errors);
-            return {success:false,message:"User validation error"};
-        }
     } catch (error:any) {
         console.log("Insert Blood Request Error:", error);
         return {success:false,message:"Something went wrong"}

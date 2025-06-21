@@ -11,7 +11,6 @@ const Navbar = () => {
   const { data: session } = useSession();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  console.log(session?.user);
   // const pathname = usePathname();
 
   // Get page title based on pathname

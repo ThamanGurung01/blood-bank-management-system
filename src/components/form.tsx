@@ -11,13 +11,14 @@ import { ACCEPTED_IMAGE_TYPES } from "@/utils/validation";
 import { createUser } from "@/actions/userActions";
 import { getSession, signIn ,useSession} from "next-auth/react";
 import { useSearchParams,useRouter } from "next/navigation";
-import { uploadImage } from "@/actions/uploadFileActions";
+import { uploadAllFile } from "@/actions/uploadFileActions";
 
-interface UploadResult {
+export interface UploadResult {
   success: boolean;
   data?: {
     secure_url: string;
     public_id: string;
+    resource_type:string
   };
   error?: string;
 }
@@ -124,7 +125,7 @@ if(type==="signup"){
       console.error("Invalid role specified");
       return;
   }
-    const uploadFile: UploadResult = await uploadImage(selectedFile, folder);
+    const uploadFile: UploadResult = await uploadAllFile(selectedFile, folder);
     if(uploadFile.success&&uploadFile.data){
       formdata.append("profileImage", JSON.stringify({url:uploadFile.data.secure_url, publicId:uploadFile.data.public_id}));
       const response = await createUser(formdata);

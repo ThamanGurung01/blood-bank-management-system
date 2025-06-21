@@ -8,6 +8,8 @@ import { fromValidation } from "@/utils/validation";
 import { insertBloodRequest } from "@/actions/bloodRequestActions";
 import { getLatLong } from "@/app/api/map/getLatLong";
 import { useRouter } from "next/navigation";
+import { UploadResult } from "./form";
+import { uploadAllFile } from "@/actions/uploadFileActions";
 
 interface Prop {
   formType: string;
@@ -77,18 +79,36 @@ const BloodRequisitionForm = ({formType}:Prop) => {
   };
 
   const handleSubmit = async(e: any) => {
-   try {
-    console.log("Form Data: ",formData);
     e.preventDefault();
+   try {
     setFileError("");
 const formdata = new FormData(e.target as HTMLFormElement);
   const validation = fromValidation(formdata, "blood_request");
   const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
   setValidationErrors(errors);
   if(!errors&&!fileError){
-   const response:any=await insertBloodRequest(formdata);
-   console.log("Response: ",response);
-  setBloodReqResponse(response);
+    const file = formdata.get("document");
+    if (file && file instanceof File) {
+      const uploadFile: UploadResult = await uploadAllFile(file, "bloodRequestFile");
+      const mimeType = file.type;
+      console.log(uploadFile);
+      if(uploadFile.success&&uploadFile.data){
+        formdata.set("document", JSON.stringify({
+        url: uploadFile.data.secure_url,
+        publicId: uploadFile.data.public_id,
+        fileType:mimeType,
+        }));
+      }else {
+        console.error("Error uploading file");
+      }
+    } else {
+      setFileError("Please upload a valid file.");
+      return;
+    }
+    console.log(formdata);
+    const response:any=await insertBloodRequest(formdata);
+    console.log("Response: ",response);
+    setBloodReqResponse(response);
 
     setIsSubmitting(true);
     setTimeout(() => {
