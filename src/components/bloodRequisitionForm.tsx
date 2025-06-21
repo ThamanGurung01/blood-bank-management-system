@@ -82,7 +82,20 @@ const BloodRequisitionForm = ({formType}:Prop) => {
     e.preventDefault();
    try {
     setFileError("");
-const formdata = new FormData(e.target as HTMLFormElement);
+    const formdata = new FormData();
+    formdata.append("patientName", formData.patientName);
+    formdata.append("contactNumber", formData.contactNumber);
+    formdata.append("hospitalName", formData.hospitalName);
+    formdata.append("hospitalAddress", formData.hospitalAddress);
+    formdata.append("blood_group", formData.blood_group);
+    formdata.append("blood_quantity", formData.blood_quantity.toString());
+    formdata.append("blood_component", formData.blood_component);
+    formdata.append("priorityLevel", formData.priorityLevel);
+    formdata.append("requestDate", formData.requestDate);
+    formdata.append("notes", formData.notes);
+    if (formData.document) {
+      formdata.append("document", formData.document);
+    }
   const validation = fromValidation(formdata, "blood_request");
   const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
   setValidationErrors(errors);
@@ -91,7 +104,6 @@ const formdata = new FormData(e.target as HTMLFormElement);
     if (file && file instanceof File) {
       const uploadFile: UploadResult = await uploadAllFile(file, "bloodRequestFile");
       const mimeType = file.type;
-      console.log(uploadFile);
       if(uploadFile.success&&uploadFile.data){
         formdata.set("document", JSON.stringify({
         url: uploadFile.data.secure_url,
@@ -99,13 +111,16 @@ const formdata = new FormData(e.target as HTMLFormElement);
         fileType:mimeType,
         }));
       }else {
-        console.error("Error uploading file");
+        formdata.set("document", JSON.stringify({
+        url: '',
+        publicId: '',
+        fileType:'',
+        }));
       }
     } else {
       setFileError("Please upload a valid file.");
       return;
     }
-    console.log(formdata);
     const response:any=await insertBloodRequest(formdata);
     console.log("Response: ",response);
     setBloodReqResponse(response);
@@ -132,7 +147,7 @@ const formdata = new FormData(e.target as HTMLFormElement);
       blood_group: "",
       blood_quantity: 1,
       blood_component: "",
-      priorityLevel: "normal",
+      priorityLevel: "Normal",
       requestDate: "",
       document: null,
       notes: ""

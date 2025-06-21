@@ -15,10 +15,18 @@ interface Blood_Request extends Omit<IBlood_Request, "blood_bank"> {
   };
   createdAt: Date;
 }
+
 const page = ({ params }: Props) => {
   const { id } = use(params);
   const [data, setData] = useState<Blood_Request>();
   const [showBloodbankDetails, setShowBloodbankDetails] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState<string | undefined>(undefined);
+  const [fileName, setFileName] = useState<string | undefined>(undefined);
+  const mimeToExt: Record<string, string> = {
+    'application/msword': 'doc',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+  };
+
   const Data = {
     bloodRequestId: "REQ-2025050501",
     status: "Approved" as "Approved" | "Pending" | "Processing" | "Rejected", // or "Pending", "Processing", "Rejected"
@@ -65,9 +73,25 @@ const page = ({ params }: Props) => {
       </span>
     );
   };
+  function appendFlAttachment(url: string): string {
+  return url.replace('/upload/', '/upload/fl_attachment:bloodDocumentFile/');
+}
   const fetchBloodRequestDetails = async (id: string) => {
     const response = await getUserBloodRequest(id);
     setData(response.data);
+    const document = response?.data?.document;
+    if (!document) return;
+    const fileUrl = document?.url;
+    const mimeType = document?.fileType;
+    const extension = mimeToExt[mimeType];
+    setFileName(`bloodRequestFile.${extension}`);
+    setDownloadUrl(appendFlAttachment(fileUrl));
+    // console.log(extension ? `${fileUrl}.${extension}` : fileUrl);
+    console.log(fileUrl)
+    console.log(appendFlAttachment(fileUrl));
+    console.log(mimeType);
+    console.log(extension);
+    console.log(`bloodRequestFile.${extension}`);
   }
   useEffect(() => {
     if (id) {
@@ -81,16 +105,6 @@ const page = ({ params }: Props) => {
           <ArrowLeft className="mr-2" size={20} />
           Back to Requisitions
         </button>
-        <div className="flex space-x-3">
-          <button className="flex items-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-            <Download size={18} className="mr-2" />
-            Download
-          </button>
-          <button className="flex items-center px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-            <Printer size={18} className="mr-2" />
-            Print
-          </button>
-        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -102,7 +116,7 @@ const page = ({ params }: Props) => {
             </p>
           </div>
           <div className="flex flex-col items-end">
-            {data?.status && ["Pending", "Approved", "Successful","Unsuccessful", "Rejected"].includes(data.status)
+            {data?.status && ["Pending", "Approved", "Successful", "Unsuccessful", "Rejected"].includes(data.status)
               ? getStatusBadge(data.status as "Pending" | "Approved" | "Successful" | "Unsuccessful" | "Rejected")
               : getStatusBadge("Pending")}
             <span className="text-sm text-gray-500 mt-2 flex items-center">
@@ -182,16 +196,20 @@ const page = ({ params }: Props) => {
                 <h2 className="text-lg font-semibold mb-4 pb-2 border-b border-gray-200">Blood Bank Note</h2>
                 <p className="bg-gray-50 p-3 rounded">{data?.bloodBankNotes || "No notes from the blood bank."}</p>
               </div>
-              {/* <div>
+              <div>
                 <p className="text-sm text-gray-600 mb-2">Requisition Document</p>
-                <a href={data?.documentUrl} className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                  <FileText className="text-gray-400 mr-3" size={24} />
+                {downloadUrl ? (
+                  <a href={downloadUrl}
+                    download={fileName}
+                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <FileText className="text-gray-400 mr-3" size={24} />
                   <div>
-                    <p className="font-medium">Blood_Requisition_Document.pdf</p>
+                    <p className="font-medium">Blood_Requisition_Document</p>
                     <p className="text-sm text-gray-500">Click to view or download</p>
                   </div>
-                </a>
-              </div> */}
+                  </a>
+                  ) : (<p>No file available</p>)}
+              </div>
             </div>
           </div>
         </div>

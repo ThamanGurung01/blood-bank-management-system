@@ -1,6 +1,7 @@
 'use server';
 
 import cloudinary from '@/lib/cloudinary';
+import { getUniquePublicId } from '@/utils/generateUniqueId';
 
 type CloudinaryUploadResult = {
   public_id: string;
@@ -39,14 +40,19 @@ if (!file || !folderName) {
   try {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+    const originalName = file.name;
+    const publicId = `${folderName}/${getUniquePublicId(originalName)}`;
     const result = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
-          folder: folderName,
+          public_id: publicId,
           resource_type: 'auto',
+          use_filename: true,
+          unique_filename: false,
         },
         (error, result) => {
           if (error || !result) {
+            console.log(error);
             reject(error || new Error('Upload failed'));
           } else {
             resolve(result);

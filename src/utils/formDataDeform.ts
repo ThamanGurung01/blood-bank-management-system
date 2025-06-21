@@ -57,6 +57,7 @@ if(type==="user"){
         requestDate: new Date(formData.get("requestDate") as string),
         priorityLevel: formData.get("priorityLevel"),
         notes: formData.get("notes"),
+        document:JSON.parse(formData.get("document")as string),
     }
 
 }else if(type==="event"){
