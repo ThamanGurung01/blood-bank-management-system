@@ -1,4 +1,4 @@
-import { Schema, model, Types } from "mongoose";
+import { Schema, model, Types, models } from "mongoose";
 
 const ScheduleSchema = new Schema(
   {
@@ -16,4 +16,4 @@ ScheduleSchema.index(
   { unique: true }
 );
 
-export default model("Schedule", ScheduleSchema);
+export default models.Schedule || model("Schedule", ScheduleSchema);

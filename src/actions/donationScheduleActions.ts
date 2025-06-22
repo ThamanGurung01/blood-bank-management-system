@@ -127,6 +127,10 @@ export async function getDonorDonationRequests(donorId: string) {
       .populate("blood_bank", "blood_bank location contact")
       .sort({ createdAt: -1 });
 
+    if (!requests) {
+      console.log("No requests found for this donor");
+    }
+
     return { success: true, data: requests };
   } catch (error) {
     console.error("Error fetching donor donation requests:", error);
