@@ -1,7 +1,9 @@
 'use server';
 
+import { authOptions } from '@/lib/auth';
 import cloudinary from '@/lib/cloudinary';
 import { getUniquePublicId } from '@/utils/generateUniqueId';
+import { getServerSession } from 'next-auth';
 
 type CloudinaryUploadResult = {
   public_id: string;
@@ -38,13 +40,22 @@ if (!file || !folderName) {
 }
 
   try {
+    const session=await getServerSession(authOptions);
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const originalName = file.name;
-    const publicId = `${folderName}/${getUniquePublicId(originalName)}`;
+      const originalName = file.name;
+  let publicId;
+
+  if (type === "bloodBankVerification") {
+    const extension = originalName.substring(originalName.lastIndexOf('.') + 1);
+    publicId = `${session?.user.name}.${extension}`;
+  } else {
+    publicId = getUniquePublicId(originalName);
+  }
     const result = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
+          folder:folderName,
           public_id: publicId,
           resource_type: 'auto',
           use_filename: true,

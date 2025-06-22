@@ -167,3 +167,33 @@ export const deleteBloodBank = async (bloodBankId: string) => {
     return { success: false, message: "An error occurred while deleting the Blood Bank." };
   }
 };
+
+export async function updateBloodBankDocument(bloodBankId: string,
+  document: 
+        {
+        publicId: string;
+        url:string;
+        fileType: string;
+        }) {
+   try {
+    await connectToDb();
+    if(!bloodBankId&&!document) return {success:false,message:"emptyParamter"};
+    const updated = await BloodBank.findByIdAndUpdate(
+      bloodBankId,
+      {
+        $set: {
+          document,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updated) {
+      return { success: false, message: 'Blood bank not found' };
+    }
+    return { success: true, message: 'uploaded file successfully' };
+  } catch (error) {
+    console.error('Error updating blood bank document:', error);
+    return { success: false, message: 'Server error' };
+  }
+}

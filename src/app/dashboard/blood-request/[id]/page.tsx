@@ -16,7 +16,7 @@ interface Blood_Request extends Omit<IBlood_Request, "blood_bank"> {
   createdAt: Date;
 }
 export function appendFlAttachment(url: string): string {
-  return url.replace('/upload/', '/upload/fl_attachment:bloodDocumentFile/');
+  return url.replace('/upload/', '/upload/fl_attachment:documentFile/');
 }
 export const mimeToExt: Record<string, string> = {
   'application/msword': 'doc',
