@@ -1,12 +1,18 @@
 "use client"
 import { useState, useEffect } from 'react';
-import { Search, Filter, Calendar, User, Droplet, Clock, Check, X, AlertCircle } from 'lucide-react';
+import { Search, Filter, Calendar, User, Droplet, Clock, Check, X, AlertCircle, FileText } from 'lucide-react';
 import { changeBloodRequestStatus, getBloodRequest } from '@/actions/bloodRequestActions';
 import { Schema } from 'mongoose';
+import { appendFlAttachment, mimeToExt } from '../blood-request/[id]/page';
 
 interface BloodRequest {
   _id: string;
   bloodRequestId: string;
+  document:{
+    url:string;
+    publicId:string;
+    fileType:string;
+  };
   requestor: {
     user: {
       name: string;
@@ -33,6 +39,9 @@ const page = () => {
   const [showModal, setShowModal] = useState(false);
   const [bloodBankStatusNote, setBloodBankStatusNote] = useState('');
   const [noteError, setNoteError] = useState("");
+  const [downloadUrl, setDownloadUrl] = useState<string | undefined>(undefined);
+  const [fileName, setFileName] = useState<string | undefined>(undefined);
+
   const filteredRequests = requests.filter(request => {
     const matchesStatus = statusFilter === 'All' || request.status === statusFilter;
     const matchesSearch =
@@ -98,7 +107,7 @@ const page = () => {
   const fetchRequests = async () => {
     try {
       const BloodRequests = await getBloodRequest();
-      const data = BloodRequests?.data;
+      const data = BloodRequests?.data;   
       const updatedData = (data || []).map((item: BloodRequest) => ({
         ...item,
         updatedStatus: item.status
@@ -333,6 +342,20 @@ const page = () => {
                 <p className="text-sm bg-gray-50 p-3 rounded-md">{selectedRequest.notes}</p>
               </div>
 
+              <div>
+                <p className="text-sm text-gray-600 mb-2">Requisition Document</p>
+                {selectedRequest?.document?.url ? (
+                  <a href={selectedRequest.document?.url ? appendFlAttachment(selectedRequest.document.url) : '#'}
+                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <FileText className="text-gray-400 mr-3" size={24} />
+                  <div>
+                    <p className="font-medium">Blood_Requisition_Document</p>
+                    <p className="text-sm text-gray-500">Click to view or download</p>
+                  </div>
+                  </a>
+                  ) : (<p>No file available</p>)}
+              </div>  
+
               <div className={selectedRequest.status !== 'Pending' && selectedRequest.status!=='Approved' ? 'hidden' : "border-t border-gray-200 pt-4"}>
                 <p className="text-sm font-medium text-gray-700 mb-2">Update Status</p>
                 <div className={'flex flex-wrap gap-2'}>
@@ -373,7 +396,7 @@ const page = () => {
                     Rejected
                   </button>
                 </div>
-              </div>
+              </div> 
 
               {selectedRequest.status === "Pending" || selectedRequest.status === "Approved"? (
                 <div className={selectedRequest.updatedStatus === 'Pending' ? 'hidden' : 'flex flex-wrap gap-2 flex-col'}>

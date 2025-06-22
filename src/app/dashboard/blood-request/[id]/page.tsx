@@ -15,17 +15,19 @@ interface Blood_Request extends Omit<IBlood_Request, "blood_bank"> {
   };
   createdAt: Date;
 }
-
+export function appendFlAttachment(url: string): string {
+  return url.replace('/upload/', '/upload/fl_attachment:bloodDocumentFile/');
+}
+export const mimeToExt: Record<string, string> = {
+  'application/msword': 'doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+};
 const page = ({ params }: Props) => {
   const { id } = use(params);
   const [data, setData] = useState<Blood_Request>();
   const [showBloodbankDetails, setShowBloodbankDetails] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | undefined>(undefined);
   const [fileName, setFileName] = useState<string | undefined>(undefined);
-  const mimeToExt: Record<string, string> = {
-    'application/msword': 'doc',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
-  };
 
   const Data = {
     bloodRequestId: "REQ-2025050501",
@@ -73,9 +75,6 @@ const page = ({ params }: Props) => {
       </span>
     );
   };
-  function appendFlAttachment(url: string): string {
-  return url.replace('/upload/', '/upload/fl_attachment:bloodDocumentFile/');
-}
   const fetchBloodRequestDetails = async (id: string) => {
     const response = await getUserBloodRequest(id);
     setData(response.data);
@@ -87,11 +86,11 @@ const page = ({ params }: Props) => {
     setFileName(`bloodRequestFile.${extension}`);
     setDownloadUrl(appendFlAttachment(fileUrl));
     // console.log(extension ? `${fileUrl}.${extension}` : fileUrl);
-    console.log(fileUrl)
-    console.log(appendFlAttachment(fileUrl));
-    console.log(mimeType);
-    console.log(extension);
-    console.log(`bloodRequestFile.${extension}`);
+    // console.log(fileUrl)
+    // console.log(appendFlAttachment(fileUrl));
+    // console.log(mimeType);
+    // console.log(extension);
+    // console.log(`bloodRequestFile.${extension}`);
   }
   useEffect(() => {
     if (id) {
@@ -203,12 +202,12 @@ const page = ({ params }: Props) => {
                     download={fileName}
                     className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
                     <FileText className="text-gray-400 mr-3" size={24} />
-                  <div>
-                    <p className="font-medium">Blood_Requisition_Document</p>
-                    <p className="text-sm text-gray-500">Click to view or download</p>
-                  </div>
+                    <div>
+                      <p className="font-medium">Blood_Requisition_Document</p>
+                      <p className="text-sm text-gray-500">Click to view or download</p>
+                    </div>
                   </a>
-                  ) : (<p>No file available</p>)}
+                ) : (<p>No file available</p>)}
               </div>
             </div>
           </div>
