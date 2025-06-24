@@ -141,10 +141,10 @@ const res = await signIn("credentials", {
   });
 
   if (!res || !res.ok) {
-res?.error==="Incorrect password"&& ( setValidationErrors((prev) => ({
+if(res?.error==="Incorrect password") {setValidationErrors((prev) => ({
     ...prev,
     password: [res?.error || "Something went wrong"],
-  })))
+  }))}
     return;
   }
 

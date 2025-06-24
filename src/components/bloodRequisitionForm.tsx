@@ -10,11 +10,7 @@ import { useRouter } from "next/navigation";
 import { UploadResult } from "./form";
 import { uploadAllFile } from "@/actions/uploadFileActions";
 
-interface Prop {
-  formType: string;
-}
-
-const BloodRequisitionForm = ({formType}:Prop) => {
+const BloodRequisitionForm = () => {
   const router=useRouter();
   const [formData, setFormData] = useState({
     patientName: "",

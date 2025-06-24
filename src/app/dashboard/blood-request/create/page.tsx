@@ -5,7 +5,7 @@ const Page = () => {
 
   return (
     <>
-    <BloodRequisitionForm formType="create"/>
+    <BloodRequisitionForm/>
     </>
   )
 }
