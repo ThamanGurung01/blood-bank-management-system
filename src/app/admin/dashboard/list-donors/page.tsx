@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState } from "react";
-import { Search, Filter, User, Droplet, SquarePen, Trash2, Edit } from "lucide-react";
+import { Search, Filter, User, Droplet, Trash2, Edit } from "lucide-react";
 import { deleteDonor, getAllDonor, updateDonor } from "@/actions/donorActions";
 import { IDonor } from "@/models/donor.models";
 import DonorUpdateModal from "@/components/DonorDetailsModal";
@@ -13,7 +13,7 @@ export interface Donor extends Omit<IDonor, 'user' | '_id'> {
     role: "donor" | "blood_bank";
   };
 }
-const page = () => {
+const Page = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [bloodType, setBloodType] = useState("");
   const [availability, setAvailability] = useState("");
@@ -226,4 +226,4 @@ const page = () => {
   );
 }
 
-export default page
+export default Page

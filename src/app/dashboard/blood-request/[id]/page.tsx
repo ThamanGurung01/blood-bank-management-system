@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { FileText, ArrowLeft, Download, Printer, Clock, CheckCircle } from 'lucide-react';
+import { FileText, ArrowLeft, Clock } from 'lucide-react';
 import { use } from 'react';
 import { getUserBloodRequest } from '@/actions/bloodRequestActions';
 import { IBlood_Request } from '@/models/blood_request.models';
@@ -22,31 +22,12 @@ export const mimeToExt: Record<string, string> = {
   'application/msword': 'doc',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
 };
-const page = ({ params }: Props) => {
+const Page = ({ params }: Props) => {
   const { id } = use(params);
   const [data, setData] = useState<Blood_Request>();
   const [showBloodbankDetails, setShowBloodbankDetails] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState<string | undefined>(undefined);
   const [fileName, setFileName] = useState<string | undefined>(undefined);
-
-  const Data = {
-    bloodRequestId: "REQ-2025050501",
-    status: "Approved" as "Approved" | "Pending" | "Processing" | "Rejected", // or "Pending", "Processing", "Rejected"
-    patientName: "John Doe",
-    contactNumber: "123-456-7890",
-    hospitalName: "City General Hospital",
-    hospitalAddress: "123 Medical Center Dr, Healthcare City, HC 12345",
-    blood_group: "O+",
-    blood_quantity: 2,
-    blood_component: "whole_blood",
-    requestDate: "2025-05-10",
-    priorityLevel: "Urgent",
-    notes: "Patient is scheduled for surgery on 2025-05-12. Requires fresh units.",
-    bloodBankName: "Central Blood Bank",
-    documentUrl: "#",
-    submittedDate: "2025-05-05",
-    lastUpdated: "2025-05-06",
-  };
 
   const formats = {
     whole_blood: "Whole Blood",
@@ -239,4 +220,4 @@ const page = ({ params }: Props) => {
 
   );
 }
-export default page
+export default Page

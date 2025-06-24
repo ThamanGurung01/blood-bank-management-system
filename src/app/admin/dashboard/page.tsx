@@ -7,7 +7,7 @@ import { Building } from 'lucide-react';
 import { getLatestBloodBank } from '@/actions/bloodBankActions';
 import { IBlood_Bank } from '@/models/blood_bank.models';
 import { getTodayNewDonors } from '@/actions/donorActions';
-const page = () => {
+const Page = () => {
   interface MetricsType {
     title: string;
     value: string;
@@ -180,4 +180,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page

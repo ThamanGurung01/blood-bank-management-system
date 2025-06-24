@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { FileText, Eye, CheckCircle, XCircle, Building2, MapPin, Phone, Mail, User, Shield, Download } from 'lucide-react';
+import { FileText, Eye, CheckCircle, XCircle, Building2, Phone, Mail, User, Shield, Download } from 'lucide-react';
 import { IBlood_Bank } from '@/models/blood_bank.models';
 import { changeBloodBankVerification, getAllBloodBanks } from '@/actions/bloodBankActions';
 import { appendFlAttachment } from '@/app/dashboard/blood-request/[id]/page';
@@ -14,7 +14,7 @@ interface BloodBank extends Omit<IBlood_Bank, 'user'> {
   createdAt?: string;
 }
 
-const page = () => {
+const Page = () => {
   const [selectedBank, setSelectedBank] = useState<BloodBank | null>(null);
   const [showDocumentViewer, setShowDocumentViewer] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'all' | 'verified' | 'unverified'>('unverified');
@@ -331,4 +331,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

@@ -10,7 +10,7 @@ interface Donor extends Omit<IDonor, 'user'> {
     role: string;
   };
 }
-const page = () => {
+const Page = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [bloodType, setBloodType] = useState("");
   const [availability, setAvailability] = useState("");
@@ -18,7 +18,6 @@ const page = () => {
   const [donors, setDonors] = useState<Donor[]>([]);
   const [showRecommended, setShowRecommended] = useState(false);
   const [selectedBloodGroup, setSelectedBloodGroup] = useState("A+");
-  const [loading, setLoading] = useState(false);
   // const donors = [
   //   { id: 1, name: "John Doe", bloodType: "A+", available: true, lastDonation: "2025-03-15", contactNumber: "555-1234" },
   //   { id: 2, name: "Jane Smith", bloodType: "O-", available: false, lastDonation: "2025-04-01", contactNumber: "555-5678" },
@@ -234,4 +233,4 @@ const page = () => {
   );
 }
 
-export default page
+export default Page

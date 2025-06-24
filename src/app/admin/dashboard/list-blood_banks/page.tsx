@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState } from "react";
-import { Search, Filter, User, Droplet, SquarePen, Edit, Trash2 } from "lucide-react";
+import { Search, Filter, User, Edit, Trash2 } from "lucide-react";
 import { IBlood_Bank } from "@/models/blood_bank.models";
 import { deleteBloodBank, getAllBloodBanks, updateBloodBank } from "@/actions/bloodBankActions";
 import DeleteConfirmationModal from "@/components/DeleteConfirmationModal";
@@ -13,7 +13,7 @@ export interface BloodBank extends Omit<IBlood_Bank, 'user'> {
   };
   createdAt?: string;
 }
-const page = () => {
+const Page = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [verification, setVerification] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -217,4 +217,4 @@ const page = () => {
   );
 }
 
-export default page
+export default Page

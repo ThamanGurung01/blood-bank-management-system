@@ -6,14 +6,9 @@ import { useState, useEffect } from "react";
 import {
   Calendar,
   Clock,
-  MapPin,
-  Award,
   Heart,
   Droplet,
-  TrendingUp,
   Search,
-  Download,
-  ChevronDown,
   AlertCircle,
   CheckCircle,
   User,
@@ -42,7 +37,6 @@ export default function DonationHistoryPage() {
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [dateFilter, setDateFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"list" | "stats">("list");
 const [donorData, setDonorData] = useState<DonorData>({}as DonorData);
@@ -151,7 +145,9 @@ const DonationTypeLabels: Record<DonationType, string> = {
       try {
           const response = await getBloodDonations(session.user.id);
           const donorData= await getDonor(session.user.id);
-        setDonorData(donorData.data);
+        if (donorData?.data) {
+          setDonorData(donorData.data);
+        }
         setDonations(response.data);
         applyFilters(
           response.data,
@@ -626,8 +622,7 @@ const DonationTypeLabels: Record<DonationType, string> = {
                 </h3>
                 <p className="mb-6 text-gray-500">
                   {searchTerm ||
-                  typeFilter !== "all" ||
-                  dateFilter !== "all"
+                  typeFilter !== "all"
                     ? "No donations match your search criteria."
                     : "You haven't made any blood donations yet."}
                 </p>

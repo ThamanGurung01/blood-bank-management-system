@@ -3,12 +3,6 @@ import { useEffect, useState } from "react";
 import {
   Trophy,
   Medal,
-  ArrowUp,
-  ArrowDown,
-  Heart,
-  Search,
-  Filter,
-  ChevronDown,
   Calendar,
   Droplet,
 } from "lucide-react";

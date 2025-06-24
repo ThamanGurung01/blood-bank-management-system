@@ -6,7 +6,6 @@ import 'ldrs/react/Ring2.css'
 import IValidation from "@/types/validationTypes";
 import { fromValidation } from "@/utils/validation";
 import { insertBloodRequest } from "@/actions/bloodRequestActions";
-import { getLatLong } from "@/app/api/map/getLatLong";
 import { useRouter } from "next/navigation";
 import { UploadResult } from "./form";
 import { uploadAllFile } from "@/actions/uploadFileActions";

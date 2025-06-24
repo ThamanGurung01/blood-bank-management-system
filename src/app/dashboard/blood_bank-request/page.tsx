@@ -1,8 +1,7 @@
 "use client"
 import { useState, useEffect } from 'react';
-import { Search, Filter, Calendar, User, Droplet, Clock, Check, X, AlertCircle, FileText } from 'lucide-react';
+import { Search, Filter, Calendar, Droplet, Clock, Check, X, AlertCircle, FileText } from 'lucide-react';
 import { changeBloodRequestStatus, getBloodRequest } from '@/actions/bloodRequestActions';
-import { Schema } from 'mongoose';
 import { appendFlAttachment, mimeToExt } from '../blood-request/[id]/page';
 
 interface BloodRequest {
@@ -31,7 +30,7 @@ interface BloodRequest {
   bloodBankNotes: string;
 }
 
-const page = () => {
+const Page = () => {
   const [requests, setRequests] = useState<BloodRequest[]>([]);
   const [statusFilter, setStatusFilter] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,9 +38,6 @@ const page = () => {
   const [showModal, setShowModal] = useState(false);
   const [bloodBankStatusNote, setBloodBankStatusNote] = useState('');
   const [noteError, setNoteError] = useState("");
-  const [downloadUrl, setDownloadUrl] = useState<string | undefined>(undefined);
-  const [fileName, setFileName] = useState<string | undefined>(undefined);
-
   const filteredRequests = requests.filter(request => {
     const matchesStatus = statusFilter === 'All' || request.status === statusFilter;
     const matchesSearch =
@@ -452,4 +448,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page

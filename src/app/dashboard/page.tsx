@@ -1,12 +1,12 @@
 "use client"
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { Droplet, Users, Clock, Calendar, AlertTriangle, TrendingUp } from 'lucide-react';
+import { Droplet, Clock, Calendar, TrendingUp } from 'lucide-react';
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 const Page = () => {
-  const {data:session,status}=useSession();
+  const {data:_session,status}=useSession();
   const router=useRouter();
 
   const bloodStockData = [

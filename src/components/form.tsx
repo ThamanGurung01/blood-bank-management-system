@@ -9,7 +9,7 @@ import { fromValidation } from "@/utils/validation";
 import IValidation from "@/types/validationTypes";
 import { ACCEPTED_IMAGE_TYPES } from "@/utils/validation";
 import { createUser } from "@/actions/userActions";
-import { getSession, signIn ,useSession} from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 import { useSearchParams,useRouter } from "next/navigation";
 import { uploadAllFile } from "@/actions/uploadFileActions";
 
@@ -37,7 +37,6 @@ const Form = ({ type }: { type: string }) => {
   const searchParams=useSearchParams();
   const signinError=searchParams.get("error");
   const router=useRouter();
-const {data:session}=useSession();
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || undefined;
     setSelectedFile(file);
