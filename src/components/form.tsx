@@ -142,7 +142,10 @@ const res = await signIn("credentials", {
   });
 
   if (!res || !res.ok) {
-    console.log("Login failed:", res?.error);
+res?.error==="Incorrect password"&& ( setValidationErrors((prev) => ({
+    ...prev,
+    password: [res?.error || "Something went wrong"],
+  })))
     return;
   }
 
