@@ -12,6 +12,7 @@ import { createUser } from "@/actions/userActions";
 import { getSession, signIn } from "next-auth/react";
 import { useSearchParams,useRouter } from "next/navigation";
 import { uploadAllFile } from "@/actions/uploadFileActions";
+import { toast } from "react-toastify";
 
 export interface UploadResult {
   success: boolean;
@@ -128,11 +129,17 @@ if(type==="signup"){
     if(uploadFile.success&&uploadFile.data){
       formdata.append("profileImage", JSON.stringify({url:uploadFile.data.secure_url, publicId:uploadFile.data.public_id}));
       const response = await createUser(formdata);
-    console.log(response);
-    }else {
-      console.error("Image upload failed:", uploadFile.error || "Unknown error");
+    if(response?.success){
+      toast.success("Account created successfully!",{
+        autoClose: 3000,
+      });
+      setTimeout(() => {router.push("/");}, 1000);
     }
-router.push("/");
+    }else {
+      toast.error("Failed to upload profile image. Please try again.",{
+        autoClose: 3000,
+      });
+    }
 }else if(type==="login"){
 const credentials=Object.fromEntries(formdata);
 const res = await signIn("credentials", {
@@ -144,7 +151,11 @@ const res = await signIn("credentials", {
 if(res?.error==="Incorrect password") {setValidationErrors((prev) => ({
     ...prev,
     password: [res?.error || "Something went wrong"],
-  }))}
+  }))}else{
+    toast.error(res?.error || "Login failed. Please try again.",{
+        autoClose: 3000,
+      });
+  }
     return;
   }
 
@@ -159,8 +170,11 @@ if(res?.error==="Incorrect password") {setValidationErrors((prev) => ({
   } else if(role === "donor"){
     destination = "/dashboard/find-donors";
   }
-
-  router.push(destination);
+  
+  toast.success("Login successful! Redirecting...",{
+        autoClose: 3000,
+      });
+  setTimeout(() => {router.push(destination);}, 1000);
 }
   }
 } catch (error:any) {
