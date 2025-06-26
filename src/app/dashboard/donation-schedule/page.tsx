@@ -49,7 +49,10 @@ interface DonationRequest {
   blood_bank: {
     _id: string;
     blood_bank: string;
-    location: string;
+    location: {
+    latitude:number;
+    longitude:number;
+    };
     contact: string;
   };
   requested_date: Date;
@@ -62,7 +65,10 @@ interface DonationRequest {
 interface BloodBank {
   _id: string;
   blood_bank: string;
-  location: string;
+  location: {
+    latitude:number;
+    longitude:number;
+  };
   contact: string;
 }
 
@@ -87,26 +93,26 @@ export default function DonorDonationSchedulePage() {
 
   useEffect(() => {
     if (session?.user?.id) {
-      fetchData();
+      fetchData(session?.user?.id);
     }
   }, [session]);
 
-  const fetchData = async () => {
+  const fetchData = async (userId:string='') => {
     setIsLoading(true);
     try {
       const [requestsResult, bloodBanksResult] = await Promise.all([
-        getDonorDonationRequests("68563a71c9a4c5d184cb2ea3"),
+        userId?getDonorDonationRequests(userId):getDonorDonationRequests(''),
         getAllBloodBanks(),
       ]);
 
       if (requestsResult.success) {
-        console.error("Requests:", requestsResult);
-        setRequests(requestsResult?.data);
+        console.log("Requests:", requestsResult);
+        setRequests(requestsResult?.data ?? []);
       }
-      // if (bloodBanksResult.success) {
-      //   console.log("Blood Banks:", bloodBanksResult.data);
-      //   setBloodBanks(bloodBanksResult.data);
-      // }
+      if (bloodBanksResult.success) {
+        console.log("Blood Banks:", bloodBanksResult.data);
+        setBloodBanks(bloodBanksResult.data);
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -123,7 +129,7 @@ export default function DonorDonationSchedulePage() {
         new Date(date)
       );
       if (slotsResult.success) {
-        setAvailableSlots(slotsResult.data);
+        setAvailableSlots(slotsResult.data ?? []);
       }
     }
   };
@@ -137,7 +143,7 @@ export default function DonorDonationSchedulePage() {
         new Date(formData.requestedDate)
       );
       if (slotsResult.success) {
-        setAvailableSlots(slotsResult.data);
+        setAvailableSlots(slotsResult.data ?? []);
       }
     }
   };
@@ -405,7 +411,7 @@ export default function DonorDonationSchedulePage() {
                           {request.blood_bank.blood_bank}
                         </h3>
                         <p className="text-sm text-gray-500">
-                          {request.blood_bank.location}
+                          {request.blood_bank.location.latitude}
                         </p>
                       </div>
                     </div>
@@ -425,7 +431,7 @@ export default function DonorDonationSchedulePage() {
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
                       <MapPin className="h-4 w-4" />
-                      <span>{request.blood_bank.location}</span>
+                      <span>{request.blood_bank.location.latitude+" , "+request.blood_bank.location.longitude}</span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
                       <Info className="h-4 w-4" />

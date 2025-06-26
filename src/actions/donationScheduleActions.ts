@@ -109,7 +109,7 @@ export async function createDonationRequest(data: CreateDonationRequestData) {
 
     return {
       success: true,
-      data: donationRequest,
+      data: JSON.parse(JSON.stringify(donationRequest)),
       message: "Donation request submitted successfully",
     };
   } catch (error) {
@@ -126,12 +126,12 @@ export async function getDonorDonationRequests(donorId: string) {
     const requests = await DonationRequest.find({ donor: donorId })
       .populate("blood_bank", "blood_bank location contact")
       .sort({ createdAt: -1 });
-
+    console.log("requests",requests);
     if (!requests) {
       console.log("No requests found for this donor");
     }
 
-    return { success: true, data: requests };
+    return { success: true, data: JSON.parse(JSON.stringify(requests)) };
   } catch (error) {
     console.error("Error fetching donor donation requests:", error);
     return { success: false, error: "Failed to fetch donation requests" };
