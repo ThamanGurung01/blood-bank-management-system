@@ -15,7 +15,6 @@ try {
     const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
     if(!errors){
         const existingUser=await User.find({email:formData.get("email")});
-        console.log("existing"+existingUser);
         if(existingUser.length>0) return {success:false,message:"user already exists"};
         if(formData.get("role")==="donor"){
             const cUser:IUser=await User.create(formDataDeform(formData,"user"));
@@ -31,6 +30,7 @@ try {
             user:userId,
             contact:donorData.contact,
             age:donorData.age,
+            address:donorData.address,
             location:{
                 latitude:donorData.location.latitude,
                 longitude:donorData.location.longitude,
@@ -42,7 +42,6 @@ try {
             },
            });
            const createdUser={...cUser,...cDonor};
-           console.log(createdUser);
            return {success:true,message:`User successfully created`}
         }else if(formData.get("role")==="blood_bank"){
             const cUser:IBlood_Bank=await User.create(formDataDeform(formData,"user"));
@@ -58,6 +57,7 @@ try {
                 latitude:bloodBank.location.latitude,
                 longitude:bloodBank.location.longitude,
             },
+            address:bloodBank.address,
             contact:bloodBank.contact,
             profileImage: {
             url: bloodBank.profileImage.url,
@@ -65,8 +65,6 @@ try {
             },
            });
            const createdUser={...cUser,...cBloodBank};
-           console.log(cBloodBank+"cblood")
-           console.log(createdUser);
            return {success:true,message:`User successfully created:`}
         }
     }else{

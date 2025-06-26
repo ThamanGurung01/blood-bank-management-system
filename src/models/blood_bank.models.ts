@@ -7,6 +7,7 @@ export interface IBlood_Bank extends Document{
     latitude:number;
     longitude:number;
 };
+    address:string;
     contact:string;
     verified:boolean;
     document: {
@@ -37,6 +38,10 @@ const BloodBankSchema=new Schema<IBlood_Bank>({
             type:Number,
             required:true
         },
+    },
+    address:{
+        type:String,
+        required:true
     },
     contact:{
         type:String,

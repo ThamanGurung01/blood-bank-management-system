@@ -3,6 +3,7 @@ export default interface IValidation {
   password?: string[];
   name?: string[];
   role?: string[];
+  address?: string[];
   contact?: string[];
   location?: string[];
   profile_picture?: string[];

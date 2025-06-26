@@ -124,9 +124,8 @@ export async function getDonorDonationRequests(donorId: string) {
     await connectToDb();
 
     const requests = await DonationRequest.find({ donor: donorId })
-      .populate("blood_bank", "blood_bank location contact")
+      .populate("blood_bank", "blood_bank location contact address")
       .sort({ createdAt: -1 });
-    console.log("requests",requests);
     if (!requests) {
       console.log("No requests found for this donor");
     }

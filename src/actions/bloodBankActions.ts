@@ -77,6 +77,24 @@ export const getAllBloodBanks = async () => {
   }
 }
 
+export const getVerifiedAllBloodBanks = async () => {
+  try {
+    await connectToDb();
+    const bloodBanks = await BloodBank.find({verified:true}).populate(
+      {
+        path: "user",
+        select: "name email role"
+      }).lean().sort({ createdAt: -1 });
+    if (!bloodBanks || bloodBanks.length === 0) return { success: false, message: "No Blood Bank found" };
+
+    return { success: true, data: JSON.parse(JSON.stringify(bloodBanks)) };
+
+  } catch (error: any) {
+    console.log(error?.message);
+    return { success: false, message: "Something went wrong" }
+  }
+}
+
 export const checkBloodBankVerification = async (bloodBankId: string): Promise<boolean> => {
   try {
     await connectToDb();

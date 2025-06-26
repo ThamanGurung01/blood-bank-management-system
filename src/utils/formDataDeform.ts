@@ -12,6 +12,7 @@ if(type==="user"){
         blood_group:formData.get("blood_group"),
         age:formData.get("age"),
         location:JSON.parse(formData.get("location")as string),
+        address:formData.get("address"),
         contact:formData.get("contact"),
         profileImage:JSON.parse(formData.get("profileImage")as string),
     }
@@ -19,6 +20,7 @@ if(type==="user"){
     return {
         blood_bank:formData.get("blood_bank"),
          location:JSON.parse(formData.get("location")as string),
+         address:formData.get("address"),
          contact:formData.get("contact"),
          profileImage:JSON.parse(formData.get("profileImage")as string),
      }

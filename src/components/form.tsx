@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Upload, User, Mail, Lock, AlertCircle, Contact, Building } from "lucide-react";
+import { MapPin, Upload, User, Mail, Lock, AlertCircle, Contact, Building, MapPinned } from "lucide-react";
 import { fromValidation } from "@/utils/validation";
 import IValidation from "@/types/validationTypes";
 import { ACCEPTED_IMAGE_TYPES } from "@/utils/validation";
@@ -517,6 +517,37 @@ const res = await signIn("credentials", {
                 )}
 
 
+                <div>
+                  <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                    Address
+                  </label>
+                  <div className="relative mt-1 rounded-md shadow-sm">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <MapPinned className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      id="address"
+                      name="address"
+                      className="block w-full rounded-md border-gray-300 pl-10 py-2 focus:border-red-500 focus:ring-red-500 sm:text-sm"
+                      placeholder="1234 Main St, City, Country"
+                    />
+                  </div>
+                </div>
+                {validationErrors?.address?.[0] && (
+                  <div className="rounded-md bg-red-50 p-2">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <AlertCircle className="h-5 w-5 text-red-400" />
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-red-700">
+                          {validationErrors?.address?.[0]}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div>
                   <label
                     htmlFor="contact"

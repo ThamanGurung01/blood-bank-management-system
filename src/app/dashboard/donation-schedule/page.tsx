@@ -14,6 +14,7 @@ import {
   X,
   Info,
   Heart,
+  MapPinned,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,7 +42,7 @@ import {
   getAvailableTimeSlots,
   cancelDonationRequest,
 } from "@/actions/donationScheduleActions";
-import { getAllBloodBanks } from "@/actions/bloodBankActions";
+import { getVerifiedAllBloodBanks } from "@/actions/bloodBankActions";
 import { getStatusColor, formatTimeSlot } from "@/utils/donation-utils";
 
 interface DonationRequest {
@@ -53,6 +54,7 @@ interface DonationRequest {
     latitude:number;
     longitude:number;
     };
+    address:string;
     contact: string;
   };
   requested_date: Date;
@@ -69,6 +71,7 @@ interface BloodBank {
     latitude:number;
     longitude:number;
   };
+    address:string;
   contact: string;
 }
 
@@ -102,7 +105,7 @@ export default function DonorDonationSchedulePage() {
     try {
       const [requestsResult, bloodBanksResult] = await Promise.all([
         userId?getDonorDonationRequests(userId):getDonorDonationRequests(''),
-        getAllBloodBanks(),
+        getVerifiedAllBloodBanks(),
       ]);
 
       if (requestsResult.success) {
@@ -430,8 +433,10 @@ export default function DonorDonationSchedulePage() {
                       <span>{formatTimeSlot(request.scheduled_time_slot)}</span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
-                      <MapPin className="h-4 w-4" />
-                      <span>{request.blood_bank.location.latitude+" , "+request.blood_bank.location.longitude}</span>
+                      <MapPinned className="h-4 w-4" />
+                      {/* there was only location which had lat and long address and now i added address some data dont have it so bear with it*/}
+                      {/* <span>{request.blood_bank.location.latitude+" , "+request.blood_bank.location.longitude}</span> */}
+                      {request.blood_bank.address?? 'Bharatpur-11, Chitwan'}
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
                       <Info className="h-4 w-4" />

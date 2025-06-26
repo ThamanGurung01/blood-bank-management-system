@@ -13,6 +13,7 @@ const signupSchema=baseSchema.extend({
   contact:z.string()
   .length(10, "Contact number must be exactly 10 digits")
   .regex(/^98\d{8}$|^97\d{8}$/, "Contact number must start with 98 or 97"),
+  address: z.string().min(5, "Address must be at least 5 characters").max(100, "Address must be at most 100 characters"),
   location:z.object({
     latitude:z.number().min(1,"Location is Required"),
     longitude:z.number().min(1,"Location is Required"),
