@@ -9,6 +9,7 @@ import { insertBloodRequest } from "@/actions/bloodRequestActions";
 import { useRouter } from "next/navigation";
 import { UploadResult } from "./form";
 import { uploadAllFile } from "@/actions/uploadFileActions";
+import { toast } from "react-toastify";
 
 const BloodRequisitionForm = () => {
   const router=useRouter();
@@ -75,6 +76,7 @@ const BloodRequisitionForm = () => {
 
   const handleSubmit = async(e: any) => {
     e.preventDefault();
+    setIsSubmitting(true);
    try {
     setFileError("");
     const formdata = new FormData();
@@ -117,14 +119,18 @@ const BloodRequisitionForm = () => {
       return;
     }
     const response:any=await insertBloodRequest(formdata);
-    console.log("Response: ",response);
+    if(response.success){
     setBloodReqResponse(response);
-
-    setIsSubmitting(true);
-    setTimeout(() => {
+    toast.success("Account created successfully!",{
+            autoClose: 3000,
+          });
       setIsSubmitting(false);
       setIsSubmitted(true);
-    }, 1500);
+      }else{
+        setIsSubmitting(false);
+      }
+
+ 
   }else{
     console.log(errors);
   }
