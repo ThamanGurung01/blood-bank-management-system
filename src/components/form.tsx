@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -36,6 +36,7 @@ const Form = ({ type }: { type: string }) => {
   const [dropdownValue, setDropdownValue] = useState("");
   const [validationErrors, setValidationErrors] = useState<IValidation>();
   const searchParams=useSearchParams();
+  const from = useSearchParams().get('from');
   const signinError=searchParams.get("error");
   const router=useRouter();
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,13 +132,13 @@ if(type==="signup"){
       const response = await createUser(formdata);
     if(response?.success){
       toast.success("Account created successfully!",{
-        autoClose: 3000,
+        theme:"colored",
       });
       setTimeout(() => {router.push("/");}, 1000);
     }
     }else {
       toast.error("Failed to upload profile image. Please try again.",{
-        autoClose: 3000,
+        theme:"colored",
       });
     }
 }else if(type==="login"){
@@ -153,7 +154,7 @@ if(res?.error==="Incorrect password") {setValidationErrors((prev) => ({
     password: [res?.error || "Something went wrong"],
   }))}else{
     toast.error(res?.error || "Login failed. Please try again.",{
-        autoClose: 3000,
+        theme:"colored",
       });
   }
     return;
@@ -172,7 +173,7 @@ if(res?.error==="Incorrect password") {setValidationErrors((prev) => ({
   }
   
   toast.success("Login successful! Redirecting...",{
-        autoClose: 3000,
+        theme:"colored",
       });
   setTimeout(() => {router.push(destination);}, 1000);
 }
@@ -181,6 +182,12 @@ if(res?.error==="Incorrect password") {setValidationErrors((prev) => ({
   throw new Error(error.message);
 }
   };
+
+  useEffect(() => {
+  if (from === 'protected') toast.error('Please login to continue',{
+        theme:"colored",
+      })
+}, [from]);
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       {/* Left Column - Form */}

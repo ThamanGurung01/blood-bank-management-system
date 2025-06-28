@@ -25,6 +25,7 @@ const getSidebarOptionFromPath = (path: string): string | undefined => {
   if (path.startsWith('/admin/dashboard/verify-blood_banks')) return 'verify-blood_banks';
   if (path === '/admin/dashboard') return 'admin-overview';
 
+  if (path.startsWith('/dashboard/blood_bank-overview')) return 'blood_bank-overview';
   if (path.startsWith('/dashboard/blood-stock')) return 'blood-stock';
   if (path.startsWith('/dashboard/blood-donation')) return 'blood-donation';
   if (path.startsWith('/dashboard/blood_bank-request')) return 'blood_bank-request';
@@ -40,7 +41,7 @@ const selectedSidebarOption = getSidebarOptionFromPath(pathname);
     if (role === "blood_bank") {
       if (option === "overview") {
         // setSelectedSidebarOption(option)
-        router.push(`/dashboard`)
+        router.push(`/dashboard/blood_bank-overview`)
       } else {
         // setSelectedSidebarOption(option)
         router.push(`/dashboard/${option}`)
@@ -48,7 +49,7 @@ const selectedSidebarOption = getSidebarOptionFromPath(pathname);
     } else if (role === "donor") {
       if (option === "overview") {
         // setSelectedSidebarOption(option)
-        router.push(`/dashboard`)
+        router.push(`/dashboard/find-donors`)
       } else {
         // setSelectedSidebarOption(option)
         router.push(`/dashboard/${option}`)
@@ -108,9 +109,9 @@ const selectedSidebarOption = getSidebarOptionFromPath(pathname);
           <>
             <SidebarItem
               icon={<Home size={20} />}
-              label="Overview"
-              isSelected={selectedSidebarOption === "overview"}
-              onClick={() => handleSidebarSelect("overview", "blood_bank")}
+              label="Blood Overview"
+              isSelected={selectedSidebarOption === "blood_bank-overview"}
+              onClick={() => handleSidebarSelect("blood_bank-overview", "blood_bank")}
             />
             <SidebarItem
               icon={<Heart size={20} />}

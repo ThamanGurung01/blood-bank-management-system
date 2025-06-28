@@ -18,7 +18,16 @@ export default function RootLayout({
       </head>
       <body className="bg-gray-100">
       <AuthProvider> {children}</AuthProvider>
-      <ToastContainer />
+      <ToastContainer
+        position="top-left"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="light"
+      />
       </body>
     </html>
   );

@@ -9,7 +9,7 @@ import Image from "next/image";
 
 const Navbar = () => {
   const { data: session } = useSession();
-  const [showNotifications, setShowNotifications] = useState(false);
+  // const [showNotifications, setShowNotifications] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   // const pathname = usePathname();
 
@@ -66,7 +66,7 @@ const Navbar = () => {
         </div> */}
 
         <div className="flex items-center gap-2">
-          <div className="relative">
+          {/* <div className="relative">
            {session?.user?.role !== "admin" && (
              <button
               className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-100"
@@ -114,7 +114,7 @@ const Navbar = () => {
             )}
           </div>
 
-          <div className="h-6 border-l border-gray-300"></div>
+          <div className="h-6 border-l border-gray-300"></div> */}
 
           {session?.user?.role!=="admin"?(
             <Link
