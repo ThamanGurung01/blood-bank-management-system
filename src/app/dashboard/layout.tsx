@@ -8,7 +8,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { checkBloodBankVerification } from "@/actions/bloodBankActions";
 import Link from "next/link";
-import { Toaster } from "@/components/ui/sonner";
+
 
 export default function Layout({
   children,
@@ -80,7 +80,7 @@ export default function Layout({
           </div>
         </>
       )}
-      <Toaster />
+     
     </div>
   );
 }
