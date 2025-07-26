@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react";
 import {
   Calendar,
   Clock,
-  MapPin,
   Droplet,
   Plus,
   Search,
@@ -51,10 +50,10 @@ interface DonationRequest {
     _id: string;
     blood_bank: string;
     location: {
-    latitude:number;
-    longitude:number;
+      latitude: number;
+      longitude: number;
     };
-    address:string;
+    address: string;
     contact: string;
   };
   requested_date: Date;
@@ -68,10 +67,10 @@ interface BloodBank {
   _id: string;
   blood_bank: string;
   location: {
-    latitude:number;
-    longitude:number;
+    latitude: number;
+    longitude: number;
   };
-    address:string;
+  address: string;
   contact: string;
 }
 
@@ -100,21 +99,25 @@ export default function DonorDonationSchedulePage() {
     }
   }, [session]);
 
-  const fetchData = async (userId:string='') => {
+  const fetchData = async (userId: string = "") => {
     setIsLoading(true);
     try {
       const [requestsResult, bloodBanksResult] = await Promise.all([
-        userId?getDonorDonationRequests(userId):getDonorDonationRequests(''),
+        userId
+          ? getDonorDonationRequests(userId)
+          : getDonorDonationRequests(""),
         getVerifiedAllBloodBanks(),
       ]);
 
       if (requestsResult.success) {
         console.log("Requests:", requestsResult);
         setRequests(requestsResult?.data ?? []);
+        console.log("requests", requestsResult?.data);
       }
       if (bloodBanksResult.success) {
         console.log("Blood Banks:", bloodBanksResult.data);
         setBloodBanks(bloodBanksResult.data);
+        console.log(bloodBanksResult.data);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -436,7 +439,7 @@ export default function DonorDonationSchedulePage() {
                       <MapPinned className="h-4 w-4" />
                       {/* there was only location which had lat and long address and now i added address some data dont have it so bear with it*/}
                       {/* <span>{request.blood_bank.location.latitude+" , "+request.blood_bank.location.longitude}</span> */}
-                      {request.blood_bank.address?? 'Bharatpur-11, Chitwan'}
+                      {request.blood_bank.address ?? "Bharatpur-11, Chitwan"}
                     </div>
                     <div className="flex items-center gap-2 text-gray-600">
                       <Info className="h-4 w-4" />

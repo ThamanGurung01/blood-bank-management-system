@@ -150,11 +150,13 @@ export async function getBloodBankDonationRequests(
       filter.status = status;
     }
 
+    console.log("filters", filter);
     const requests = await DonationRequest.find(filter)
       .populate("donor", "donorId blood_group age contact profileImage")
       .populate("donor.user", "name email")
       .sort({ createdAt: -1 });
 
+    console.log("request for donation_schedule", requests);
     return { success: true, data: requests };
   } catch (error) {
     console.error("Error fetching blood bank donation requests:", error);
