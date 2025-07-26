@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import { X, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,8 +14,11 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
+// Import the action
 import { updateDonationRequestStatus } from "@/actions/donationScheduleActions";
-import { toast } from "sonner"; // Import toast from sonner
 
 interface DonationRequest {
   _id: string;
@@ -34,6 +36,7 @@ interface RejectionModalProps {
 export function RejectionModal({ request, onClose }: RejectionModalProps) {
   const [loading, setLoading] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,12 +62,15 @@ export function RejectionModal({ request, onClose }: RejectionModalProps) {
           description: result.message,
         });
         onClose();
+        // Use router.refresh() instead of window.location.reload()
+        router.refresh();
       } else {
         toast.error("Error Rejecting Request", {
           description: result.error,
         });
       }
-    } catch {
+    } catch (error) {
+      console.error("Error rejecting request:", error);
       toast.error("Error", {
         description: "Failed to reject request",
       });

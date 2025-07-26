@@ -8,69 +8,79 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { checkBloodBankVerification } from "@/actions/bloodBankActions";
 import Link from "next/link";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-    const {data:session,status}=useSession();
-    const [verified, setVerified] = useState(false);
-    const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
+  const [verified, setVerified] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-    const checkBloodBank=async()=>{
-        if(session?.user?.role==="blood_bank"){
-          const checkVerification=await checkBloodBankVerification(session?.user?.id);  
-          if(checkVerification)setVerified(true);
+  const checkBloodBank = async () => {
+    if (session?.user?.role === "blood_bank") {
+      const checkVerification = await checkBloodBankVerification(
+        session?.user?.id
+      );
+      if (checkVerification) setVerified(true);
     }
     setLoading(false);
+  };
+  useEffect(() => {
+    if (session?.user?.role === "blood_bank") {
+      if (status === "authenticated") {
+        checkBloodBank();
+      } else if (status !== "loading") {
+        setLoading(false);
+      }
+    }
+  }, [session, status]);
+  if (session?.user?.role === "blood_bank" && loading) {
+    return (
+      <div className="flex items-center justify-center h-screen w-full">
+        <div className="text-gray-500 text-sm">Checking verification...</div>
+      </div>
+    );
   }
-useEffect(() => {
-if(session?.user?.role==="blood_bank"){
-  if (status === "authenticated") {
-    checkBloodBank();
-  } else if (status !== "loading") {
-    setLoading(false);
-  }
-}
-}, [session, status]);
-if (session?.user?.role==="blood_bank"&&loading) {
-  return (
-    <div className="flex items-center justify-center h-screen w-full">
-      <div className="text-gray-500 text-sm">Checking verification...</div>
-    </div>
-  );
-}
   return (
     <div className="flex min-h-screen bg-gray-50">
-      
-      {session?.user?.role==="blood_bank"?verified ? (
-        <>
-        <Sidebar />
-      <div className="flex-1 md:ml-64">
-        <Navbar />
-        <main className="p-6 pt-24">{children}</main>
-      </div>
-        </>
-        ):(
+      {session?.user?.role === "blood_bank" ? (
+        verified ? (
+          <>
+            <Sidebar />
+            <div className="flex-1 md:ml-64">
+              <Navbar />
+              <main className="p-6 pt-24">{children}</main>
+            </div>
+          </>
+        ) : (
           <div className="flex items-center justify-center h-screen w-full">
             <div className="bg-white p-6 rounded-lg shadow-md text-center">
               <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-              <p className="text-gray-600">Your blood bank is not verified yet. Please contact the admin for verification.</p>
+              <p className="text-gray-600">
+                Your blood bank is not verified yet. Please contact the admin
+                for verification.
+              </p>
               <p>Contact: 9845781264</p>
               <p className="mb-10 ">Address: Bharatpur-11,Baseni</p>
-              <Link href={"/profile"} className="text-blue-500">Check your profile</Link>
+              <Link href={"/profile"} className="text-blue-500">
+                Check your profile
+              </Link>
             </div>
           </div>
-        ):(        
+        )
+      ) : (
         <>
-        <Sidebar />
-      <div className="flex-1 md:ml-64">
-        <Navbar />
-        <main className="p-6 pt-24">{children}</main>
-      </div>
+          <Sidebar />
+          <div className="flex-1 md:ml-64">
+            <Navbar />
+            <main className="p-6 pt-24">{children}</main>
+          </div>
         </>
       )}
+      <Toaster />
     </div>
   );
 }
