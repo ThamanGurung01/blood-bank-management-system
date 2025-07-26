@@ -83,7 +83,7 @@ export function ApprovalModal({ request, onClose }: ApprovalModalProps) {
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md z-[1000]">
+      <DialogContent className="sm:max-w-md rounded-lg bg-green-50">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Check className="h-5 w-5 text-green-600" />

@@ -134,6 +134,7 @@ if(type==="signup"){
       console.error("Image upload failed:", uploadFile.error || "Unknown error");
     }
 router.push("/");
+
 }else if(type==="login"){
 const credentials=Object.fromEntries(formdata);
 const res = await signIn("credentials", {

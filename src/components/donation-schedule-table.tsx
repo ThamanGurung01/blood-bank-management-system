@@ -4,9 +4,16 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { Calendar, Clock, User, Phone, Droplet } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { ApprovalModal } from "./approval-modal";
 import { RejectionModal } from "./rejection-model";
 
@@ -59,43 +66,40 @@ export default function DonationScheduleTable({
 
   if (requests.length === 0) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <Droplet className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Pending Requests</h3>
-          <p className="text-muted-foreground text-center">
-            There are no pending donation requests at the moment.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="border rounded-lg p-12 text-center">
+        <Droplet className="h-12 w-12 text-muted-foreground mb-4 mx-auto" />
+        <h3 className="text-lg font-semibold mb-2">No Pending Requests</h3>
+        <p className="text-muted-foreground">
+          There are no pending donation requests at the moment.
+        </p>
+      </div>
     );
   }
 
   return (
     <>
-      <div className="grid gap-4">
-        {requests.map((request) => (
-          <Card key={request._id} className="w-full">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">
-                  Donation Request #{request.donor.donorId}
-                </CardTitle>
-                <Badge variant="secondary" className="capitalize">
-                  {request.status}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-6">
+      <div className="border rounded-lg overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50">
+              <TableHead className="w-[200px]">Donor Information</TableHead>
+              <TableHead className="w-[120px]">Blood Group</TableHead>
+              <TableHead className="w-[80px]">Age</TableHead>
+              <TableHead className="w-[120px]">Contact</TableHead>
+              <TableHead className="w-[150px]">Requested Date</TableHead>
+              <TableHead className="w-[120px]">Time Slot</TableHead>
+              <TableHead className="w-[100px]">Status</TableHead>
+              <TableHead className="w-[120px]">Requested On</TableHead>
+              <TableHead className="w-[200px] text-center">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {requests.map((request) => (
+              <TableRow key={request._id} className="hover:bg-muted/30">
                 {/* Donor Information */}
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                    Donor Information
-                  </h4>
-
+                <TableCell>
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-12 w-12">
+                    <Avatar className="h-10 w-10">
                       <AvatarImage
                         src={
                           request.donor.profileImage?.url ||
@@ -104,81 +108,106 @@ export default function DonationScheduleTable({
                         alt={`Donor ${request.donor.donorId}`}
                       />
                       <AvatarFallback>
-                        <User className="h-6 w-6" />
+                        <User className="h-5 w-5" />
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium">
-                        Donor ID: {request.donor.donorId}
+                      <p className="font-medium text-sm">
+                        {request.donor.donorId}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        Age: {request.donor.age}
+                      <p className="text-xs text-muted-foreground">
+                        ID: {request.donor._id.slice(-6)}
                       </p>
                     </div>
                   </div>
+                </TableCell>
 
+                {/* Blood Group */}
+                <TableCell>
                   <div className="flex items-center gap-2">
                     <Droplet className="h-4 w-4 text-red-500" />
                     <span className="font-medium">
                       {request.donor.blood_group}
                     </span>
                   </div>
+                </TableCell>
 
+                {/* Age */}
+                <TableCell>
+                  <span className="text-sm">{request.donor.age}</span>
+                </TableCell>
+
+                {/* Contact */}
+                <TableCell>
                   <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <Phone className="h-3 w-3 text-muted-foreground" />
                     <span className="text-sm">{request.donor.contact}</span>
                   </div>
-                </div>
+                </TableCell>
 
-                {/* Schedule Information */}
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                    Schedule Details
-                  </h4>
-
+                {/* Requested Date */}
+                <TableCell>
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Calendar className="h-3 w-3 text-muted-foreground" />
                     <span className="text-sm">
-                      {format(new Date(request.requested_date), "PPP")}
+                      {format(new Date(request.requested_date), "MMM dd, yyyy")}
                     </span>
                   </div>
+                </TableCell>
 
+                {/* Time Slot */}
+                <TableCell>
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <Clock className="h-3 w-3 text-muted-foreground" />
                     <span className="text-sm">
                       {request.scheduled_time_slot}
                     </span>
                   </div>
+                </TableCell>
 
-                  <div className="text-xs text-muted-foreground">
-                    Requested: {format(new Date(request.createdAt), "PPp")}
+                {/* Status */}
+                <TableCell>
+                  <Badge variant="secondary" className="capitalize">
+                    {request.status}
+                  </Badge>
+                </TableCell>
+
+                {/* Requested On */}
+                <TableCell>
+                  <span className="text-xs text-muted-foreground">
+                    {format(new Date(request.createdAt), "MMM dd, HH:mm")}
+                  </span>
+                </TableCell>
+
+                {/* Actions */}
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => handleApprove(request)}
+                      size="sm"
+                      variant="default"
+                      className="h-8 px-3 text-xs text-white bg-green-400"
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      onClick={() => handleReject(request)}
+                      size="sm"
+                      variant="destructive"
+                      className="h-8 px-3 text-xs text-white
+                       bg-red-500"
+                    >
+                      Reject
+                    </Button>
                   </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-3 mt-6 pt-4 border-t">
-                <Button
-                  onClick={() => handleApprove(request)}
-                  className="flex-1"
-                  variant="default"
-                >
-                  Approve Request
-                </Button>
-                <Button
-                  onClick={() => handleReject(request)}
-                  className="flex-1"
-                  variant="destructive"
-                >
-                  Reject Request
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
 
-      {/* Modals */}
+      {/* Modals with increased z-index */}
       {modalType === "approve" && selectedRequest && (
         <ApprovalModal request={selectedRequest} onClose={closeModal} />
       )}
