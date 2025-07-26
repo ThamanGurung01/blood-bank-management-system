@@ -159,12 +159,56 @@ export async function getBloodBankDonationRequests(
     console.log("request for donation_schedule", requests);
 
     if (requests.length === 0) {
-      return { success: false, error: "No requests found", data: [] };
+      return { success: true, data: [], error: null }; // Changed to success: true for empty array
     }
-    return { success: true, data: requests };
+
+    // CRITICAL: Clean the data to make it serializable for React Server Components
+    const cleanedRequests = requests.map(request => {
+      // Convert MongoDB document to plain object and serialize all data
+      const requestObj = request.toObject ? request.toObject() : request;
+      
+      return {
+        _id: requestObj._id?.toString() || '',
+        donor: {
+          profileImage: requestObj.donor?.profileImage || undefined,
+          _id: requestObj.donor?._id?.toString() || '',
+          donorId: requestObj.donor?.donorId || '',
+          blood_group: requestObj.donor?.blood_group || '',
+          age: Number(requestObj.donor?.age) || 0,
+          contact: requestObj.donor?.contact || '',
+          // Handle nested user data if populated
+          user: requestObj.donor?.user ? {
+            name: requestObj.donor.user.name || '',
+            email: requestObj.donor.user.email || ''
+          } : undefined
+        },
+        blood_bank: requestObj.blood_bank?.toString() || '',
+        requested_date: requestObj.requested_date ? 
+          (requestObj.requested_date instanceof Date ? 
+            requestObj.requested_date.toISOString() : 
+            String(requestObj.requested_date)) : '',
+        status: requestObj.status || 'pending',
+        rejection_reason: requestObj.rejection_reason || '',
+        scheduled_time_slot: requestObj.scheduled_time_slot || '',
+        createdAt: requestObj.createdAt ? 
+          (requestObj.createdAt instanceof Date ? 
+            requestObj.createdAt.toISOString() : 
+            String(requestObj.createdAt)) : '',
+        updatedAt: requestObj.updatedAt ? 
+          (requestObj.updatedAt instanceof Date ? 
+            requestObj.updatedAt.toISOString() : 
+            String(requestObj.updatedAt)) : '',
+      };
+    });
+
+    return { success: true, data: cleanedRequests, error: null };
   } catch (error) {
     console.error("Error fetching blood bank donation requests:", error);
-    return { success: false, error: "Failed to fetch donation requests" };
+    return { 
+      success: false, 
+      error: "Failed to fetch donation requests", 
+      data: [] 
+    };
   }
 }
 

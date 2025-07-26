@@ -3,26 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import DonationScheduleTable from "@/components/donation-schedule-table";
 
-// Define the interface to ensure type safety
-interface DonationRequest {
-  _id: string;
-  donor: {
-    profileImage?: string;
-    _id: string;
-    donorId: string;
-    blood_group: string;
-    age: number;
-    contact: string;
-  };
-  blood_bank: string;
-  requested_date: string;
-  status: string;
-  rejection_reason: string;
-  scheduled_time_slot: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 const BloodBankDonationSchedulePage = async () => {
   try {
     const session = await getServerSession(authOptions);
@@ -58,26 +38,7 @@ const BloodBankDonationSchedulePage = async () => {
       );
     }
 
-    // Ensure the data is properly serialized and clean
-    const cleanedRequests: DonationRequest[] = (result.data || []).map((request: any) => ({
-      _id: String(request._id || ''),
-      donor: {
-        profileImage: request.donor?.profileImage || undefined,
-        _id: String(request.donor?._id || ''),
-        donorId: String(request.donor?.donorId || ''),
-        blood_group: String(request.donor?.blood_group || ''),
-        age: Number(request.donor?.age || 0),
-        contact: String(request.donor?.contact || ''),
-      },
-      blood_bank: String(request.blood_bank || ''),
-      requested_date: String(request.requested_date || ''),
-      status: String(request.status || ''),
-      rejection_reason: String(request.rejection_reason || ''),
-      scheduled_time_slot: String(request.scheduled_time_slot || ''),
-      createdAt: String(request.createdAt || ''),
-      updatedAt: String(request.updatedAt || ''),
-    }));
-
+    // Data is now already cleaned in the server action
     return (
       <div className="container mx-auto py-6">
         <div className="mb-6">
@@ -87,7 +48,7 @@ const BloodBankDonationSchedulePage = async () => {
           </p>
         </div>
 
-        <DonationScheduleTable requests={cleanedRequests} />
+        <DonationScheduleTable requests={result.data || []} />
       </div>
     );
   } catch (error) {
