@@ -157,6 +157,10 @@ export async function getBloodBankDonationRequests(
       .sort({ createdAt: -1 });
 
     console.log("request for donation_schedule", requests);
+
+    if (requests.length === 0) {
+      return { success: false, error: "No requests found", data: [] };
+    }
     return { success: true, data: requests };
   } catch (error) {
     console.error("Error fetching blood bank donation requests:", error);
