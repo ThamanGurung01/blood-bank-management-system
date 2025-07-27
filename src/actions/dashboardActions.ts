@@ -114,10 +114,24 @@ export const getDashboardStats = async (): Promise<{
     });
 
 
+    // Debug: Check if there's any blood data for this blood bank
+    const totalBloodCount = await Blood.countDocuments({ blood_bank: bloodBankId });
+    console.log('Total blood records for blood bank:', totalBloodCount);
+    
+    const availableBloodCount = await Blood.countDocuments({ 
+      blood_bank: bloodBankId, 
+      status: 'available' 
+    });
+    console.log('Available blood records for blood bank:', availableBloodCount);
+    
+    // Debug: Check sample blood records
+    const sampleBloodRecords = await Blood.find({ blood_bank: bloodBankId }).limit(3);
+    console.log('Sample blood records:', JSON.stringify(sampleBloodRecords, null, 2));
+
     const bloodStockByType = await Blood.aggregate([
       {
         $match: {
-          blood_bank: bloodBankId,
+          blood_bank:new mongoose.Types.ObjectId(bloodBankId),
           status: 'available',
         }
       },
@@ -126,16 +140,17 @@ export const getDashboardStats = async (): Promise<{
           _id: '$blood_type',
           units: { $sum: '$blood_units' }
         }
-      },
-      {
-        $project: {
-          bloodType: '$_id',
-          units: 1,
-          _id: 0
+      },{
+        $project:{
+            _id:0,
+            bloodType:'$_id',
+            units:1
         }
       }
+     
     ]);
 
+    console.log('bloodStockByType aggregation result:', JSON.stringify(bloodStockByType, null, 2));
     
     const donationTrends = [];
     for (let i = 6; i >= 0; i--) {
