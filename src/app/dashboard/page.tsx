@@ -454,7 +454,7 @@ return (
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {stats.recentDonations.map((donation) => (
+            {transformedRecentDonations.map((donation) => (
               <tr key={donation.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{donation.donorName}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -474,7 +474,7 @@ return (
                 </td>
               </tr>
             ))}
-            {stats.recentDonations.length === 0 && (
+            {transformedRecentDonations.length === 0 && (
               <tr>
                 <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">
                   No recent donations found

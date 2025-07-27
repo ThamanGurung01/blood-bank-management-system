@@ -5,7 +5,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import Blood from "@/models/blood.models";
 import BloodRequest from "@/models/blood_request.models";
+import BloodDonation from "@/models/blood_donation.models";
 import { startOfDay, subDays, endOfDay } from "date-fns";
+
+
 
 export interface DashboardStats {
   totalBloodUnits: number;
@@ -44,52 +47,78 @@ export const getDashboardStats = async (): Promise<{
 
     const bloodBankId = session.user.id;
     
-    // Get current date and date range for trends (last 7 days)
+    // Log the session user to verify the ID
+    console.log('Session user:', JSON.stringify(session.user, null, 2));
+    
     const today = new Date();
     const sevenDaysAgo = subDays(today, 6);
     
-    // 1. Get total blood units (only available units)
-    const totalBloodUnits = await Blood.aggregate([
-      {
-        $match: {
-          blood_bank: bloodBankId,
-          status: 'available',
-          expiry_date: { $gt: new Date() } // Only non-expired blood
+    console.log('Querying total blood units for blood bank ID:', bloodBankId);
+    console.log('Blood bank ID type:', typeof bloodBankId);
+    
+        const totalCount = await Blood.countDocuments({});
+    console.log('Total blood records in collection:', totalCount);
+    
+    const mongoose = require('mongoose');
+    let queryId = bloodBankId;
+    
+   
+    if (typeof bloodBankId === 'string' && mongoose.Types.ObjectId.isValid(bloodBankId)) {
+      queryId = new mongoose.Types.ObjectId(bloodBankId);
+      console.log('Converted blood bank ID to ObjectId');
+    }
+    
+    const matchCriteria = {
+      blood_bank: queryId,
+      status: 'available'
+    };
+    
+    console.log('Using match criteria:', JSON.stringify({
+      ...matchCriteria,
+      blood_bank: matchCriteria.blood_bank.toString()
+    }, null, 2));
+    
+    const matchingSample = await Blood.find(matchCriteria).limit(2).lean();
+    console.log('Sample matching records:', JSON.stringify(matchingSample, null, 2));
+    
+   const totalBloodUnits=await Blood.aggregate([
+    {
+        $match:matchCriteria
+    },
+    {
+        $group:{
+            _id:matchCriteria.blood_bank,
+            total:{
+                $sum:"$blood_units"
+            }
         }
-      },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: '$blood_units' }
-        }
-      }
-    ]);
+    }
+])
 
-    // 2. Get total donations count
-    const totalDonations = await Blood.countDocuments({
+    
+   const totalDonations = await BloodDonation.countDocuments({
       blood_bank: bloodBankId
     });
 
-    // 3. Get pending blood requests
+    
     const pendingRequests = await BloodRequest.countDocuments({
       blood_bank: bloodBankId,
       status: 'pending'
     });
 
-    // 4. Get upcoming blood requests (next 7 days)
+    
     const upcomingRequests = await BloodRequest.countDocuments({
       blood_bank: bloodBankId,
       required_date: { $lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
       status: 'approved'
     });
 
-    // 5. Get blood stock by type
+
     const bloodStockByType = await Blood.aggregate([
       {
         $match: {
           blood_bank: bloodBankId,
           status: 'available',
-          expiry_date: { $gt: new Date() }
         }
       },
       {
@@ -107,14 +136,14 @@ export const getDashboardStats = async (): Promise<{
       }
     ]);
 
-    // 6. Get donation trends for last 7 days
+    
     const donationTrends = [];
     for (let i = 6; i >= 0; i--) {
       const date = subDays(today, i);
       const start = startOfDay(date);
       const end = endOfDay(date);
       
-      const count = await Blood.countDocuments({
+      const count = await BloodDonation.countDocuments({
         blood_bank: bloodBankId,
         collected_date: { $gte: start, $lte: end }
       });
@@ -125,52 +154,42 @@ export const getDashboardStats = async (): Promise<{
       });
     }
 
-    // 7. Get recent donations (last 5)
-    const recentDonations = await Blood.aggregate([
-      {
-        $match: {
-          blood_bank: bloodBankId
-        }
-      },
-      {
-        $lookup: {
-          from: 'donors',
-          localField: 'donor',
-          foreignField: '_id',
-          as: 'donorInfo'
-        }
-      },
-      { $unwind: '$donorInfo' },
-      {
-        $sort: { collected_date: -1 }
-      },
-      {
-        $limit: 5
-      },
-      {
-        $project: {
-          id: { $toString: '$_id' },
-          donorName: { $concat: ['$donorInfo.first_name', ' ', '$donorInfo.last_name'] },
-          bloodType: 1,
-          units: '$blood_units',
-          date: { $dateToString: { date: '$collected_date', format: '%Y-%m-%dT%H:%M:%S.%LZ' } }
-        }
-      }
-    ]);
+      
+    console.log('Fetching recent donations for blood bank:', bloodBankId);
+    
+    const donationCount = await BloodDonation.countDocuments({ blood_bank: bloodBankId });
+    console.log(`Found ${donationCount} blood donation records for blood bank ${bloodBankId}`);
+    
+    const sampleDonations = await BloodDonation.find({ blood_bank: bloodBankId }).limit(2).lean();
+    console.log('Sample blood donation records:', JSON.stringify(sampleDonations, null, 2));
+    
+
+
+     const recentDonations = await BloodDonation.find({
+      blood_bank:bloodBankId
+     }).sort({collected_date:-1}).limit(5)
+
+console.log("recentDonations",recentDonations);
+      
+
+
 
     return {
       success: true,
       data: {
         totalBloodUnits: totalBloodUnits[0]?.total || 0,
-        totalDonations,
+        totalDonations, 
         pendingRequests,
         upcomingRequests,
         bloodStockByType,
         donationTrends,
-        recentDonations: recentDonations.map(donation => ({
-          ...donation,
-          id: donation.id.toString()
-        }))
+        recentDonations:recentDonations.map((item:any)=>({
+            id:item._id,
+            donorName:item.donor_name,
+            bloodType:item.blood_type,
+            units:item.blood_units,
+            date:item.collected_date
+        })) 
       }
     };
   } catch (error) {
