@@ -6,16 +6,12 @@ import 'ldrs/react/Ring2.css'
 import IValidation from "@/types/validationTypes";
 import { fromValidation } from "@/utils/validation";
 import { insertBloodRequest } from "@/actions/bloodRequestActions";
-import { getLatLong } from "@/app/api/map/getLatLong";
 import { useRouter } from "next/navigation";
 import { UploadResult } from "./form";
 import { uploadAllFile } from "@/actions/uploadFileActions";
+import { toast } from "react-toastify";
 
-interface Prop {
-  formType: string;
-}
-
-const BloodRequisitionForm = ({formType}:Prop) => {
+const BloodRequisitionForm = () => {
   const router=useRouter();
   const [formData, setFormData] = useState({
     patientName: "",
@@ -80,6 +76,7 @@ const BloodRequisitionForm = ({formType}:Prop) => {
 
   const handleSubmit = async(e: any) => {
     e.preventDefault();
+    setIsSubmitting(true);
    try {
     setFileError("");
     const formdata = new FormData();
@@ -122,14 +119,18 @@ const BloodRequisitionForm = ({formType}:Prop) => {
       return;
     }
     const response:any=await insertBloodRequest(formdata);
-    console.log("Response: ",response);
+    if(response.success){
     setBloodReqResponse(response);
-
-    setIsSubmitting(true);
-    setTimeout(() => {
+    toast.success("Account created successfully!",{
+            autoClose: 3000,
+          });
       setIsSubmitting(false);
       setIsSubmitted(true);
-    }, 1500);
+      }else{
+        setIsSubmitting(false);
+      }
+
+ 
   }else{
     console.log(errors);
   }

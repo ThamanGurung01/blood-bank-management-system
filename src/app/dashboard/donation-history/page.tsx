@@ -10,6 +10,7 @@ import {
   Heart,
   Droplet,
   Search,
+  AlertCircle,
   CheckCircle,
   User,
   BarChart2,
@@ -91,6 +92,30 @@ export default function DonationHistoryPage() {
   };
 
   useEffect(() => {
+    const fetchDonationHistory = async () => {
+      if(!session?.user?.id) return;
+      setIsLoading(true);
+      try {
+          const response = await getBloodDonations(session.user.id);
+          const donorData= await getDonor(session.user.id);
+        if (donorData?.data) {
+          setDonorData(donorData.data);
+        }
+        setDonations(response.data);
+        applyFilters(
+          response.data,
+          searchTerm,
+          typeFilter,
+        );
+      } catch (error) {
+        console.error("Error fetching donation history:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDonationHistory();
+  }, [session]);
     if (session?.user?.id) {
       fetchDonationHistory();
     }
@@ -596,6 +621,134 @@ export default function DonationHistoryPage() {
                 </div>
               </CardContent>
             </Card>
+                              }
+                            )}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {new Date(donation?.collected_date).toLocaleTimeString([], {
+  hour: '2-digit',
+  minute: '2-digit',
+})}
+                          </div>
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4">
+                          <div className="flex items-center">
+                            <div
+                              className={`mr-2 h-2 w-2 rounded-full ${
+                                donation.donation_type === "whole_blood"
+                                  ? "bg-red-500"
+                                  : donation.donation_type === "platelets"
+                                  ? "bg-yellow-500"
+                                  : donation.donation_type === "plasma"
+                                  ? "bg-blue-500"
+                                  : "bg-purple-500"
+                              }`}
+                            ></div>
+                            <div className="text-sm text-gray-900">
+                              {DonationTypeLabels[donation.donation_type]}
+                            </div>
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {donation.blood_units} unit(s)
+                          </div>
+                        </td>
+                        <td className="whitespace-nowrap px-6 py-4">
+                          <div className="text-sm text-gray-900">
+                            {donation.blood_bank.blood_bank}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center p-12 text-center">
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                  <Droplet className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="mb-1 text-lg font-medium text-gray-900">
+                  No donations found
+                </h3>
+                <p className="mb-6 text-gray-500">
+                  {searchTerm ||
+                  typeFilter !== "all"
+                    ? "No donations match your search criteria."
+                    : "You haven't made any blood donations yet."}
+                </p>
+                <button className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
+                  Schedule Your First Donation
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="rounded-xl bg-white p-6 shadow-md">
+            <h2 className="mb-4 text-lg font-medium text-gray-800">
+              Donation Types
+            </h2>
+            <div className="space-y-4">
+              {[
+                {
+                  type: "Whole Blood",
+                  color: "bg-red-500",
+                  count: donations.filter(
+                    (d) => d.donation_type === "whole_blood"
+                  ).length,
+                },
+                {
+                  type: "Platelets",
+                  color: "bg-yellow-500",
+                  count: donations.filter((d) => d.donation_type === "platelets")
+                    .length,
+                },
+                {
+                  type: "Plasma",
+                  color: "bg-blue-500",
+                  count: donations.filter((d) => d.donation_type === "plasma")
+                    .length,
+                },
+                {
+                  type: "RBC",
+                  color: "bg-blue-500",
+                  count: donations.filter((d) => d.donation_type === "rbc")
+                    .length,
+                },
+                {
+                  type: "Cryoprecipitate",
+                  color: "bg-blue-500",
+                  count: donations.filter((d) => d.donation_type === "cryoprecipitate")
+                    .length,
+                }
+              ].map((item) => (
+                <div key={item.type} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div
+                        className={`mr-2 h-3 w-3 rounded-full ${item.color}`}
+                      ></div>
+                      <span className="text-sm font-medium text-gray-700">
+                        {item.type}
+                      </span>
+                    </div>
+                    <span className="text-sm font-medium text-gray-900">
+                      {item.count}
+                    </span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                    <div
+                      className={`h-full ${item.color}`}
+                      style={{
+                        width: `${(item.count / totalDonations) * 100}%`,
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
             <Card>
               <CardHeader>

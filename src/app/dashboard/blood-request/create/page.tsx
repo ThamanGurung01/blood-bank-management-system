@@ -1,13 +1,13 @@
 "use client"
 import BloodRequisitionForm from "@/components/bloodRequisitionForm"
-const page = () => {
+const Page = () => {
 
 
   return (
     <>
-    <BloodRequisitionForm formType="create"/>
+    <BloodRequisitionForm/>
     </>
   )
 }
 
-export default page
+export default Page

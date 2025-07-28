@@ -1,8 +1,14 @@
+"use client"
 import React from 'react'
-import Form from '@/components/form'
+import Form from '@/components/form';
+import { Suspense } from 'react';
 const Signup = () => {
   return (
-    <div><Form type={"signup"}/></div>
+    <div>
+     <Suspense fallback={<div>Loading...</div>}>
+        <Form type={"signup"}/>
+      </Suspense>
+    </div>
   )
 }
 

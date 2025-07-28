@@ -3,6 +3,8 @@ import "@/styles/globals.css";
 import Head from "../components/head";
 import AuthProvider from "./context/AuthProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function RootLayout({
   children,
@@ -15,8 +17,17 @@ export default function RootLayout({
         <Head />
       </head>
       <body className="bg-gray-100">
-        <AuthProvider> {children}</AuthProvider>
-        <Toaster />
+      <AuthProvider> {children}</AuthProvider>
+      <ToastContainer
+        position="top-left"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="light"
+      />
       </body>
     </html>
   );

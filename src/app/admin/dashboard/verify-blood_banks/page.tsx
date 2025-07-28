@@ -1,8 +1,9 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { FileText, Eye, CheckCircle, XCircle, Building2, MapPin, Phone, Mail, User, Shield, Download } from 'lucide-react';
+import { FileText, Eye, CheckCircle, XCircle, Building2, Phone, Mail, User, Shield, Download } from 'lucide-react';
 import { IBlood_Bank } from '@/models/blood_bank.models';
 import { changeBloodBankVerification, getAllBloodBanks } from '@/actions/bloodBankActions';
+import { appendFlAttachment } from '@/app/dashboard/blood-request/[id]/page';
 
 interface BloodBank extends Omit<IBlood_Bank, 'user'> {
   user: {
@@ -13,7 +14,7 @@ interface BloodBank extends Omit<IBlood_Bank, 'user'> {
   createdAt?: string;
 }
 
-const page = () => {
+const Page = () => {
   const [selectedBank, setSelectedBank] = useState<BloodBank | null>(null);
   const [showDocumentViewer, setShowDocumentViewer] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'all' | 'verified' | 'unverified'>('unverified');
@@ -227,35 +228,23 @@ const page = () => {
                     License Document
                   </h4>
 
-                  <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+                  {selectedBank?.document?.url ? (
+                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                     <div className="flex items-center space-x-4">
                       <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-lg">
                         <FileText className="w-6 h-6 text-red-600" />
                       </div>
                       <div>
-                        {/* <h5 className="font-medium text-gray-900">{selectedBank.licenseDocument.name}</h5>
-                        <p className="text-sm text-gray-600">
-                          PDF • {selectedBank.licenseDocument.size} • Uploaded: {new Date(selectedBank.licenseDocument.uploadDate).toLocaleDateString()}
-                        </p> */} liscense Document name
+                         Blood Bank Document
                       </div>
                     </div>
-                    
                     <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => setShowDocumentViewer(true)}
-                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="View Document"
-                      >
-                        <Eye className="w-5 h-5" />
-                      </button>
-                      <button
-                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Download"
-                      >
+                      <a href={selectedBank.document?.url ? appendFlAttachment(selectedBank.document.url) : '#'}
+                      className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
                         <Download className="w-5 h-5" />
-                      </button>
+                      </a>
                     </div>
-                  </div>
+                  </div>): (<p>No file available</p>)}
                 </div>
 
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -342,4 +331,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

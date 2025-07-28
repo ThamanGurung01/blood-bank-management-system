@@ -1,14 +1,9 @@
 "use client"
 import React, { useEffect, useState } from 'react';
-import { Calendar, MapPin, Clock, User, Edit, Trash2, Plus, AlertCircle, CheckCircle, PlayCircle } from 'lucide-react';
+import { Calendar, MapPin, Clock, Edit, Trash2, Plus, AlertCircle, CheckCircle, PlayCircle } from 'lucide-react';
 import { createEvent, deleteEvent, getAllEvents, updateEvent } from '@/actions/eventActions';
 import { useSession } from 'next-auth/react';
 import DeleteConfirmationModal from '@/components/DeleteConfirmationModal';
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-}
 
 interface Event {
   _id: string;
@@ -68,7 +63,7 @@ interface EventFormData {
 //   }
 // ];
 
-const page = () => {
+const Page = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
@@ -478,4 +473,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

@@ -1,6 +1,6 @@
 "use client";
 import type React from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,10 +19,10 @@ import { fromValidation } from "@/utils/validation";
 import IValidation from "@/types/validationTypes";
 import { ACCEPTED_IMAGE_TYPES } from "@/utils/validation";
 import { createUser } from "@/actions/userActions";
-import { getSession, signIn, useSession } from "next-auth/react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { getSession, signIn } from "next-auth/react";
+import { useSearchParams,useRouter } from "next/navigation";
 import { uploadAllFile } from "@/actions/uploadFileActions";
-import { toast } from "sonner";
+import { toast } from "react-toastify";
 
 export interface UploadResult {
   success: boolean;
@@ -45,10 +45,10 @@ const Form = ({ type }: { type: string }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [dropdownValue, setDropdownValue] = useState("");
   const [validationErrors, setValidationErrors] = useState<IValidation>();
-  const searchParams = useSearchParams();
-  const signinError = searchParams.get("error");
-  const router = useRouter();
-  const { data: session } = useSession();
+  const searchParams=useSearchParams();
+  const from = useSearchParams().get('from');
+  const signinError=searchParams.get("error");
+  const router=useRouter();
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || undefined;
     setSelectedFile(file);
@@ -126,75 +126,79 @@ const Form = ({ type }: { type: string }) => {
           const role = formdata.get("role");
           let folder: string | null = null;
 
-          switch (role) {
-            case "donor":
-              folder = "donorProfile";
-              break;
-            case "blood_bank":
-              folder = "bloodBankProfile";
-              break;
-            default:
-              console.error("Invalid role specified");
-              return;
-          }
-          const uploadFile: UploadResult = await uploadAllFile(
-            selectedFile,
-            folder
-          );
-          if (uploadFile.success && uploadFile.data) {
-            formdata.append(
-              "profileImage",
-              JSON.stringify({
-                url: uploadFile.data.secure_url,
-                publicId: uploadFile.data.public_id,
-              })
-            );
-            const response = await createUser(formdata);
-            if (response?.success) {
-              toast.success("Account created Successfully");
-            }
-            console.log(response);
-          } else {
-            console.error(
-              "Image upload failed:",
-              uploadFile.error || "Unknown error"
-            );
-          }
-          router.push("/");
-        } else if (type === "login") {
-          const credentials = Object.fromEntries(formdata);
-          const res = await signIn("credentials", {
-            ...credentials,
-            redirect: false,
-          });
+  switch (role) {
+    case "donor":
+      folder = "donorProfile";
+      break;
+    case "blood_bank":
+      folder = "bloodBankProfile";
+      break;
+    default:
+      console.error("Invalid role specified");
+      return;
+  }
+    const uploadFile: UploadResult = await uploadAllFile(selectedFile, folder);
+    if(uploadFile.success&&uploadFile.data){
+      formdata.append("profileImage", JSON.stringify({url:uploadFile.data.secure_url, publicId:uploadFile.data.public_id}));
+      const response = await createUser(formdata);
+    if(response?.success){
+      toast.success("Account created successfully!",{
+        theme:"colored",
+      });
+      setTimeout(() => {router.push("/");}, 1000);
+    }
+    }else {
+      toast.error("Failed to upload profile image. Please try again.",{
+        theme:"colored",
+      });
+    }
+}else if(type==="login"){
+const credentials=Object.fromEntries(formdata);
+const res = await signIn("credentials", {
+    ...credentials,
+    redirect: false,
+  });
 
-          if (!res || !res.ok) {
-            console.log("Login failed:", res?.error);
-            return;
-          }
-          if (res?.ok) {
-            toast.success("Logged In Success fully");
-          }
+  if (!res || !res.ok) {
+if(res?.error==="Incorrect password") {setValidationErrors((prev) => ({
+    ...prev,
+    password: [res?.error || "Something went wrong"],
+  }))}else{
+    toast.error(res?.error || "Login failed. Please try again.",{
+        theme:"colored",
+      });
+  }
+    return;
+  }
 
           const session = await getSession();
           const role = session?.user?.role;
 
-          let destination = "/dashboard";
-          if (role === "admin") {
-            destination = "/admin/dashboard";
-          } else if (role === "blood_bank") {
-            destination = "/dashboard/";
-          } else if (role === "donor") {
-            destination = "/dashboard/find-donors";
-          }
-
-          router.push(destination);
-        }
-      }
-    } catch (error: any) {
-      throw new Error(error.message);
-    }
+  let destination = "/dashboard";
+  if (role === "admin") {
+    destination = "/admin/dashboard";
+  } else if (role === "blood_bank") {
+    destination = "/dashboard/";
+  } else if(role === "donor"){
+    destination = "/dashboard/find-donors";
+  }
+  
+  toast.success("Login successful! Redirecting...",{
+        theme:"colored",
+      });
+  setTimeout(() => {router.push(destination);}, 1000);
+}
+  }
+} catch (error:any) {
+  throw new Error(error.message);
+}
   };
+
+  useEffect(() => {
+  if (from === 'protected') toast.error('Please login to continue',{
+        theme:"colored",
+      })
+}, [from]);
   return (
     <div className="flex min-h-screen flex-col lg:flex-row">
       {/* Left Column - Form */}

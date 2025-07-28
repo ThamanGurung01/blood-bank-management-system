@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useState } from 'react';
-import { User, Phone, Droplet, X, Save } from 'lucide-react';
+import { User, X, Save } from 'lucide-react';
 import { Donor } from '@/app/admin/dashboard/list-donors/page';
 
 interface DonorFormErrors {

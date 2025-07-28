@@ -11,7 +11,7 @@ export interface IBlood_Bank extends Document{
     contact:string;
     verified:boolean;
     document: {
-        public_id: string;
+        publicId: string;
         url:string;
         fileType: string;
     };
@@ -52,7 +52,7 @@ const BloodBankSchema=new Schema<IBlood_Bank>({
         default:false
     },
     document: {
-        public_id: String,
+        publicId: String,
         url:String,
         fileType: String,
     },

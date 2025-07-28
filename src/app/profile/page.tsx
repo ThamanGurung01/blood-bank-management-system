@@ -18,6 +18,9 @@ import {
   CheckCircle,
   XCircle,
   Fingerprint,
+  FileText,
+  X,
+  Check,
   MapPinned,
 } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -25,7 +28,11 @@ import { signOut, useSession } from "next-auth/react";
 import { getDonor } from "@/actions/donorActions";
 import { IDonor } from "@/models/donor.models";
 import { IBlood_Bank } from "@/models/blood_bank.models";
-import { getBloodBank } from "@/actions/bloodBankActions";
+import { getBloodBank, updateBloodBankDocument } from "@/actions/bloodBankActions";
+import { Ring2 } from "ldrs/react";
+import { UploadResult } from "@/components/form";
+import { uploadAllFile } from "@/actions/uploadFileActions";
+import { appendFlAttachment } from "../dashboard/blood-request/[id]/page";
 interface Donation {
   id: number;
   date: string;
@@ -69,6 +76,13 @@ export default function ProfilePage() {
   const [donorData, setDonorData] = useState<Donor>({} as Donor);
   const [bloodBankData, setBloodBankData] = useState<BloodBank>({} as BloodBank);
   const { data: session } = useSession();
+  const [fileError, setFileError] = useState("");
+  const [fileName, setFileName] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showVerifyBtn, setShowVerifyBtn] = useState(true);
   const fetchDonorData = async () => {
     if (session?.user?.id) {
       const response = await getDonor(session.user.id);
@@ -79,8 +93,76 @@ export default function ProfilePage() {
     if (session?.user?.id) {
       const response = await getBloodBank(session.user.id);
       setBloodBankData(response.data);
+      if (response.data.verified) {
+        setShowVerifyBtn(false);
+      } else {
+        setShowVerifyBtn(true);
+      }
     }
   }
+  const handleFileUpload = (e: any) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setFileError("File size exceeds 5MB limit");
+        return;
+      }
+
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (!allowedTypes.includes(file.type)) {
+        setFileError("Only PDF, JPEG, PNG, and DOC/DOCX files are allowed");
+        return;
+      }
+      setSelectedFile(file);
+      setFileName(file.name);
+      setFileError("");
+    }
+  };
+
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    try {
+      let documentData;
+      setFileError("");
+      if (!fileError && selectedFile && bloodBankData._id) {
+        const file = selectedFile;
+        if (file && file instanceof File) {
+          const uploadFile: UploadResult = await uploadAllFile(file, "bloodBankVerification");
+          const mimeType = file.type;
+          if (uploadFile.success && uploadFile.data) {
+            documentData = {
+              url: uploadFile.data.secure_url,
+              publicId: uploadFile.data.public_id,
+              fileType: mimeType,
+            }
+          } else {
+            documentData = {
+              url: '',
+              publicId: '',
+              fileType: '',
+            }
+          }
+        } else {
+          setFileError("Please upload a valid file.");
+          return;
+        }
+        if (!documentData) {
+          console.log("no document data");
+        }
+        setIsSubmitting(true);
+        const response: any = await updateBloodBankDocument(String(bloodBankData._id), documentData);
+        if (response.success) { setIsSubmitting(false);fetchBloodBankData(); } else {
+        }
+        setIsOpen(false);
+        setSelectedFile(undefined); 
+        setFileName('')
+      } else {
+        console.log("errors");
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
+  };
 
   useEffect(() => {
     if (session?.user?.role === "blood_bank") {
@@ -104,7 +186,7 @@ export default function ProfilePage() {
             </h1>
             <div className="flex space-x-4">
               <button className="inline-flex items-center rounded-md border border-transparent bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                onClick={() => { session?.user?.role === "blood_bank"?redirect("/dashboard"):redirect("/dashboard/find-donors") }}
+                onClick={() => { session?.user?.role === "blood_bank" ? redirect("/dashboard") : redirect("/dashboard/find-donors") }}
               >
                 Dashboard
               </button>
@@ -167,26 +249,106 @@ export default function ProfilePage() {
                     </span>
                   ) : (
                     <div className="flex flex-col gap-2">
-                      <span className="inline-flex items-center rounded-full bg-blue-600 px-2.5 py-0.5 text-xs font-medium text-white">
-                        <Building className="mr-1 h-3 w-3" />
-                        Blood Bank
-                      </span>
-                      {bloodBankData.verified ? (
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-                          <CheckCircle className="mr-1 h-4 w-4 text-green-500" />
-                          Verified
+                      <div className="flex gap-2">
+                        <span className="inline-flex items-center rounded-full bg-blue-600 px-2.5 py-0.5 text-xs font-medium text-white">
+                          <Building className="mr-1 h-3 w-3" />
+                          Blood Bank
                         </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
-                          <XCircle className="mr-1 h-4 w-4 text-yellow-500" />
-                          Unverified
-                        </span>
-                      )}
+                        {bloodBankData.verified ? (
+                          <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+                            <CheckCircle className="mr-1 h-4 w-4 text-green-500" />
+                            Verified
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
+                            <XCircle className="mr-1 h-4 w-4 text-yellow-500" />
+                            Unverified
+                          </span>
+                        )}
+                      </div>
+                      {(!bloodBankData.verified && showVerifyBtn) && (
+                        <div className="flex justify-center">
+                          <span
+                            className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800 cursor-pointer hover:bg-blue-200 transition"
+                            onClick={() => { setIsOpen(true) }}>
+                            <Check className="mr-1 h-4 w-4 text-blue-500" />
+                            Verify now
+                          </span>
+                        </div>
+                      )
+                      }
                     </div>
                   )}
                 </div>
               </div>
             </div>
+
+            {isOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="bg-white rounded-xl p-6 max-w-md w-full relative">
+                  <button
+                    onClick={() => { setIsOpen(false); setSelectedFile(undefined); setFileName('') }}
+                    className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 cursor-pointer">
+                    <X className="w-5 h-5" />
+                  </button>
+                  <form onSubmit={handleSubmit}>
+                    <div className="text-center">
+                      <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-sm font-medium text-gray-700 mb-2">
+                        Upload Blood Requisition Document <span className="text-red-500">*</span>
+                      </p>
+                      <p className="text-xs text-gray-500 mb-4">
+                        PDF, DOC, DOCX, JPG or PNG (Max. 5MB)
+                      </p>
+
+                      <input
+                        type="file"
+                        id="document"
+                        name="document"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                      />
+                      <div className="flex flex-col gap-3 items-center">
+                        <button
+                          type="button"
+                          onClick={() => document.getElementById("document")?.click()}
+                          className="px-4 py-2 bg-gray-200 cursor-pointer text-gray-700 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                        >
+                          Select File
+                        </button>
+
+                        {fileName && (
+                          <div className="mt-4 text-sm text-gray-600">
+                            <span className="font-medium">Selected File:</span> {fileName}
+                          </div>
+                        )}
+                        <button type="submit"
+                          className="px-4 py-2 bg-blue-600 cursor-pointer text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                          disabled={isSubmitting}>
+                          {isSubmitting ? (
+                            <>
+                              <Ring2
+                                size="20"
+                                stroke="5"
+                                strokeLength="0.25"
+                                bgOpacity="0.1"
+                                speed="0.8"
+                                color="white"
+                              />
+                              <span className="ml-3">Processing...</span>
+                            </>
+                          ) : (
+                            "Submit Verify Request"
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
             <div className="px-6 py-4">
               <div className="space-y-4">
                 {viewMode === "donor" && (
@@ -258,6 +420,20 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 )}
+                {viewMode === "blood_bank" && (<div>
+                  <p className="text-sm text-gray-600 mb-2">Requisition Document</p>
+                  {bloodBankData?.document?.url ? (
+                    <a href={bloodBankData.document?.url ? appendFlAttachment(bloodBankData.document?.url) : '#'}
+                      className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                      <FileText className="text-gray-400 mr-3" size={24} />
+                      <div>
+                        <p className="font-medium">Blood Bank Document</p>
+                        <p className="text-sm text-gray-500">Download</p>
+                      </div>
+                    </a>
+                  ) : (<p>No file available</p>)}
+                </div>
+              )}
               </div>
             </div>
             <div className="flex items-center px-6 py-4">
