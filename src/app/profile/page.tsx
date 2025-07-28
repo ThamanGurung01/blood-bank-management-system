@@ -21,6 +21,7 @@ import {
   FileText,
   X,
   Check,
+  MapPinned,
 } from "lucide-react";
 import { redirect } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -391,6 +392,13 @@ export default function ProfilePage() {
                       <p className="font-medium">{bloodBankData.blood_bank}</p>
                     </div>
                   </div>)}
+                  <div className="flex items-center">
+                  <MapPinned className="mr-3 h-5 w-5 text-gray-500" />
+                  <div>
+                    <p className="text-sm text-gray-500">Address</p>
+                    <p className="font-medium">{donorData.address ?? bloodBankData.address?? 'Bharatpur-11, Chitwan'}</p>
+                  </div>
+                </div>
                 <div className="flex items-center">
                   <MapPin className="mr-3 h-5 w-5 text-gray-500" />
                   <div>

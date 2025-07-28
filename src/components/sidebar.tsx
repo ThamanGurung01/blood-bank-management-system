@@ -9,21 +9,25 @@ const Sidebar = () => {
   const { data: session } = useSession();
   const router = useRouter();
 
-const pathname = usePathname();
+  const pathname = usePathname();
 
-const getSidebarOptionFromPath = (path: string): string | undefined => {
-  if (path.startsWith('/dashboard/find-donors')) return 'find-donors';
-  if (path.startsWith('/dashboard/blood-request')) return 'blood-request';
-  if (path.startsWith('/dashboard/donation-schedule')) return 'donation-schedule';
-  if (path.startsWith('/dashboard/donation-history')) return 'donation-history';
-  if (path.startsWith('/dashboard/leaderboard')) return 'leaderboard';
-  if (path.startsWith('/dashboard/event')) return 'event';
-  if (path === '/dashboard') return 'overview';
+  const getSidebarOptionFromPath = (path: string): string | undefined => {
+    if (path.startsWith("/dashboard/find-donors")) return "find-donors";
+    if (path.startsWith("/dashboard/blood-request")) return "blood-request";
+    if (path.startsWith("/dashboard/donation-schedule"))
+      return "donation-schedule";
+    if (path.startsWith("/dashboard/donation-history"))
+      return "donation-history";
+    if (path.startsWith("/dashboard/leaderboard")) return "leaderboard";
+    if (path.startsWith("/dashboard/event")) return "event";
+    if (path === "/dashboard") return "overview";
 
-  if (path.startsWith('/admin/dashboard/list-blood_banks')) return 'list-blood_banks';
-  if (path.startsWith('/admin/dashboard/list-donors')) return 'list-donors';
-  if (path.startsWith('/admin/dashboard/verify-blood_banks')) return 'verify-blood_banks';
-  if (path === '/admin/dashboard') return 'admin-overview';
+    if (path.startsWith("/admin/dashboard/list-blood_banks"))
+      return "list-blood_banks";
+    if (path.startsWith("/admin/dashboard/list-donors")) return "list-donors";
+    if (path.startsWith("/admin/dashboard/verify-blood_banks"))
+      return "verify-blood_banks";
+    if (path === "/admin/dashboard") return "admin-overview";
 
   if (path.startsWith('/dashboard/blood_bank-overview')) return 'blood_bank-overview';
   if (path.startsWith('/dashboard/blood-stock')) return 'blood-stock';
@@ -32,19 +36,20 @@ const getSidebarOptionFromPath = (path: string): string | undefined => {
   if (path.startsWith('/dashboard/blood_bank-donation_schedule')) return 'blood_bank-donation_schedule';
   if (path.startsWith('/dashboard/blood_bank-event')) return 'blood_bank-event';
 
-  return undefined;
-};
+    return undefined;
+  };
 
-const selectedSidebarOption = getSidebarOptionFromPath(pathname);
+  const selectedSidebarOption = getSidebarOptionFromPath(pathname);
   const handleSidebarSelect = (option: string, role: string) => {
-    if (!option && !role) return console.log("error no option and role passed for handle side bar")
+    if (!option && !role)
+      return console.log("error no option and role passed for handle side bar");
     if (role === "blood_bank") {
       if (option === "overview") {
         // setSelectedSidebarOption(option)
         router.push(`/dashboard/blood_bank-overview`)
       } else {
         // setSelectedSidebarOption(option)
-        router.push(`/dashboard/${option}`)
+        router.push(`/dashboard/${option}`);
       }
     } else if (role === "donor") {
       if (option === "overview") {
@@ -52,22 +57,24 @@ const selectedSidebarOption = getSidebarOptionFromPath(pathname);
         router.push(`/dashboard/find-donors`)
       } else {
         // setSelectedSidebarOption(option)
-        router.push(`/dashboard/${option}`)
+        router.push(`/dashboard/${option}`);
       }
     } else if (role === "admin") {
       if (option === "admin-overview") {
         // setSelectedSidebarOption(option)
-        router.push(`/admin/dashboard`)
+        router.push(`/admin/dashboard`);
       } else {
         // setSelectedSidebarOption(option)
-        router.push(`/admin/dashboard/${option}`)
+        router.push(`/admin/dashboard/${option}`);
       }
     }
-  }
+  };
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: "/" })
-  }
+    signOut({ callbackUrl: "/" }).then(() => {
+      toast.success("logged out successfully");
+    });
+  };
 
   // useEffect(() => {
   //   if (!session?.user?.role) return
@@ -86,7 +93,6 @@ const selectedSidebarOption = getSidebarOptionFromPath(pathname);
   // // }, [session, selectedSidebarOption, router])
   // }, [session, router])
 
-
   return (
     <div className="fixed z-10 flex h-screen w-64 flex-col border-r border-gray-200 bg-white pt-20 shadow-sm transition-all">
       <div className="mb-6 px-6">
@@ -96,7 +102,11 @@ const selectedSidebarOption = getSidebarOptionFromPath(pathname);
           </div>
           <div>
             <h2 className="font-semibold text-gray-800">
-              {session?.user.role === "blood_bank" ? "Blood Bank" :session?.user.role === "donor"? "Donor Portal":"Admin Dashboard"}
+              {session?.user.role === "blood_bank"
+                ? "Blood Bank"
+                : session?.user.role === "donor"
+                ? "Donor Portal"
+                : "Admin Dashboard"}
             </h2>
             <p className="text-xs text-gray-500">{session?.user.name}</p>
           </div>
@@ -123,25 +133,38 @@ const selectedSidebarOption = getSidebarOptionFromPath(pathname);
               icon={<Syringe size={20} />}
               label="Blood Donation"
               isSelected={selectedSidebarOption === "blood-donation"}
-              onClick={() => handleSidebarSelect("blood-donation", "blood_bank")}
+              onClick={() =>
+                handleSidebarSelect("blood-donation", "blood_bank")
+              }
             />
             <SidebarItem
               icon={<Droplet size={20} />}
               label="Blood Requests"
               isSelected={selectedSidebarOption === "blood_bank-request"}
-              onClick={() => handleSidebarSelect("blood_bank-request", "blood_bank")}
+              onClick={() =>
+                handleSidebarSelect("blood_bank-request", "blood_bank")
+              }
             />
             <SidebarItem
               icon={<Package size={20} />}
               label="Donation Schedule"
-              isSelected={selectedSidebarOption === "blood_bank-donation_schedule"}
-              onClick={() => handleSidebarSelect("blood_bank-donation_schedule", "blood_bank")}
+              isSelected={
+                selectedSidebarOption === "blood_bank-donation_schedule"
+              }
+              onClick={() =>
+                handleSidebarSelect(
+                  "blood_bank-donation_schedule",
+                  "blood_bank"
+                )
+              }
             />
-             <SidebarItem
+            <SidebarItem
               icon={<Calendar size={20} />}
               label="Event"
               isSelected={selectedSidebarOption === "blood_bank-event"}
-              onClick={() => handleSidebarSelect("blood_bank-event", "blood_bank")}
+              onClick={() =>
+                handleSidebarSelect("blood_bank-event", "blood_bank")
+              }
             />
           </>
         )}
@@ -209,7 +232,7 @@ const selectedSidebarOption = getSidebarOptionFromPath(pathname);
               onClick={() => handleSidebarSelect("list-donors", "admin")}
             />
             <SidebarItem
-              icon={<ShieldCheck  size={20} />}
+              icon={<ShieldCheck size={20} />}
               label="Verify Blood Banks"
               isSelected={selectedSidebarOption === "verify-blood_banks"}
               onClick={() => handleSidebarSelect("verify-blood_banks", "admin")}
@@ -228,29 +251,39 @@ const selectedSidebarOption = getSidebarOptionFromPath(pathname);
         />
       </div>
     </div>
-  )
-}
+  );
+};
 
 interface SidebarItemProps {
-  icon: React.ReactNode
-  label: string
-  isSelected?: boolean
-  onClick: () => void
-  className?: string
+  icon: React.ReactNode;
+  label: string;
+  isSelected?: boolean;
+  onClick: () => void;
+  className?: string;
 }
 
-const SidebarItem = ({ icon, label, isSelected, onClick, className }: SidebarItemProps) => {
+const SidebarItem = ({
+  icon,
+  label,
+  isSelected,
+  onClick,
+  className,
+}: SidebarItemProps) => {
   return (
     <button
       onClick={onClick}
-      className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${isSelected
-        ? "bg-red-50 text-red-600"
-        : className || "text-gray-700 hover:bg-gray-100"
-        } ${className || ""}`}
+      className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+        isSelected
+          ? "bg-red-50 text-red-600"
+          : className || "text-gray-700 hover:bg-gray-100"
+      } ${className || ""}`}
     >
       <div
-        className={`flex h-6 w-6 items-center justify-center ${isSelected ? "text-red-600" : "text-gray-500 group-hover:text-gray-700"
-          }`}
+        className={`flex h-6 w-6 items-center justify-center ${
+          isSelected
+            ? "text-red-600"
+            : "text-gray-500 group-hover:text-gray-700"
+        }`}
       >
         {icon}
       </div>
@@ -259,7 +292,7 @@ const SidebarItem = ({ icon, label, isSelected, onClick, className }: SidebarIte
         <div className="ml-auto h-1.5 w-1.5 rounded-full bg-red-600"></div>
       )}
     </button>
-  )
-}
+  );
+};
 
-export default Sidebar
+export default Sidebar;

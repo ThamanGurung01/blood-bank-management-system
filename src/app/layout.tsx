@@ -1,7 +1,8 @@
-"use client"
+"use client";
 import "@/styles/globals.css";
 import Head from "../components/head";
 import AuthProvider from "./context/AuthProvider";
+import { Toaster } from "@/components/ui/sonner";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -10,11 +11,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
     <html lang="en">
       <head>
-        <Head/>
+        <Head />
       </head>
       <body className="bg-gray-100">
       <AuthProvider> {children}</AuthProvider>

@@ -4,7 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Upload, User, Mail, Lock, AlertCircle, Contact, Building } from "lucide-react";
+import {
+  MapPin,
+  Upload,
+  User,
+  Mail,
+  Lock,
+  AlertCircle,
+  Contact,
+  Building,
+  MapPinned,
+} from "lucide-react";
 import { fromValidation } from "@/utils/validation";
 import IValidation from "@/types/validationTypes";
 import { ACCEPTED_IMAGE_TYPES } from "@/utils/validation";
@@ -19,7 +29,7 @@ export interface UploadResult {
   data?: {
     secure_url: string;
     public_id: string;
-    resource_type:string
+    resource_type: string;
   };
   error?: string;
 }
@@ -87,33 +97,34 @@ const Form = ({ type }: { type: string }) => {
   const handleOptionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target?.value;
     setDropdownValue(value);
-  }
+  };
 
-  const handleSubmit = async(e: React.FormEvent) => {
-try {
-  e.preventDefault();
-  const formdata = new FormData(e.target as HTMLFormElement);
-  const location = {
-    latitude, longitude
-  }
-  if (type === "signup") {
-    formdata.append("location", JSON.stringify(location));
-  }
-  const validation = fromValidation(formdata, type);
-  const errors: IValidation | undefined = validation?.error?.flatten().fieldErrors;
-  setValidationErrors(errors);
-  if(!errors){
-if(type==="signup"){
-  
-  if (!selectedFile) {
-    setValidationErrors((prev) => ({
-      ...prev,
-      profile_picture: ["Profile picture is required."]
-    }));
-    return;
-  }
-   const role = formdata.get("role");
-  let folder: string | null = null;
+  const handleSubmit = async (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      const formdata = new FormData(e.target as HTMLFormElement);
+      const location = {
+        latitude,
+        longitude,
+      };
+      if (type === "signup") {
+        formdata.append("location", JSON.stringify(location));
+      }
+      const validation = fromValidation(formdata, type);
+      const errors: IValidation | undefined =
+        validation?.error?.flatten().fieldErrors;
+      setValidationErrors(errors);
+      if (!errors) {
+        if (type === "signup") {
+          if (!selectedFile) {
+            setValidationErrors((prev) => ({
+              ...prev,
+              profile_picture: ["Profile picture is required."],
+            }));
+            return;
+          }
+          const role = formdata.get("role");
+          let folder: string | null = null;
 
   switch (role) {
     case "donor":
@@ -160,8 +171,8 @@ if(res?.error==="Incorrect password") {setValidationErrors((prev) => ({
     return;
   }
 
-  const session = await getSession();
-  const role = session?.user?.role;
+          const session = await getSession();
+          const role = session?.user?.role;
 
   let destination = "/dashboard";
   if (role === "admin") {
@@ -224,7 +235,11 @@ if(res?.error==="Incorrect password") {setValidationErrors((prev) => ({
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-6" encType="multipart/form-data">
+          <form
+            onSubmit={handleSubmit}
+            className="mt-8 space-y-6"
+            encType="multipart/form-data"
+          >
             {type !== "login" && (
               <div className="space-y-6">
                 <div className="flex flex-col items-center">
@@ -407,7 +422,8 @@ if(res?.error==="Incorrect password") {setValidationErrors((prev) => ({
                     name="role"
                     id="role"
                     className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-red-500 focus:outline-none focus:ring-red-500 sm:text-sm"
-                    onChange={handleOptionChange} value={dropdownValue}
+                    onChange={handleOptionChange}
+                    value={dropdownValue}
                   >
                     <option value="">Select your role</option>
                     <option value="donor">Donor</option>
@@ -502,44 +518,77 @@ if(res?.error==="Incorrect password") {setValidationErrors((prev) => ({
                 )}
                 {dropdownValue === "blood_bank" && (
                   <>
-                  <div>
-                    <label
-                      htmlFor="blood_bank"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Blood Bank
-                    </label>
-                    <div className="relative mt-1 rounded-md shadow-sm">
-                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <Building className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        type="text"
-                        id="blood_bank"
-                        name="blood_bank"
-                        className="block w-full rounded-md border-gray-300 pl-10 py-2 focus:border-red-500 focus:ring-red-500 sm:text-sm"
-                        placeholder="NRCS Blood Bank"
-                      />
-                    </div>
-                  </div>
-                  {validationErrors?.blood_bank?.[0] && (
-                    <div className="rounded-md bg-red-50 p-2">
-                      <div className="flex">
-                        <div className="flex-shrink-0">
-                          <AlertCircle className="h-5 w-5 text-red-400" />
+                    <div>
+                      <label
+                        htmlFor="blood_bank"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Blood Bank
+                      </label>
+                      <div className="relative mt-1 rounded-md shadow-sm">
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                          <Building className="h-5 w-5 text-gray-400" />
                         </div>
-                        <div className="ml-3">
-                          <p className="text-sm text-red-700">
-                            {validationErrors?.blood_bank?.[0]}
-                          </p>
-                        </div>
+                        <input
+                          type="text"
+                          id="blood_bank"
+                          name="blood_bank"
+                          className="block w-full rounded-md border-gray-300 pl-10 py-2 focus:border-red-500 focus:ring-red-500 sm:text-sm"
+                          placeholder="NRCS Blood Bank"
+                        />
                       </div>
                     </div>
-                  )}
+                    {validationErrors?.blood_bank?.[0] && (
+                      <div className="rounded-md bg-red-50 p-2">
+                        <div className="flex">
+                          <div className="flex-shrink-0">
+                            <AlertCircle className="h-5 w-5 text-red-400" />
+                          </div>
+                          <div className="ml-3">
+                            <p className="text-sm text-red-700">
+                              {validationErrors?.blood_bank?.[0]}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
 
-
+                <div>
+                  <label
+                    htmlFor="address"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Address
+                  </label>
+                  <div className="relative mt-1 rounded-md shadow-sm">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <MapPinned className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      id="address"
+                      name="address"
+                      className="block w-full rounded-md border-gray-300 pl-10 py-2 focus:border-red-500 focus:ring-red-500 sm:text-sm"
+                      placeholder="1234 Main St, City, Country"
+                    />
+                  </div>
+                </div>
+                {validationErrors?.address?.[0] && (
+                  <div className="rounded-md bg-red-50 p-2">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <AlertCircle className="h-5 w-5 text-red-400" />
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-red-700">
+                          {validationErrors?.address?.[0]}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div>
                   <label
                     htmlFor="contact"
@@ -659,19 +708,17 @@ if(res?.error==="Incorrect password") {setValidationErrors((prev) => ({
               </button>
             </div>
             {signinError && (
-                <div className="rounded-md bg-red-50 p-2">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <AlertCircle className="h-5 w-5 text-red-400" />
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm text-red-700">
-                        {signinError}
-                      </p>
-                    </div>
+              <div className="rounded-md bg-red-50 p-2">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <AlertCircle className="h-5 w-5 text-red-400" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-red-700">{signinError}</p>
                   </div>
                 </div>
-              )}
+              </div>
+            )}
           </form>
         </div>
       </div>

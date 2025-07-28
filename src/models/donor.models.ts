@@ -11,6 +11,7 @@ export interface IDonor extends Document{
         longitude:number;
     };
     contact:string;
+    address:string;
     status:boolean;
     last_donation_date:Date;
     donated_volume:number;
@@ -69,6 +70,10 @@ const DonorSchema=new Schema<IDonor>({
     unsuccessful_donations:{
         type:Number,
         default:0
+    },
+    address:{
+        type:String,
+        required:true
     },
     profileImage: {
     url: {
