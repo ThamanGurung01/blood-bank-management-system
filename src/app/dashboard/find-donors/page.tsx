@@ -1,48 +1,50 @@
 "use client"
-import { useEffect, useState } from "react";
-import { Search, Filter, User, Droplet } from "lucide-react";
-import { getAllDonor, getRecommendedDonors } from "@/actions/donorActions";
-import { IDonor } from "@/models/donor.models";
-interface Donor extends Omit<IDonor, 'user'> {
-  user: {
-    name: string;
-    email: string;
-    role: string;
-  };
-}
-const Page = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [bloodType, setBloodType] = useState("");
-  const [availability, setAvailability] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
-  const [donors, setDonors] = useState<Donor[]>([]);
-  const [showRecommended, setShowRecommended] = useState(false);
-  const [selectedBloodGroup, setSelectedBloodGroup] = useState("A+");
-  // const donors = [
-  //   { id: 1, name: "John Doe", bloodType: "A+", available: true, lastDonation: "2025-03-15", contactNumber: "555-1234" },
-  //   { id: 2, name: "Jane Smith", bloodType: "O-", available: false, lastDonation: "2025-04-01", contactNumber: "555-5678" },
-  //   { id: 3, name: "Mike Johnson", bloodType: "B+", available: true, lastDonation: "2025-02-22", contactNumber: "555-9012" },
-  //   { id: 4, name: "Sarah Williams", bloodType: "AB+", available: true, lastDonation: "2025-01-30", contactNumber: "555-3456" },
-  //   { id: 5, name: "Robert Brown", bloodType: "A-", available: false, lastDonation: "2025-03-25", contactNumber: "555-7890" }
-  // ];
 
-  const filteredDonors = donors.filter(donor => {
-    const matchesSearch = donor.user.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesBloodType = bloodType === "" || donor.blood_group === bloodType;
+import type React from "react"
+
+import { useEffect, useState } from "react"
+import { Search, Filter, User, Droplet, X, Phone, MapPin } from "lucide-react"
+import { getAllDonor, getRecommendedDonors } from "@/actions/donorActions"
+import type { IDonor } from "@/models/donor.models"
+
+interface Donor extends Omit<IDonor, "user"> {
+  user: {
+    name: string
+    email: string
+    role: string
+  }
+}
+
+const Page = () => {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [bloodType, setBloodType] = useState("")
+  const [availability, setAvailability] = useState("")
+  const [showFilters, setShowFilters] = useState(false)
+  const [donors, setDonors] = useState<Donor[]>([])
+  const [showRecommended, setShowRecommended] = useState(false)
+  const [selectedBloodGroup, setSelectedBloodGroup] = useState("A+")
+
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null)
+
+  const filteredDonors = donors.filter((donor) => {
+    const matchesSearch = donor.user.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesBloodType = bloodType === "" || donor.blood_group === bloodType
     const matchesAvailability =
       availability === "" ||
       (availability === "available" && donor.status) ||
-      (availability === "unavailable" && !donor.status);
+      (availability === "unavailable" && !donor.status)
+    return matchesSearch && matchesBloodType && matchesAvailability
+  })
 
-    return matchesSearch && matchesBloodType && matchesAvailability;
-  });
+  const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
 
-  const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
   const fetchRequests = async () => {
     try {
       if (showRecommended) {
-        const BloodRequests = await getRecommendedDonors(selectedBloodGroup);
-        const data = BloodRequests?.data;
+        const BloodRequests = await getRecommendedDonors(selectedBloodGroup)
+        const data = BloodRequests?.data
         const updatedData: Donor[] = (data || []).map((item: any) => ({
           donorId: item.donorId ?? item._id ?? "",
           blood_group: item.blood_group,
@@ -57,56 +59,64 @@ const Page = () => {
             role: item.user?.role ?? "",
           },
           ...item,
-        }));
-        setDonors(updatedData || []);
+        }))
+        setDonors(updatedData || [])
       } else if (!showRecommended) {
-        const BloodRequests = await getAllDonor();
-        const data = BloodRequests?.data;
+        const BloodRequests = await getAllDonor()
+        const data = BloodRequests?.data
         const updatedData = (data || []).map((item: Donor) => ({
           ...item,
-          updatedStatus: item.status
-        }));
-        // const data = mockRequests;
-        setDonors(updatedData || []);
-        // console.log(updatedData);
+          updatedStatus: item.status,
+        }))
+        setDonors(updatedData || [])
       }
     } catch (err) {
-      console.error("Error fetching blood requests:", err);
+      console.error("Error fetching blood requests:", err)
     }
-  };
+  }
 
   const handleBloodGroupChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedBloodGroup(e.target.value);
-  };
+    setSelectedBloodGroup(e.target.value)
+  }
 
+  const handleRowClick = (donor: Donor) => {
+    setSelectedDonor(donor)
+    setIsModalOpen(true)
+  }
+
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setSelectedDonor(null)
+  }
 
   useEffect(() => {
     if (showRecommended && selectedBloodGroup) {
-      fetchRequests();
+      fetchRequests()
     } else if (!showRecommended) {
-      fetchRequests();
+      fetchRequests()
     }
-  }, [showRecommended, selectedBloodGroup]);
+  }, [showRecommended, selectedBloodGroup])
+
   return (
     <div className="bg-gray-50 p-10 min-h-screen initialPage">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Find Donor</h1>
         </div>
+
         <div className="flex items-center gap-4 mb-4">
           <button
             onClick={() => {
-              const newState = !showRecommended;
-              setShowRecommended(newState);
+              const newState = !showRecommended
+              setShowRecommended(newState)
               if (!newState) {
-                setSelectedBloodGroup("A+");
+                setSelectedBloodGroup("A+")
               }
             }}
             className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
           >
             {showRecommended ? "Show All Donors" : "Show Recommended Donors"}
           </button>
-
           {showRecommended && (
             <select
               value={selectedBloodGroup}
@@ -115,11 +125,14 @@ const Page = () => {
               disabled={!showRecommended}
             >
               {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((bg) => (
-                <option key={bg} value={bg}>{bg}</option>
+                <option key={bg} value={bg}>
+                  {bg}
+                </option>
               ))}
             </select>
           )}
         </div>
+
         <div className="bg-white p-4 rounded-lg shadow mb-6">
           <div className="flex mb-4">
             <div className="relative flex-1">
@@ -151,8 +164,10 @@ const Page = () => {
                   onChange={(e) => setBloodType(e.target.value)}
                 >
                   <option value="">All Blood Types</option>
-                  {bloodTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
+                  {bloodTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -177,17 +192,31 @@ const Page = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Donor</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Blood Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Donation</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Donor
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Blood Type
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Last Donation
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Contact
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredDonors.length > 0 ? (
                 filteredDonors.map((donor, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
+                  <tr
+                    key={index}
+                    className="hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+                    onClick={() => handleRowClick(donor)}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
@@ -206,16 +235,18 @@ const Page = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${donor.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {donor.status ? 'Available' : 'Unavailable'}
+                      <span
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${donor.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                      >
+                        {donor.status ? "Available" : "Unavailable"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {donor?.last_donation_date ? new Date(donor.last_donation_date).toISOString().split("T")[0] : "N/A"}
+                      {donor?.last_donation_date
+                        ? new Date(donor.last_donation_date).toISOString().split("T")[0]
+                        : "N/A"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {donor.contact}
-                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{donor.contact}</td>
                   </tr>
                 ))
               ) : (
@@ -228,9 +259,144 @@ const Page = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Modal */}
+        {isModalOpen && selectedDonor && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]">
+            <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-t-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="h-16 w-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                      <User className="text-white" size={32} />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-white">{selectedDonor.user.name}</h2>
+                      <p className="text-blue-100">Donor ID: {selectedDonor.donorId}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={closeModal}
+                    className="text-white hover:text-gray-200 transition-colors duration-200"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 bg-gray-50 text-gray-800">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Blood Information */}
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                      <Droplet className="mr-2 text-red-500" size={20} />
+                      Blood Information
+                    </h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Blood Group:</span>
+                        <span className="font-medium text-red-600">{selectedDonor.blood_group}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Status:</span>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                            selectedDonor.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {selectedDonor.status ? "Available" : "Unavailable"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Last Donation:</span>
+                        <span className="font-medium text-gray-800">
+                          {selectedDonor?.last_donation_date
+                            ? new Date(selectedDonor.last_donation_date).toLocaleDateString()
+                            : "N/A"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Personal Information */}
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                      <User className="mr-2 text-blue-500" size={20} />
+                      Personal Information
+                    </h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Age:</span>
+                        <span className="font-medium text-gray-800">{selectedDonor.age || "N/A"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Role:</span>
+                        <span className="font-medium text-gray-800 capitalize">{selectedDonor.user.role}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Contact Information */}
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                      <Phone className="mr-2 text-green-500" size={20} />
+                      Contact Information
+                    </h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Phone:</span>
+                        <span className="font-medium text-gray-800">{selectedDonor.contact || "N/A"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Email:</span>
+                        <span className="font-medium text-gray-800">{selectedDonor.user.email}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Location Information */}
+                  <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                      <MapPin className="mr-2 text-purple-500" size={20} />
+                      Location
+                    </h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Address:</span>
+                        <span className="font-medium text-gray-800">{selectedDonor.address || "N/A"}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="mt-6 flex justify-end space-x-3">
+                  <button
+                    onClick={closeModal}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors duration-200"
+                  >
+                    Close
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                    onClick={() => {
+                      if (selectedDonor.contact) {
+                        window.open(`tel:${selectedDonor.contact}`, "_self")
+                      }
+                    }}
+                  >
+                    Contact Donor
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
-  );
+  )
 }
 
 export default Page
