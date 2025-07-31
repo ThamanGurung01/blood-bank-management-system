@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import { Search, Filter, User, Droplet, X, Phone, MapPin } from "lucide-react"
 import { getAllDonor, getRecommendedDonors } from "@/actions/donorActions"
 import type { IDonor } from "@/models/donor.models"
+import { log } from "console"
 
 interface Donor extends Omit<IDonor, "user"> {
   user: {
@@ -96,6 +97,7 @@ const Page = () => {
       fetchRequests()
     }
   }, [showRecommended, selectedBloodGroup])
+  console.log("selectedDonor",selectedDonor)
 
   return (
     <div className="bg-gray-50 p-10 min-h-screen initialPage">
@@ -202,7 +204,7 @@ const Page = () => {
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Donation
+                Next Eligible Donation
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Contact
@@ -242,8 +244,8 @@ const Page = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {donor?.last_donation_date
-                        ? new Date(donor.last_donation_date).toISOString().split("T")[0]
+                      {donor?.next_eligible_donation_date
+                        ? new Date(donor.next_eligible_donation_date).toISOString().split("T")[0]
                         : "N/A"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{donor.contact}</td>
@@ -262,7 +264,7 @@ const Page = () => {
 
         {/* Modal */}
         {isModalOpen && selectedDonor && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]">
+          <div className="fixed inset-0 bg-gray-300/65 bg-opacity-50 flex items-center justify-center p-4 z-[9999]">
             <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               {/* Modal Header */}
               <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-t-lg">
@@ -310,10 +312,10 @@ const Page = () => {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Last Donation:</span>
+                        <span className="text-gray-600">Next Eligible Donation:</span>
                         <span className="font-medium text-gray-800">
-                          {selectedDonor?.last_donation_date
-                            ? new Date(selectedDonor.last_donation_date).toLocaleDateString()
+                          {selectedDonor?.next_eligible_donation_date
+                            ? new Date(selectedDonor?.next_eligible_donation_date).toLocaleDateString()
                             : "N/A"}
                         </span>
                       </div>
@@ -347,11 +349,11 @@ const Page = () => {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Phone:</span>
-                        <span className="font-medium text-gray-800">{selectedDonor.contact || "N/A"}</span>
+                        <span className="font-medium text-gray-800">{selectedDonor?.contact || "N/A"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Email:</span>
-                        <span className="font-medium text-gray-800">{selectedDonor.user.email}</span>
+                        <span className="font-medium text-gray-800">{selectedDonor?.user.email}</span>
                       </div>
                     </div>
                   </div>
@@ -365,7 +367,13 @@ const Page = () => {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Address:</span>
-                        <span className="font-medium text-gray-800">{selectedDonor.address || "N/A"}</span>
+                        <div className="flex flex-col">
+                        <span className="font-medium text-gray-800">Longitude: {selectedDonor?.location.longitude || "N/A"}</span>
+                        <span className="font-medium text-gray-800">Latitude: {selectedDonor?.location.latitude || "N/A"}</span>
+
+                        <span className="font-medium text-gray-800">Address : {selectedDonor?.address || "N/A"}</span>
+                        </div>
+
                       </div>
                     </div>
                   </div>
@@ -382,8 +390,8 @@ const Page = () => {
                   <button
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
                     onClick={() => {
-                      if (selectedDonor.contact) {
-                        window.open(`tel:${selectedDonor.contact}`, "_self")
+                      if (selectedDonor?.user?.email) {
+                        window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(selectedDonor.user.email)}`, "_blank");
                       }
                     }}
                   >
