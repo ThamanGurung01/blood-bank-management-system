@@ -289,7 +289,7 @@ export default function DonorDonationSchedulePage() {
 
         <Dialog open={showScheduleForm} onOpenChange={setShowScheduleForm}>
           <DialogTrigger asChild>
-            <Button className="bg-red-600 hover:bg-red-700">
+            <Button className="bg-red-600 hover:bg-red-700 text-white">
               <Plus className="w-4 h-4 mr-2" />
               Schedule Donation
             </Button>

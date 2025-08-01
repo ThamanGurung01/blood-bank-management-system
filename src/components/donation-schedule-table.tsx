@@ -94,7 +94,7 @@ export default function DonationScheduleTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {requests.map((request) => (
+            {requests?.map((request) => (
               <TableRow key={request._id} className="hover:bg-muted/30">
                 {/* Donor Information */}
                 <TableCell>
@@ -180,27 +180,29 @@ export default function DonationScheduleTable({
                 </TableCell>
 
                 {/* Actions */}
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => handleApprove(request)}
-                      size="sm"
-                      variant="default"
-                      className="h-8 px-3 text-xs text-white bg-green-400"
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      onClick={() => handleReject(request)}
-                      size="sm"
-                      variant="destructive"
-                      className="h-8 px-3 text-xs text-white
+                {request?.status === "pending" && (
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleApprove(request)}
+                        size="sm"
+                        variant="default"
+                        className="h-8 px-3 text-xs text-white bg-green-400"
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        onClick={() => handleReject(request)}
+                        size="sm"
+                        variant="destructive"
+                        className="h-8 px-3 text-xs text-white
                        bg-red-500"
-                    >
-                      Reject
-                    </Button>
-                  </div>
-                </TableCell>
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

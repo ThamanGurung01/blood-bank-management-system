@@ -12,7 +12,9 @@ const BloodBankDonationSchedulePage = async () => {
         <div className="container mx-auto py-6">
           <div className="mb-6">
             <h1 className="text-3xl font-bold">Donation Schedule Management</h1>
-            <p className="text-red-600">Please log in to view donation requests</p>
+            <p className="text-red-600">
+              Please log in to view donation requests
+            </p>
           </div>
         </div>
       );
@@ -20,7 +22,7 @@ const BloodBankDonationSchedulePage = async () => {
 
     const result = await getBloodBankDonationRequests(
       session.user.id as string,
-      "pending"
+      "all"
     );
 
     console.log("data", result.data);
@@ -53,7 +55,7 @@ const BloodBankDonationSchedulePage = async () => {
     );
   } catch (error) {
     console.error("Error in BloodBankDonationSchedulePage:", error);
-    
+
     return (
       <div className="container mx-auto py-6">
         <div className="mb-6">

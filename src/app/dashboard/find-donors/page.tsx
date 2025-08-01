@@ -1,51 +1,55 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useEffect, useState } from "react"
-import { Search, Filter, User, Droplet, X, Phone, MapPin } from "lucide-react"
-import { getAllDonor, getRecommendedDonors } from "@/actions/donorActions"
-import type { IDonor } from "@/models/donor.models"
-import { log } from "console"
+import { useEffect, useState } from "react";
+import { Search, Filter, User, Droplet, X, Phone, MapPin } from "lucide-react";
+import { getAllDonor, getRecommendedDonors } from "@/actions/donorActions";
+import type { IDonor } from "@/models/donor.models";
+import { log } from "console";
+import Image from "next/image";
 
 interface Donor extends Omit<IDonor, "user"> {
   user: {
-    name: string
-    email: string
-    role: string
-  }
+    name: string;
+    email: string;
+    role: string;
+  };
 }
 
 const Page = () => {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [bloodType, setBloodType] = useState("")
-  const [availability, setAvailability] = useState("")
-  const [showFilters, setShowFilters] = useState(false)
-  const [donors, setDonors] = useState<Donor[]>([])
-  const [showRecommended, setShowRecommended] = useState(false)
-  const [selectedBloodGroup, setSelectedBloodGroup] = useState("A+")
+  const [searchQuery, setSearchQuery] = useState("");
+  const [bloodType, setBloodType] = useState("");
+  const [availability, setAvailability] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [donors, setDonors] = useState<Donor[]>([]);
+  const [showRecommended, setShowRecommended] = useState(false);
+  const [selectedBloodGroup, setSelectedBloodGroup] = useState("A+");
 
   // Modal states
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDonor, setSelectedDonor] = useState<Donor | null>(null);
 
   const filteredDonors = donors.filter((donor) => {
-    const matchesSearch = donor.user.name.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesBloodType = bloodType === "" || donor.blood_group === bloodType
+    const matchesSearch = donor.user.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesBloodType =
+      bloodType === "" || donor.blood_group === bloodType;
     const matchesAvailability =
       availability === "" ||
       (availability === "available" && donor.status) ||
-      (availability === "unavailable" && !donor.status)
-    return matchesSearch && matchesBloodType && matchesAvailability
-  })
+      (availability === "unavailable" && !donor.status);
+    return matchesSearch && matchesBloodType && matchesAvailability;
+  });
 
-  const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+  const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
   const fetchRequests = async () => {
     try {
       if (showRecommended) {
-        const BloodRequests = await getRecommendedDonors(selectedBloodGroup)
-        const data = BloodRequests?.data
+        const BloodRequests = await getRecommendedDonors(selectedBloodGroup);
+        const data = BloodRequests?.data;
         const updatedData: Donor[] = (data || []).map((item: any) => ({
           donorId: item.donorId ?? item._id ?? "",
           blood_group: item.blood_group,
@@ -60,44 +64,45 @@ const Page = () => {
             role: item.user?.role ?? "",
           },
           ...item,
-        }))
-        setDonors(updatedData || [])
+        }));
+        setDonors(updatedData || []);
       } else if (!showRecommended) {
-        const BloodRequests = await getAllDonor()
-        const data = BloodRequests?.data
+        const BloodRequests = await getAllDonor();
+        const data = BloodRequests?.data;
         const updatedData = (data || []).map((item: Donor) => ({
           ...item,
           updatedStatus: item.status,
-        }))
-        setDonors(updatedData || [])
+        }));
+        setDonors(updatedData || []);
       }
     } catch (err) {
-      console.error("Error fetching blood requests:", err)
+      console.error("Error fetching blood requests:", err);
     }
-  }
+  };
 
   const handleBloodGroupChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedBloodGroup(e.target.value)
-  }
+    setSelectedBloodGroup(e.target.value);
+  };
 
   const handleRowClick = (donor: Donor) => {
-    setSelectedDonor(donor)
-    setIsModalOpen(true)
-  }
+    setSelectedDonor(donor);
+    setIsModalOpen(true);
+  };
 
   const closeModal = () => {
-    setIsModalOpen(false)
-    setSelectedDonor(null)
-  }
+    setIsModalOpen(false);
+    setSelectedDonor(null);
+  };
 
   useEffect(() => {
     if (showRecommended && selectedBloodGroup) {
-      fetchRequests()
+      fetchRequests();
     } else if (!showRecommended) {
-      fetchRequests()
+      fetchRequests();
     }
-  }, [showRecommended, selectedBloodGroup])
-  console.log("selectedDonor",selectedDonor)
+  }, [showRecommended, selectedBloodGroup]);
+  console.log("selectedDonor", selectedDonor);
+  console.log("doner", filteredDonors);
 
   return (
     <div className="bg-gray-50 p-10 min-h-screen initialPage">
@@ -109,10 +114,10 @@ const Page = () => {
         <div className="flex items-center gap-4 mb-4">
           <button
             onClick={() => {
-              const newState = !showRecommended
-              setShowRecommended(newState)
+              const newState = !showRecommended;
+              setShowRecommended(newState);
               if (!newState) {
-                setSelectedBloodGroup("A+")
+                setSelectedBloodGroup("A+");
               }
             }}
             className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
@@ -145,7 +150,10 @@ const Page = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+              <Search
+                className="absolute left-3 top-2.5 text-gray-400"
+                size={18}
+              />
             </div>
             <button
               className="ml-2 px-4 py-2 bg-gray-200 rounded-lg flex items-center"
@@ -159,7 +167,9 @@ const Page = () => {
           {showFilters && (
             <div className="flex space-x-4">
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Blood Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Blood Type
+                </label>
                 <select
                   className="w-full p-2 border rounded-lg"
                   value={bloodType}
@@ -174,7 +184,9 @@ const Page = () => {
                 </select>
               </div>
               <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Availability</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Availability
+                </label>
                 <select
                   className="w-full p-2 border rounded-lg"
                   value={availability}
@@ -204,7 +216,7 @@ const Page = () => {
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Next Eligible Donation
+                  Next Eligible Donation
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Contact
@@ -222,11 +234,26 @@ const Page = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                          <User className="text-gray-500" size={20} />
+                          {/* <User className="text-gray-500" size={20} />
+                           */}
+                          <Image
+                            src={
+                              donor?.profileImage?.url ||
+                              "/placeholder.svg?height=40&width=40"
+                            }
+                            alt={`Donor ${donor.donorId}`}
+                            width={40}
+                            height={40}
+                            className="rounded-full"
+                          />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{donor.user.name}</div>
-                          <div className="text-sm text-gray-500">ID: {donor.donorId}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {donor.user.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            ID: {donor.donorId}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -238,22 +265,33 @@ const Page = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${donor.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          donor.status
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
                       >
                         {donor.status ? "Available" : "Unavailable"}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {donor?.next_eligible_donation_date
-                        ? new Date(donor.next_eligible_donation_date).toISOString().split("T")[0]
+                        ? new Date(donor.next_eligible_donation_date)
+                            .toISOString()
+                            .split("T")[0]
                         : "N/A"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{donor.contact}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {donor.contact}
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  <td
+                    colSpan={5}
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
                     No donors found matching your criteria.
                   </td>
                 </tr>
@@ -271,11 +309,24 @@ const Page = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <div className="h-16 w-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                      <User className="text-white" size={32} />
+                      <Image
+                        src={
+                          selectedDonor?.profileImage?.url ||
+                          "/placeholder.svg?height=64&width=64"
+                        }
+                        alt={`Donor ${selectedDonor.donorId}`}
+                        width={64}
+                        height={64}
+                        className="rounded-full"
+                      />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-white">{selectedDonor.user.name}</h2>
-                      <p className="text-blue-100">Donor ID: {selectedDonor.donorId}</p>
+                      <h2 className="text-2xl font-bold text-white">
+                        {selectedDonor.user.name}
+                      </h2>
+                      <p className="text-blue-100">
+                        Donor ID: {selectedDonor.donorId}
+                      </p>
                     </div>
                   </div>
                   <button
@@ -299,23 +350,31 @@ const Page = () => {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Blood Group:</span>
-                        <span className="font-medium text-red-600">{selectedDonor.blood_group}</span>
+                        <span className="font-medium text-red-600">
+                          {selectedDonor.blood_group}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Status:</span>
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                            selectedDonor.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                            selectedDonor.status
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
                           }`}
                         >
                           {selectedDonor.status ? "Available" : "Unavailable"}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Next Eligible Donation:</span>
+                        <span className="text-gray-600">
+                          Next Eligible Donation:
+                        </span>
                         <span className="font-medium text-gray-800">
                           {selectedDonor?.next_eligible_donation_date
-                            ? new Date(selectedDonor?.next_eligible_donation_date).toLocaleDateString()
+                            ? new Date(
+                                selectedDonor?.next_eligible_donation_date
+                              ).toLocaleDateString()
                             : "N/A"}
                         </span>
                       </div>
@@ -331,11 +390,15 @@ const Page = () => {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Age:</span>
-                        <span className="font-medium text-gray-800">{selectedDonor.age || "N/A"}</span>
+                        <span className="font-medium text-gray-800">
+                          {selectedDonor.age || "N/A"}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Role:</span>
-                        <span className="font-medium text-gray-800 capitalize">{selectedDonor.user.role}</span>
+                        <span className="font-medium text-gray-800 capitalize">
+                          {selectedDonor.user.role}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -349,11 +412,15 @@ const Page = () => {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Phone:</span>
-                        <span className="font-medium text-gray-800">{selectedDonor?.contact || "N/A"}</span>
+                        <span className="font-medium text-gray-800">
+                          {selectedDonor?.contact || "N/A"}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Email:</span>
-                        <span className="font-medium text-gray-800">{selectedDonor?.user.email}</span>
+                        <span className="font-medium text-gray-800">
+                          {selectedDonor?.user.email}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -368,12 +435,19 @@ const Page = () => {
                       <div className="flex justify-between">
                         <span className="text-gray-600">Address:</span>
                         <div className="flex flex-col">
-                        <span className="font-medium text-gray-800">Longitude: {selectedDonor?.location.longitude || "N/A"}</span>
-                        <span className="font-medium text-gray-800">Latitude: {selectedDonor?.location.latitude || "N/A"}</span>
+                          <span className="font-medium text-gray-800">
+                            Longitude:{" "}
+                            {selectedDonor?.location.longitude || "N/A"}
+                          </span>
+                          <span className="font-medium text-gray-800">
+                            Latitude:{" "}
+                            {selectedDonor?.location.latitude || "N/A"}
+                          </span>
 
-                        <span className="font-medium text-gray-800">Address : {selectedDonor?.address || "N/A"}</span>
+                          <span className="font-medium text-gray-800">
+                            Address : {selectedDonor?.address || "N/A"}
+                          </span>
                         </div>
-
                       </div>
                     </div>
                   </div>
@@ -391,7 +465,12 @@ const Page = () => {
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
                     onClick={() => {
                       if (selectedDonor?.user?.email) {
-                        window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(selectedDonor.user.email)}`, "_blank");
+                        window.open(
+                          `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+                            selectedDonor.user.email
+                          )}`,
+                          "_blank"
+                        );
                       }
                     }}
                   >
@@ -404,7 +483,7 @@ const Page = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

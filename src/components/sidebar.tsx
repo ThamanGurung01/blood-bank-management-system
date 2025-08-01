@@ -1,8 +1,22 @@
-"use client"
-import React from 'react'
-import { useSession, signOut } from 'next-auth/react'
-import { Heart, Home, Droplet, Syringe, Package, Calendar, LogOut, History, Users, BarChart2, Building , ShieldCheck} from 'lucide-react'
-import { usePathname, useRouter } from 'next/navigation'
+"use client";
+import React from "react";
+import { useSession, signOut } from "next-auth/react";
+import {
+  Heart,
+  Home,
+  Droplet,
+  Syringe,
+  Package,
+  Calendar,
+  LogOut,
+  History,
+  Users,
+  BarChart2,
+  Building,
+  ShieldCheck,
+} from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 const Sidebar = () => {
   // const [selectedSidebarOption, setSelectedSidebarOption] = useState<string>();
@@ -29,12 +43,16 @@ const Sidebar = () => {
       return "verify-blood_banks";
     if (path === "/admin/dashboard") return "admin-overview";
 
-  if (path.startsWith('/dashboard/blood_bank-overview')) return 'blood_bank-overview';
-  if (path.startsWith('/dashboard/blood-stock')) return 'blood-stock';
-  if (path.startsWith('/dashboard/blood-donation')) return 'blood-donation';
-  if (path.startsWith('/dashboard/blood_bank-request')) return 'blood_bank-request';
-  if (path.startsWith('/dashboard/blood_bank-donation_schedule')) return 'blood_bank-donation_schedule';
-  if (path.startsWith('/dashboard/blood_bank-event')) return 'blood_bank-event';
+    if (path.startsWith("/dashboard/blood_bank-overview"))
+      return "blood_bank-overview";
+    if (path.startsWith("/dashboard/blood-stock")) return "blood-stock";
+    if (path.startsWith("/dashboard/blood-donation")) return "blood-donation";
+    if (path.startsWith("/dashboard/blood_bank-request"))
+      return "blood_bank-request";
+    if (path.startsWith("/dashboard/blood_bank-donation_schedule"))
+      return "blood_bank-donation_schedule";
+    if (path.startsWith("/dashboard/blood_bank-event"))
+      return "blood_bank-event";
 
     return undefined;
   };
@@ -46,7 +64,7 @@ const Sidebar = () => {
     if (role === "blood_bank") {
       if (option === "overview") {
         // setSelectedSidebarOption(option)
-        router.push(`/dashboard/blood_bank-overview`)
+        router.push(`/dashboard/blood_bank-overview`);
       } else {
         // setSelectedSidebarOption(option)
         router.push(`/dashboard/${option}`);
@@ -54,7 +72,7 @@ const Sidebar = () => {
     } else if (role === "donor") {
       if (option === "overview") {
         // setSelectedSidebarOption(option)
-        router.push(`/dashboard/find-donors`)
+        router.push(`/dashboard/find-donors`);
       } else {
         // setSelectedSidebarOption(option)
         router.push(`/dashboard/${option}`);
@@ -121,7 +139,9 @@ const Sidebar = () => {
               icon={<Home size={20} />}
               label="Blood Overview"
               isSelected={selectedSidebarOption === "blood_bank-overview"}
-              onClick={() => handleSidebarSelect("blood_bank-overview", "blood_bank")}
+              onClick={() =>
+                handleSidebarSelect("blood_bank-overview", "blood_bank")
+              }
             />
             <SidebarItem
               icon={<Heart size={20} />}
