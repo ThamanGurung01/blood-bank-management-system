@@ -238,8 +238,8 @@ const Page = () => {
                            */}
                           <Image
                             src={
-                              donor?.profileImage?.url ||
-                              "/placeholder.svg?height=40&width=40"
+                              donor?.profileImage?.url ||"/defaultProfile.png"||
+                              "/placeholder.svg?height=40&width=40" 
                             }
                             alt={`Donor ${donor.donorId}`}
                             width={40}
@@ -311,7 +311,7 @@ const Page = () => {
                     <div className="h-16 w-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
                       <Image
                         src={
-                          selectedDonor?.profileImage?.url ||
+                          selectedDonor?.profileImage?.url||"/defaultProfile.png" ||
                           "/placeholder.svg?height=64&width=64"
                         }
                         alt={`Donor ${selectedDonor.donorId}`}

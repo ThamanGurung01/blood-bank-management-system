@@ -413,7 +413,7 @@ const Form = ({ type }: { type: string }) => {
                   </div>
                 </div>
               )}
-              {type === "login" && (
+              {/* {type === "login" && (
                 <div className="mt-2 text-right">
                   <Link
                     href="/forgot-password"
@@ -422,7 +422,7 @@ const Form = ({ type }: { type: string }) => {
                     Forgot your password?
                   </Link>
                 </div>
-              )}
+              )} */}
             </div>
 
             {type !== "login" && (

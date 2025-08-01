@@ -102,9 +102,25 @@ export default function DonationHistoryPage() {
           getDonorDonationRequests(session.user.id),
         ]);
 
-      if (donorResponse.success) {
+      if (donorResponse.success && donorResponse.data) {
         console.log("donorResponse.data: ", donorResponse.data);
-        setDonorData(donorResponse?.data);
+        setDonorData({
+          next_eligible_donation_date: donorResponse.data.next_eligible_donation_date
+            ? new Date(donorResponse.data.next_eligible_donation_date)
+            : new Date(),
+          last_donation_date: donorResponse.data.last_donation_date
+            ? new Date(donorResponse.data.last_donation_date)
+            : new Date(),
+          total_donations: donorResponse.data.total_donations ?? 0,
+          donated_volume: donorResponse.data.donated_volume ?? 0,
+        });
+      } else {
+        setDonorData({
+          next_eligible_donation_date: new Date(),
+          last_donation_date: new Date(),
+          total_donations: 0,
+          donated_volume: 0,
+        });
       }
       if (donationsResponse.success) {
         setDonations(donationsResponse.data);
