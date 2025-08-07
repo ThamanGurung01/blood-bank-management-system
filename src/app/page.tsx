@@ -1,12 +1,12 @@
 "use client"
 import Form from "@/components/form";
 import { Suspense } from 'react';
-
+import Loading from "./Loading";
 
 const Page = () => {
   return (
     <div>
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<Loading/>}>
         <Form type={"login"} />
       </Suspense>
     </div>
