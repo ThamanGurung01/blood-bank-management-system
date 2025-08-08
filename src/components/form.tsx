@@ -49,6 +49,7 @@ const Form = ({ type }: { type: string }) => {
   const from = useSearchParams().get("from");
   const signinError = searchParams.get("error");
   const router = useRouter();
+  const [isSubmitting,setIsSubmitting]=useState<boolean>(false);
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || undefined;
     setSelectedFile(file);
@@ -100,6 +101,7 @@ const Form = ({ type }: { type: string }) => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    setIsSubmitting(true);
     try {
       e.preventDefault();
       const formdata = new FormData(e.target as HTMLFormElement);
@@ -156,6 +158,9 @@ const Form = ({ type }: { type: string }) => {
               });
               setTimeout(() => {
                 router.push("/");
+                setTimeout(()=>{
+                  setIsSubmitting(false);
+                },1000)
               }, 1000);
             }
           } else {
@@ -181,9 +186,9 @@ const Form = ({ type }: { type: string }) => {
                 theme: "colored",
               });
             }
+            setIsSubmitting(false);
             return;
           }
-
           const session = await getSession();
           const role = session?.user?.role;
 
@@ -201,8 +206,14 @@ const Form = ({ type }: { type: string }) => {
           });
           setTimeout(() => {
             router.push(destination);
+            setTimeout(()=>{
+              setIsSubmitting(false);
+            },1000)
           }, 1000);
         }
+      }else{
+        setIsSubmitting(false);
+        return;
       }
     } catch (error: any) {
       throw new Error(error.message);
@@ -718,9 +729,9 @@ const Form = ({ type }: { type: string }) => {
             <div>
               <button
                 type="submit"
-                className="group relative flex w-full justify-center rounded-md border border-transparent bg-red-600 py-2 px-4 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-              >
-                {type === "login" ? "Sign in" : "Create account"}
+                disabled={isSubmitting}
+                className="group relative flex w-full justify-center rounded-md border border-transparent bg-red-600 py-2 px-4 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                {isSubmitting ? "Processing..." : (type === "login" ? "Sign in" : "Create account")}
               </button>
             </div>
             {signinError && (
