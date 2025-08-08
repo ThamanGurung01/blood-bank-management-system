@@ -180,8 +180,8 @@ export default function ProfilePage() {
       <div className="relative bg-red-600">
         <div className="absolute inset-0 bg-gradient-to-r from-red-800 to-red-600 opacity-90" />
         <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-white">
+          <div className="flex md:flex-row flex-col items-center justify-between">
+            <h1 className="text-xl md:text-3xl font-bold text-white mb-6 md:mb-0">
               Blood Bank Management System
             </h1>
             <div className="flex space-x-4">
