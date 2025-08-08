@@ -28,7 +28,7 @@ export interface DashboardStats {
     donorName: string;
     bloodType: string;
     units: number;
-    date: string; // Changed from Date to string for serialization
+    date: string;
   }>;
 }
 
@@ -47,17 +47,9 @@ export const getDashboardStats = async (): Promise<{
 
     const bloodBankId = session.user.id;
     
-    // Log the session user to verify the ID
-    console.log('Session user:', JSON.stringify(session.user, null, 2));
-    
     const today = new Date();
     const sevenDaysAgo = subDays(today, 6);
-    
-    console.log('Querying total blood units for blood bank ID:', bloodBankId);
-    console.log('Blood bank ID type:', typeof bloodBankId);
-    
-        const totalCount = await Blood.countDocuments({});
-    console.log('Total blood records in collection:', totalCount);
+    const totalCount = await Blood.countDocuments({});
     
     const mongoose = require('mongoose');
     let queryId = bloodBankId;
@@ -65,7 +57,6 @@ export const getDashboardStats = async (): Promise<{
    
     if (typeof bloodBankId === 'string' && mongoose.Types.ObjectId.isValid(bloodBankId)) {
       queryId = new mongoose.Types.ObjectId(bloodBankId);
-      console.log('Converted blood bank ID to ObjectId');
     }
     
     const matchCriteria = {
@@ -73,13 +64,7 @@ export const getDashboardStats = async (): Promise<{
       status: 'available'
     };
     
-    console.log('Using match criteria:', JSON.stringify({
-      ...matchCriteria,
-      blood_bank: matchCriteria.blood_bank.toString()
-    }, null, 2));
-    
     const matchingSample = await Blood.find(matchCriteria).limit(2).lean();
-    console.log('Sample matching records:', JSON.stringify(matchingSample, null, 2));
     
    const totalBloodUnits=await Blood.aggregate([
     {
@@ -116,18 +101,14 @@ export const getDashboardStats = async (): Promise<{
 
     // Debug: Check if there's any blood data for this blood bank
     const totalBloodCount = await Blood.countDocuments({ blood_bank: bloodBankId });
-    console.log('Total blood records for blood bank:', totalBloodCount);
     
     const availableBloodCount = await Blood.countDocuments({ 
       blood_bank: bloodBankId, 
       status: 'available' 
     });
-    console.log('Available blood records for blood bank:', availableBloodCount);
     
     // Debug: Check sample blood records
     const sampleBloodRecords = await Blood.find({ blood_bank: bloodBankId }).limit(3);
-    console.log('Sample blood records:', JSON.stringify(sampleBloodRecords, null, 2));
-
     const bloodStockByType = await Blood.aggregate([
       {
         $match: {
@@ -149,8 +130,6 @@ export const getDashboardStats = async (): Promise<{
       }
      
     ]);
-
-    console.log('bloodStockByType aggregation result:', JSON.stringify(bloodStockByType, null, 2));
     
     const donationTrends = [];
     for (let i = 6; i >= 0; i--) {
@@ -169,26 +148,12 @@ export const getDashboardStats = async (): Promise<{
       });
     }
 
-      
-    console.log('Fetching recent donations for blood bank:', bloodBankId);
-    
-    const donationCount = await BloodDonation.countDocuments({ blood_bank: bloodBankId });
-    console.log(`Found ${donationCount} blood donation records for blood bank ${bloodBankId}`);
-    
-    const sampleDonations = await BloodDonation.find({ blood_bank: bloodBankId }).limit(2).lean();
-    console.log('Sample blood donation records:', JSON.stringify(sampleDonations, null, 2));
-    
-
-
+    await BloodDonation.countDocuments({ blood_bank: bloodBankId });
+    await BloodDonation.find({ blood_bank: bloodBankId }).limit(2).lean();
      const recentDonations = await BloodDonation.find({
       blood_bank:bloodBankId
      }).sort({collected_date:-1}).limit(5)
-
-console.log("recentDonations",recentDonations);
-      
-
-
-
+    
     return {
       success: true,
       data: {
@@ -199,11 +164,11 @@ console.log("recentDonations",recentDonations);
         bloodStockByType,
         donationTrends,
         recentDonations:recentDonations.map((item:any)=>({
-            id:item._id,
+            id:item._id.toString(),
             donorName:item.donor_name,
             bloodType:item.blood_type,
             units:item.blood_units,
-            date:item.collected_date
+            date:item.collected_date.toISOString()
         })) 
       }
     };

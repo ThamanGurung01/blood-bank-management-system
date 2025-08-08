@@ -5,7 +5,6 @@ import { Droplet, Users, Calendar, AlertTriangle, Activity, Clock, TrendingUp } 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { getDashboardStats } from '@/actions/dashboardActions';
-import { formatDate } from 'date-fns';
 
 // Color palette for charts
 const CHART_COLORS: Record<string, string> = {
@@ -42,7 +41,7 @@ interface DashboardStats {
 }
 
 const DashboardPage = () => {
-  const { data: session } = useSession();
+  const { data: session,status } = useSession();
   const router = useRouter();
   const [stats, setStats] = useState<DashboardStats>({
     totalBloodUnits: 0,
@@ -88,20 +87,20 @@ const DashboardPage = () => {
       }
     };
 
-    if (session) {
-      fetchDashboardData();
-    } else if (!session) {
-      router.push('/login');
-    }
+  if (status === "authenticated") {
+    fetchDashboardData();
+  } else if (status === "unauthenticated") {
+    router.push("/");
+  }
   }, [session, router]);
 
-  // if (status === 'loading' || loading) {
-  //   return (
-  //     <div className="flex items-center justify-center min-h-screen">
-  //       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
-  //     </div>
-  //   );
-  // }
+  if (status === 'loading' || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
@@ -114,33 +113,29 @@ const DashboardPage = () => {
     );
   }
 
-  const recentDonations = [
-    { id: 1, donor: 'John Smith', bloodType: 'O+', time: '2 hours ago' },
-    { id: 2, donor: 'Sarah Johnson', bloodType: 'A-', time: '4 hours ago' },
-    { id: 3, donor: 'Mike Davis', bloodType: 'B+', time: '6 hours ago' },
-    { id: 4, donor: 'Emily Brown', bloodType: 'AB-', time: '8 hours ago' },
-    { id: 5, donor: 'David Wilson', bloodType: 'O-', time: '12 hours ago' }
-  ];
+  // const recentDonations = [
+  //   { id: 1, donor: 'John Smith', bloodType: 'O+', time: '2 hours ago' },
+  //   { id: 2, donor: 'Sarah Johnson', bloodType: 'A-', time: '4 hours ago' },
+  //   { id: 3, donor: 'Mike Davis', bloodType: 'B+', time: '6 hours ago' },
+  //   { id: 4, donor: 'Emily Brown', bloodType: 'AB-', time: '8 hours ago' },
+  //   { id: 5, donor: 'David Wilson', bloodType: 'O-', time: '12 hours ago' }
+  // ];
 
-  const upcomingEvents = [
-    { id: 1, event: 'Community Blood Drive', date: '2024-06-10', location: 'City Hospital', time: '9:00 AM' },
-    { id: 2, event: 'School Donation Camp', date: '2024-06-15', location: 'Lincoln High School', time: '10:00 AM' },
-    { id: 3, event: 'Corporate Drive', date: '2024-06-20', location: 'Tech Corp Office', time: '2:00 PM' }
-  ];
+  // const upcomingEvents = [
+  //   { id: 1, event: 'Community Blood Drive', date: '2024-06-10', location: 'City Hospital', time: '9:00 AM' },
+  //   { id: 2, event: 'School Donation Camp', date: '2024-06-15', location: 'Lincoln High School', time: '10:00 AM' },
+  //   { id: 3, event: 'Corporate Drive', date: '2024-06-20', location: 'Tech Corp Office', time: '2:00 PM' }
+  // ];
 
-  const criticalShortages = [
-    { bloodType: 'O-', units: 8, threshold: 20 },
-    { bloodType: 'AB-', units: 5, threshold: 15 },
-    { bloodType: 'B-', units: 12, threshold: 25 }
-  ];
+  // const criticalShortages = [
+  //   { bloodType: 'O-', units: 8, threshold: 20 },
+  //   { bloodType: 'AB-', units: 5, threshold: 15 },
+  //   { bloodType: 'B-', units: 12, threshold: 25 }
+  // ];
 
 
 
-  useEffect(() => {
-    if (!session) {
-      router.push("/");
-    }
-  }, [session, router]);
+
 
 
 //   return (
