@@ -18,7 +18,6 @@ export default function BloodTypeSelector() {
 
   const handleClick = (bloodType: string) => {
     setSelectedType(bloodType);
-    console.log(`Selected blood type: ${bloodType}`);
     router.push(
       `/dashboard/blood-stock/stock?bloodType=${encodeURIComponent(bloodType)}`
     );

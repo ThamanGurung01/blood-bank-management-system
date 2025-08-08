@@ -25,7 +25,6 @@ const BloodBankDonationSchedulePage = async () => {
       "all"
     );
 
-    console.log("data", result.data);
 
     if (!result.success) {
       return (

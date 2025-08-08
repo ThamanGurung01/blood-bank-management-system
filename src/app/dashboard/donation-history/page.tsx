@@ -103,7 +103,6 @@ export default function DonationHistoryPage() {
         ]);
 
       if (donorResponse.success && donorResponse.data) {
-        console.log("donorResponse.data: ", donorResponse.data);
         setDonorData({
           next_eligible_donation_date: donorResponse.data.next_eligible_donation_date
             ? new Date(donorResponse.data.next_eligible_donation_date)
@@ -127,7 +126,6 @@ export default function DonationHistoryPage() {
         applyFilters(donationsResponse.data, searchTerm, typeFilter);
       }
       if (requestsResponse.success) {
-        console.log("requestsResponse.data: ", requestsResponse.data);
         setRequests(requestsResponse.data);
       }
     } catch (error) {

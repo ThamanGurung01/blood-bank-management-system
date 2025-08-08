@@ -88,8 +88,22 @@ export default function BloodBankDonationRequestsPage() {
       ])
 
       if (requestsResult.success) {
-        setRequests(requestsResult.data!)
-        applyFilters(requestsResult.data!, searchTerm, statusFilter)
+        const sanitizedRequests = requestsResult.data!
+          .filter((req: any) => req.donor && req.donor.user && typeof req.donor.user.name === "string" && typeof req.donor.user.email === "string")
+          .map((req: any) => ({
+            ...req,
+            donor: {
+              ...req.donor,
+              user: {
+                name: String(req.donor.user.name),
+                email: String(req.donor.user.email),
+              },
+            },
+            requested_date: new Date(req.requested_date),
+            createdAt: new Date(req.createdAt),
+          }))
+        setRequests(sanitizedRequests)
+        applyFilters(sanitizedRequests, searchTerm, statusFilter)
       }
       if (statsResult.success) {
         setStatistics(statsResult.data!)

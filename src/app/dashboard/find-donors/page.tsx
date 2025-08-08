@@ -101,8 +101,6 @@ const Page = () => {
       fetchRequests();
     }
   }, [showRecommended, selectedBloodGroup]);
-  console.log("selectedDonor", selectedDonor);
-  console.log("doner", filteredDonors);
 
   return (
     <div className="bg-gray-50 p-10 min-h-screen initialPage">

@@ -117,13 +117,10 @@ const Page = () => {
   const updateStatusBloodRequest = async (brObjectId: string, requestId: string, status: string,prevStatus:string) => {
     try {
       if(status!==prevStatus){
-        console.log("status ", status);
-      console.log("prevStatus ", prevStatus);
         if (bloodBankStatusNote) {
 
         setNoteError("");
         const response = await changeBloodRequestStatus(brObjectId, requestId, status, bloodBankStatusNote);
-        console.log("Response from changeBloodRequestStatus:", response);
         await fetchRequests();
         setShowModal(false);
         setSelectedRequest(null);

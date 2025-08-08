@@ -36,7 +36,6 @@ const Page = () => {
 
       if (response.success) {
         setDonors(response.data);
-        console.log(response.data);
       } else {
         console.log(response.message || "Failed to fetch donor ranks");
       }

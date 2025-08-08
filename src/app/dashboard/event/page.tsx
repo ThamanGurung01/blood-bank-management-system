@@ -116,7 +116,6 @@ const EventsPage = () => {
 
   const fetchEvents = async () => {
     const eventData = await getAllEvents('',"all");
-    console.log(eventData);
     if (!eventData?.success) {
       console.log("Error")
       return;

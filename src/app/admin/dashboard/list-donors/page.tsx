@@ -36,7 +36,6 @@ const Page = () => {
   const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
   const handleUpdate = async (donorId: string, updatedData: Partial<Donor>) => {
     const res = await updateDonor(donorId, updatedData);
-    console.log(res);
     if (res.success) {
       setDonors((prev) =>
         prev.map((donor) =>

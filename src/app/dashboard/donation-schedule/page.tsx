@@ -110,14 +110,10 @@ export default function DonorDonationSchedulePage() {
       ]);
 
       if (requestsResult.success) {
-        console.log("Requests:", requestsResult);
         setRequests(requestsResult?.data ?? []);
-        console.log("requests", requestsResult?.data);
       }
       if (bloodBanksResult.success) {
-        console.log("Blood Banks:", bloodBanksResult.data);
         setBloodBanks(bloodBanksResult.data);
-        console.log(bloodBanksResult.data);
       }
     } catch (error) {
       console.error("Error fetching data:", error);

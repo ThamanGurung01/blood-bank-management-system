@@ -38,7 +38,6 @@ const Page = () => {
     const newUnverifiedBloodBankData = await getLatestBloodBank("unverified");
     setUnverifiedBloodBank(newUnverifiedBloodBankData.data ?? {});
     const newDonors = await getTodayNewDonors();
-    console.log(newDonors.data);
     setNewDonor(newDonors.data);
   }
   useEffect(() => {

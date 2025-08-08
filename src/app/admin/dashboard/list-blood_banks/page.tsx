@@ -55,7 +55,6 @@ const Page = () => {
   }
   const handleUpdate=async(bloodBankId: string, updatedData: Partial<BloodBank>)=>{
     const res = await updateBloodBank(bloodBankId, updatedData);
-        console.log(res);
         if (res.success) {
           setBloodBank((prev) =>
             prev.map((bloodBank) =>

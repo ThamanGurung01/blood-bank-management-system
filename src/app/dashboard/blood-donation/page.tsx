@@ -320,17 +320,15 @@ export default function BloodDonationPage() {
 
       if (!errors) {
         if (existingDonor) {
-          const bloodDonationData = await insertBloodDonation(
+          await insertBloodDonation(
             formdata,
             "existing_blood_donation"
           );
-          console.log(bloodDonationData);
         } else if (!existingDonor) {
-          const bloodDonationData = await insertBloodDonation(
+          await insertBloodDonation(
             formdata,
             "new_blood_donation"
           );
-          console.log(bloodDonationData);
         }
         formRef.current?.reset();
         setValidationErrors(undefined);

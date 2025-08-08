@@ -61,7 +61,6 @@ const Page = () => {
       try {
         const BloodBankData = await getAllBloodBanks();
         const data = BloodBankData?.data;
-        console.log("Blood Bank Data verification:", data);
         setBloodBanks(data || []);
       } catch (err) {
         console.error("Error fetching blood requests:", err);

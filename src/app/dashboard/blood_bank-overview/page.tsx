@@ -74,7 +74,6 @@ const DashboardPage = () => {
       try {
         setLoading(true);
         const response = await getDashboardStats();
-        console.log("response from fetch dashboard data",response);
         
         if (response.success && response.data) {
           setStats(response.data);
