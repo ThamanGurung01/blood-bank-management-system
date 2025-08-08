@@ -6,11 +6,13 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Bell, Menu, X } from "lucide-react";
 import Image from "next/image";
-
-const Navbar = () => {
+interface NavbarProps {
+  handleHamburger: () => void;
+  showMobileMenu:boolean;
+}
+const Navbar:React.FC<NavbarProps> = ({handleHamburger,showMobileMenu}) => {
   const { data: session } = useSession();
   // const [showNotifications, setShowNotifications] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
   // const pathname = usePathname();
 
   // Get page title based on pathname
@@ -33,7 +35,7 @@ const Navbar = () => {
         <div className="flex items-center">
           <button
             className="mr-4 rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 md:hidden"
-            onClick={() => setShowMobileMenu(!showMobileMenu)}
+            onClick={handleHamburger}
           >
             {showMobileMenu ? <X size={22} /> : <Menu size={22} />}
           </button>

@@ -18,7 +18,10 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
-const Sidebar = () => {
+interface SidebarProps{
+showMobileMenu:boolean;
+}
+const Sidebar:React.FC<SidebarProps> = ({showMobileMenu}) => {
   // const [selectedSidebarOption, setSelectedSidebarOption] = useState<string>();
   const { data: session } = useSession();
   const router = useRouter();
@@ -112,7 +115,7 @@ const Sidebar = () => {
   // }, [session, router])
 
   return (
-    <div className="fixed z-10 flex h-screen w-64 flex-col border-r border-gray-200 bg-white pt-20 shadow-sm transition-all">
+    <div className={`fixed z-10 flex h-screen w-64 flex-col border-r border-gray-200 bg-white pt-20 shadow-sm transition-all ${showMobileMenu?"":"hidden md:flex"}`}>
       <div className="mb-6 px-6">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">

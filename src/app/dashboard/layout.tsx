@@ -15,9 +15,14 @@ export default function Layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const { data: session, status } = useSession();
   const [verified, setVerified] = useState(false);
   const [loading, setLoading] = useState(true);
+
+    const handleHamburger=()=>{
+    setShowMobileMenu(!showMobileMenu);
+    }
 
   const checkBloodBank = async () => {
     if (session?.user?.role === "blood_bank") {
@@ -49,9 +54,9 @@ export default function Layout({
       {session?.user?.role === "blood_bank" ? (
         verified ? (
           <>
-            <Sidebar />
+            <Sidebar showMobileMenu={showMobileMenu}/>
             <div className="flex-1 md:ml-64">
-              <Navbar />
+              <Navbar handleHamburger={handleHamburger} showMobileMenu={showMobileMenu}/>
               <main className="p-6 pt-24">{children}</main>
             </div>
           </>
@@ -73,9 +78,9 @@ export default function Layout({
         )
       ) : (
         <>
-          <Sidebar />
+          <Sidebar showMobileMenu={showMobileMenu}/>
           <div className="flex-1 md:ml-64">
-            <Navbar />
+            <Navbar showMobileMenu={showMobileMenu} handleHamburger={handleHamburger}/>
             <main className="p-6 pt-24">{children}</main>
           </div>
         </>
